@@ -7,4 +7,5 @@ build/
 *.tmp
 
 package-lock.json
+package.json
 # credentials.json
