@@ -22,7 +22,8 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
 
 const auth =
   (...requiredRights) =>
-  async (req, res, next) => {
+    async (req, res, next) => { 
+    console.log()
     return new Promise((resolve, reject) => {
       authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, requiredRights))(req, res, next);
     })

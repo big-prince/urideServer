@@ -45,12 +45,7 @@ const userSchema = new Mongoose.Schema(
       type: String,
       enum: Roles.roles,
       default: 'user',
-    },
-    schoolId: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    }
   },
   {
     timestamps: true,
