@@ -11,7 +11,7 @@ Mongoose.connect(Config.mongoose.url, Config.mongoose.options).then(() => {
   server = app.listen(Config.port, () => {
     Logger.info(`uRide Server running on port: ${Config.port}
       -----------------------------------------
-      Running on ${process.env.NODE_ENV}
+      Running on uRide Server
       -----------------------------------------
     `);
     Logger.info(`SMPT PORT ${Config.email.smtp.host}`);
