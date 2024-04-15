@@ -14,7 +14,7 @@ import authLimiter from "./middlewares/rateLimiter.js";
 import routes from "./modules/index.js";
 import Errors from "./middlewares/error.js";
 import ApiError from "./utils/ApiError.js";
-import { swaggerConfigOptions } from "./config/swagger.js";
+// import { swaggerConfigOptions } from "./config/swagger.js";
 
 const app = express();
 
@@ -61,7 +61,7 @@ app.get("/", (req, res) => {
 routes(app);
 
 //swagger config
-expressJSDocSwagger(app)(swaggerConfigOptions);
+// expressJSDocSwagger(app)(swaggerConfigOptions);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
