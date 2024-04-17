@@ -2,11 +2,11 @@ import { Router } from "express";
 import auth from "../../middlewares/auth.js";
 import validate from "../../middlewares/validate.js";
 import {
-  createUser,
-  getUsers,
-  getUser,
-  updateUser,
-  deleteUser,
+	createUser,
+	getUsers,
+	getUser,
+	updateUser,
+	deleteUser,
 } from "../../validations/user.validation.js";
 import userController from "./user.controller.js";
 
@@ -31,19 +31,18 @@ const router = Router();
  * @property {string} role.required - The artist
  */
 
-
 /**
  * POST /api/v1/users
- * @summary This Creates a user 
+ * @summary This Creates a user
  * @tags Users
- * @param {User} request.body.required - user info
+ * @param {User Request Object} request.body.required - user info
  * @return {User} 200 - User response
  */
-router.post("", validate(createUser), userController.createUser);
+router.post(auth(""), validate(createUser), userController.createUser);
 
 /**
  * GET /api/v1/users
- * @summary This retrieves all users 
+ * @summary This retrieves all users
  * @tags Users
  * @return {array<User>} 200 - success response - application/json
  * @return {object} 400 - Bad request response
@@ -61,7 +60,7 @@ router.get(auth("/:userId"), validate(getUser), userController.getUser);
 
 /**
  * PATCH /api/v1/users/:userId
- * @summary This updates a user using the user id 
+ * @summary This updates a user using the user id
  * @tags Users
  * @param {User Request Object} request.body.required - song info
  * @return {User} 200 - User response
@@ -76,9 +75,9 @@ router.patch(auth("/:userId"), validate(updateUser), userController.updateUser);
  * @return {object} 400 - Bad request response
  */
 router.delete(
-  auth("/:userId"),
-  validate(deleteUser),
-  userController.deleteUser
+	auth("/:userId"),
+	validate(deleteUser),
+	userController.deleteUser
 );
 
 export default router;

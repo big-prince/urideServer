@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import User from './user.model.js';
 import ApiError from '../../utils/ApiError.js';
+import { sendWelcomeEmail } from '../com/emails/email.service.js';
 
 /**
  * Create a user
@@ -12,7 +13,15 @@ const createUser = async (userBody) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
   const user = await User.create(userBody);
-  return user;
+
+  if (user) {
+    let emailResponse = sendWelcomeEmail(user.email, user.firstName);
+    if (emailResponse.info) {
+      user.message = "Welcome email sent"
+      return user;
+    }
+  }
+  // return user;
 };
 
 /**

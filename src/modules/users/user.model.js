@@ -1,55 +1,52 @@
-import Mongoose from 'mongoose';
-import Validator from 'validator';
-import Bcrypt from 'bcryptjs';
-import toJSON from '../../plugins/toJSON.plugin.js';
-import paginate from '../../plugins/paginate.plugin.js';
-import Roles from '../../config/roles.js';
+import Mongoose from "mongoose";
+import Validator from "validator";
+import Bcrypt from "bcryptjs";
+import toJSON from "../../plugins/toJSON.plugin.js";
+import paginate from "../../plugins/paginate.plugin.js";
+import Roles from "../../config/roles.js";
 
 const userSchema = new Mongoose.Schema(
-  {
-    firstName: {
-      type: String,
-      required: [true, 'First Name is required!'],
-      trim: true,
-    },
-    lastName: {
-      type: String,
-      required: [true, 'Last Name is required!'],
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-      validate(value) {
-        if (!Validator.isEmail(value)) {
-          throw new Error('Invalid email');
-        }
-      },
-    },
-    password: {
-      type: String,
-      required: true,
-      trim: true,
-      minlength: 5,
-      validate(value) {
-        if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
-          throw new Error('Password must contain at least one letter and one number');
-        }
-      },
-      private: true, // used by the toJSON plugin
-    },
-    role: {
-      type: String,
-      enum: Roles.roles,
-      default: 'user',
-    }
-  },
-  {
-    timestamps: true,
-  }
+	{
+		name: {
+			type: String,
+			required: [true, "Fullname is required!"],
+			trim: true,
+		},
+		email: {
+			type: String,
+			required: true,
+			unique: true,
+			trim: true,
+			lowercase: true,
+			validate(value) {
+				if (!Validator.isEmail(value)) {
+					throw new Error("Invalid email");
+				}
+			},
+		},
+		password: {
+			type: String,
+			required: true,
+			trim: true,
+			minlength: 5,
+			validate(value) {
+				if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
+					throw new Error(
+						"Password must contain at least one letter and one number"
+					);
+				}
+			},
+			private: true, // used by the toJSON plugin
+		},
+		role: {
+			type: String,
+			enum: Roles.roles,
+			default: "user",
+		},
+	},
+	{
+		timestamps: true,
+	}
 );
 
 // add plugin that converts mongoose to json
@@ -63,8 +60,8 @@ userSchema.plugin(paginate);
  * @returns {Promise<boolean>}
  */
 userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
-  const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
-  return !!user;
+	const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
+	return !!user;
 };
 
 /**
@@ -73,21 +70,21 @@ userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
  * @returns {Promise<boolean>}
  */
 userSchema.methods.isPasswordMatch = async function (password) {
-  const user = this;
-  return Bcrypt.compare(password, user.password);
+	const user = this;
+	return Bcrypt.compare(password, user.password);
 };
 
-userSchema.pre('save', async function (next) {
-  const user = this;
-  if (user.isModified('password')) {
-    user.password = await Bcrypt.hash(user.password, 8);
-  }
-  next();
+userSchema.pre("save", async function (next) {
+	const user = this;
+	if (user.isModified("password")) {
+		user.password = await Bcrypt.hash(user.password, 8);
+	}
+	next();
 });
 
 /**
  * @typedef User
  */
-const User = Mongoose.model('User', userSchema);
+const User = Mongoose.model("User", userSchema);
 
 export default User;
