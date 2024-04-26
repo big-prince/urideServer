@@ -65,6 +65,10 @@ const verifyToken = async (token, type) => {
  * @returns {Promise<Object>}
  */
 const generateAuthTokens = async (user) => {
+  // console.log('User object:', user);
+  if (!user || !user.id) {
+    throw new Error('Invalid user object or missing user ID');
+  }
   const accessTokenExpires = moment().add(Config.jwt.accessExpirationMinutes, 'minutes');
   const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
 

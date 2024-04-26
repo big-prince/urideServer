@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { welcomeEmail } from "./templs/welcome.js";
+import { passwordResetEmail } from './templs/reset.js';
 
 let config = {
 	service: "gmail", // your email domain
@@ -13,7 +14,7 @@ let config = {
 let transporter = nodemailer.createTransport(config);
 
 //send welcome email
-export const sendWelcomeEmail = (receiverEmail, receiverName) => {
+export const sendWelcomeEmail = async(receiverEmail, receiverName) => {
     
 	let message = {
 		from: process.env.EMAIL_FROM, // sender address
@@ -22,23 +23,48 @@ export const sendWelcomeEmail = (receiverEmail, receiverName) => {
 		html: welcomeEmail(receiverName), // html body
 	};
     
-	let res = fireEmail(message);
-	return res;
+	try {
+		const info = await fireEmail(message);
+		console.log(info); // Add this line to log the info object
+		return {
+		  msg: "Email sent",
+		  info: info.messageId,
+		  preview: nodemailer.getTestMessageUrl(info),
+		};
+	  } catch (err) {
+		throw new Error(err);
+	  }
 };
 
+// send forgot password email
+export const sendForgotPasswordEmail = async (receiverEmail, resetPasswordToken) => {
+	const resetPasswordLink = `${process.env.RESET_PASSWORD_URL}?token=${resetPasswordToken}`;
+	const message = {
+	  from: process.env.EMAIL_FROM,
+	  to: receiverEmail,
+	  subject: 'Reset Your Password',
+	  html: passwordResetEmail(receiverEmail, resetPasswordLink),
+	};
+  
+	try {
+	  const info = await fireEmail(message);
+	  console.log(info); // Add this line to log the info object
+	  return {
+		msg: 'Email sent',
+		info: info.messageId,
+		preview: nodemailer.getTestMessageUrl(info),
+	  };
+	} catch (err) {
+	  throw new Error(err);
+	}
+};
 
-function fireEmail(message) {
-	transporter
-		.sendMail(message)
-		.then((info) => {
-			return {
-				msg: "Email sent",
-				info: info.messageId,
-				preview: nodemailer.getTestMessageUrl(info),
-			};
-		})
-		.catch((err) => {
-			throw new Error(err)
-			// return res.status(500).json({ msg: err });
-		});
-}
+async function fireEmail(message) {
+	try {
+	  const info = await transporter.sendMail(message);
+	  return info;
+	} catch (error) {
+	  console.error("Error sending email:", error);
+	  throw new Error(error);
+	}
+  }

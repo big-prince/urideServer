@@ -16,10 +16,10 @@ const createUser = async (userBody) => {
 
   if (user) {
     let emailResponse = sendWelcomeEmail(user.email, user.firstName);
-    if (emailResponse.info) {
+    // if (emailResponse.info) {
       user.message = "Welcome email sent"
       return user;
-    }
+    // }
   }
   // return user;
 };

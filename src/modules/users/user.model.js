@@ -7,9 +7,14 @@ import Roles from "../../config/roles.js";
 
 const userSchema = new Mongoose.Schema(
 	{
-		name: {
+		firstName: {
 			type: String,
-			required: [true, "Fullname is required!"],
+			required: [true, "Firstname is required!"],
+			trim: true,
+		},
+		lastName: {
+			type: String,
+			required: [true, "Lastname is required!"],
 			trim: true,
 		},
 		email: {

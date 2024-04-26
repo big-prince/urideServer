@@ -3,6 +3,7 @@ import catchAsync from '../../utils/catchAsync.js';
 import authService from './auth.service.js';
 import userService from '../users/user.service.js';
 import tokenService from './token.service.js';
+import { sendForgotPasswordEmail } from '../com/emails/email.service.js';
 
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -29,8 +30,8 @@ const refreshTokens = catchAsync(async (req, res) => {
 
 const forgotPassword = catchAsync(async (req, res) => {
   const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email);
-  await emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken);
-  res.status(httpStatus.NO_CONTENT).send();
+  await sendForgotPasswordEmail(req.body.email, resetPasswordToken);
+  res.status(httpStatus.NO_CONTENT).send("Email has been sent");
 });
 
 const resetPassword = catchAsync(async (req, res) => {

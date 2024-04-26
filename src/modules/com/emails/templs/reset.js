@@ -1,37 +1,34 @@
-import Mailgen from "mailgen";
+import Mailgen from 'mailgen';
 
-var mailGenerator = new Mailgen({
-	theme: "default",
-	product: {
-		// Appears in header & footer of e-mails
-		name: "uRide",
-		link: "https://uRide.io/",
-		// Optional logo
-		// logo: 'https://uRide.io/img/logo.png'
-	},
+// Initialize Mailgen with default theme
+const mailGenerator = new Mailgen({
+  theme: 'default',
+  product: {
+    name: 'uRide',
+    link: 'https://uRide.io/',
+  },
 });
 
-export const welcomeEmail = (receiverName) => {
-	// Prepare email contents
-	var email = {
-		body: {
-			name: receiverName,
-			intro: "Welcome to uRide! We're very excited to have you on board.",
-			action: {
-				instructions:
-					"To get started with uRide, please vrify your phone Number:",
-				button: {
-					color: "#22BC66",
-					text: "Confirm your account",
-					link: "https://mailgen.js/confirm?s=d9729feb74992cc3482b350163a1a010",
-				},
-			},
-			outro: "Need help, or have questions? Just reply to this email, we'd love to help.",
-		},
-	};
+// Generate the forgot password email template
+export const passwordResetEmail = (receiverName, resetPasswordLink) => {
+  const email = {
+    body: {
+      name: receiverName,
+      intro: 'You have requested to reset your password. Please click the button below to reset it:',
+      action: {
+        instructions: 'Click the button below to reset your password:',
+        button: {
+          color: '#22BC66',
+          text: 'Reset Password',
+          link: resetPasswordLink, // This should be the actual reset password link
+        },
+      },
+      outro: "If you didn't request this, you can safely ignore this email.",
+    },
+  };
 
-	// Generate an HTML email with the provided contents
-	var emailBody = mailGenerator.generate(email);
+  // Generate an HTML email with the provided contents
+  const emailBody = mailGenerator.generate(email);
 
-	return emailBody;
+  return emailBody;
 };
