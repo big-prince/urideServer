@@ -48,6 +48,26 @@ const userSchema = new Mongoose.Schema(
 			enum: Roles.roles,
 			default: "passenger",
 		},
+		carName: {
+			type: String,
+			trim: true,
+		  },
+		  carColor: {
+			type: String,
+			trim: true,
+		  },
+		  carNumber: {
+			type: String,
+			trim: true,
+		  },
+		  luggageType: {
+			type: String,
+			trim: true,
+		  },
+		  backRowSeatNumber: {
+			type: Number,
+			min: 0,
+		  },
 	},
 	{
 		timestamps: true,

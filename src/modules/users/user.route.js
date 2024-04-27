@@ -57,28 +57,37 @@ router.get("", validate(getUsers), userController.getUsers);
  * @return {User} 200 - success response - application/json
  * @return {object} 400 - Bad request response
  */
-router.get(auth("/:userId"), validate(getUser), userController.getUser);
+router.get(auth("users/:userId"), validate(getUser), userController.getUser);
 
 /**
- * PATCH /api/v1/users/:userId
+ * PATCH /api/v1/users/update-user/:userId
  * @summary This updates a user using the user id 
  * @tags Users
  * @param {User Request Object} request.body.required - song info
  * @return {User} 200 - User response
  */
-router.patch(auth("/:userId"), validate(updateUser), userController.updateUser);
+router.patch(auth("users/update-user/:userId"), validate(updateUser), userController.updateUser);
 
 /**
- * DELETE /api/v1/users/:userId
+ * DELETE /api/v1/users/:userId/delete
  * @summary This deletes a single user using their id
  * @tags Users
  * @return {User} 204 - success response
  * @return {object} 400 - Bad request response
  */
 router.delete(
-  auth("/:userId"),
+  auth("/delete/:userId"),
   validate(deleteUser),
   userController.deleteUser
 );
+
+/**
+ * PATCH /api/v1/users/update-driver-profile/:userId
+ * @summary This updates a user to a driver using the user id 
+ * @tags Users
+ * @param {User Request Object} request.body.required - song info
+ * @return {User} 200 - User response
+ */
+router.patch("users/update-driver-profile/:userId", validate(updateUser), userController.updateToDriverProfile);
 
 export default router;

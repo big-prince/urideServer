@@ -89,6 +89,18 @@ const deleteUserById = async (userId) => {
   return user;
 };
 
+const updateToDriverProfile = async (userId, driverDetails) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  user.role = "driver";
+  Object.assign(user, driverDetails); // Update driver-specific details
+  await user.save();
+  return user;
+};
+
 export default {
   createUser,
   queryUsers,
@@ -96,4 +108,5 @@ export default {
   getUserByEmail,
   updateUserById,
   deleteUserById,
+  updateToDriverProfile,
 };

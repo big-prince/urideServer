@@ -35,10 +35,17 @@ const deleteUser = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const updateToDriverProfile = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const user = await userService.updateToDriverProfile(userId, req.body);
+  res.send(user);
+});
+
 export default {
   createUser,
   getUsers,
   getUser,
   updateUser,
   deleteUser,
+  updateToDriverProfile,
 };
