@@ -1,4 +1,6 @@
 import express, { json, urlencoded } from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 import helmet from "helmet";
 import xss from "xss-clean";
 import mongoSanitize from "express-mongo-sanitize";
@@ -18,10 +20,15 @@ import { swaggerConfigOptions } from "./config/swagger.js";
 
 const app = express();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 if (env !== "test") {
   app.use(Morgan.successHandler);
   app.use(Morgan.errorHandler);
 }
+
+app.use(express.static(__dirname + "/public"));
 
 // set security HTTP headers
 app.use(helmet());
@@ -52,8 +59,20 @@ if (env === "production") {
   app.use("/v1/auth", authLimiter);
 }
 
-app.get("/", (req, res) => {
-  res.end("uRide Server is Up n Running");
+// app.get("/", (req, res) => {
+//   res.end("uRide Server is Up n Running");
+// });
+
+// sendFile will go here
+app.get('/', function(req, res) {
+  res.sendFile(path.join(__dirname,"../public/index.html"));
+});
+
+// POST route to handle phone number submission
+app.post('/submitPhoneNumber', (req, res) => {
+  const phoneNumber = req.body.phoneNumber;
+  console.log("Received phone number:", phoneNumber);
+  res.json({ message: "Phone number received successfully" });
 });
 
 // v1 api routes
