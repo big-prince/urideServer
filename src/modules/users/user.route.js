@@ -77,4 +77,13 @@ router.patch("/:userId", validate(updateUser), userController.updateUser);
  */
 router.delete("/:userId", validate(deleteUser), userController.deleteUser);
 
+/**
+ * PATCH /api/v1/users//update-driver-profile/:userId
+ * @summary This updates a user using the user id 
+ * @tags Users
+ * @param {User Request Object} request.body.required - song info
+ * @return {User} 200 - User response
+ */
+router.patch("/update-driver-profile/:userId", validate(updateUser), userController.updateToDriverProfile);
+
 export default router;
