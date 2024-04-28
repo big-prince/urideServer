@@ -24,7 +24,7 @@ jobs:
           username: zabilal
           password: Eneyohwei1! #${{ secrets.DIGITALOCEAN_URIDE_PASSWORD }}
           script: |
-            cd /var/www/uride/_uRide_Backend
+            cd var/www/uride/_uRide_Backend
             git pull origin main
             supervisorctl
 
