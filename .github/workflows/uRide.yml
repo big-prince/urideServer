@@ -13,9 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        # with:
-        #   repository: uRide-NG/_uRide_Backend
-        #   token: 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 #${{ secrets.ACCESS_TOKEN }}
+        with:
+          repository: uRide-NG/_uRide_Backend
+          token: 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 #${{ secrets.ACCESS_TOKEN }}
       - name: Install dependencies
         run: npm install
       # - name: Build
@@ -29,7 +29,7 @@ jobs:
           script: |
             cd var/www/uride/_uRide_Backend
             git pull origin main
-            sudo supervisorctl
+            supervisorctl
 
 # name: Node.js CI
 
