@@ -52,7 +52,7 @@ jobs:
           script: |
             cd var/www/uride/_uRide_Backend
             git pull https://zabilal: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@github.com/uRide-NG/_uRide_Backend.git main
-            sudo supervisorctl
+            pm2 restart all
 
 # name: Node.js CI
 
