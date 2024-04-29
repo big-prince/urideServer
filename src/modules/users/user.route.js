@@ -53,6 +53,7 @@ router.get("", validate(getUsers), userController.getUsers);
  * GET /api/v1/users/:userId
  * @summary This fetches a single user using their id
  * @tags Users
+ *  @param {string} userId - user id to fetch a single user
  * @return {User} 200 - success response - application/json
  * @return {object} 400 - Bad request response
  */
