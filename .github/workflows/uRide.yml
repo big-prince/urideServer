@@ -21,8 +21,8 @@ jobs:
           host: 142.93.40.82
           username: zabilal
           password: Eneyohwei1! #${{ secrets.DIGITALOCEAN_URIDE_PASSWORD }}
-          script: sh deploy.sh
-
+          script: |
+            sh deploy.sh
           
 # name: uRide-Deploy
 
