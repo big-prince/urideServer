@@ -59,9 +59,9 @@ if (env === "production") {
   app.use("/v1/auth", authLimiter);
 }
 
-// app.get("/", (req, res) => {
-//   res.end("uRide Server is Up n Running");
-// });
+app.get("/ping", (req, res) => {
+  res.end("uRide Server is Up n Running");
+});
 
 // sendFile will go here
 app.get('/', function(req, res) {
