@@ -20,7 +20,7 @@ jobs:
         with:
           host: 142.93.40.82
           username: zabilal
-          password: Eneyohwei1! #${{ secrets.DIGITALOCEAN_URIDE_PASSWORD }}
+          password: Eneyohwei1!
           script: |
             sh deploy.sh
           
