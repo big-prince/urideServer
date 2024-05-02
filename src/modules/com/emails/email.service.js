@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { welcomeEmail } from "./templs/welcome.js";
 import { passwordResetEmail } from './templs/reset.js';
+import {sendOtpEmailTemplate} from "./templs/otp.js";
 
 let config = {
 	service: "gmail", // your email domain
@@ -46,6 +47,28 @@ export const sendForgotPasswordEmail = async (receiverEmail, resetPasswordToken)
 	  html: passwordResetEmail(receiverEmail, resetPasswordLink),
 	};
   
+	try {
+	  const info = await fireEmail(message);
+	  console.log(info); // Add this line to log the info object
+	  return {
+		msg: 'Email sent',
+		info: info.messageId,
+		preview: nodemailer.getTestMessageUrl(info),
+	  };
+	} catch (err) {
+	  throw new Error(err);
+	}
+};
+
+// send forgot password email
+export const sendOTPEmail = async (receiverEmail, otp) => {
+	const message = {
+	  from: process.env.EMAIL_FROM,
+	  to: receiverEmail,
+	  subject: 'OTP from uRide',
+	  html: sendOtpEmailTemplate(receiverEmail, otp),
+	};
+
 	try {
 	  const info = await fireEmail(message);
 	  console.log(info); // Add this line to log the info object

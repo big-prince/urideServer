@@ -74,6 +74,7 @@ router.patch("/:userId", validate(updateUser), userController.updateUser);
  * @summary This deletes a single user using their id
  * @tags Users
  * @return {User} 204 - success response
+ * @param userId
  * @return {object} 400 - Bad request response
  */
 router.delete("/:userId", validate(deleteUser), userController.deleteUser);

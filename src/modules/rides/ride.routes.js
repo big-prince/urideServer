@@ -1,8 +1,12 @@
 import { Router } from "express";
 import auth from "../../middlewares/auth.js";
 import validate from "../../middlewares/validate.js";
+import rideController from "./ride.controller.js"
 
 const router = Router();
+
+
+
 
 router.post("/update_location")
 router.post("/book_ride")

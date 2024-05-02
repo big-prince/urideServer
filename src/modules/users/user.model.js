@@ -68,6 +68,12 @@ const userSchema = new Mongoose.Schema(
 			type: Number,
 			min: 0,
 		  },
+		isEmailVerified: {
+			type: Boolean
+		},
+		isPhoneVeirified: {
+			type: Boolean
+		}
 	},
 	{
 		timestamps: true,

@@ -39,6 +39,16 @@ const resetPassword = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const sendEmailOTP = catchAsync(async (req, res) => {
+  let result = await authService.sendOTP(req.body.email);
+  res.status(httpStatus.OK).json(result);
+})
+
+const verifyOTP = catchAsync(async (req, res) => {
+  await authService.verifyOTP(req.body.otp);
+  res.status(httpStatus.OK).send();
+})
+
 export default {
   register,
   login,
@@ -46,4 +56,6 @@ export default {
   refreshTokens,
   forgotPassword,
   resetPassword,
+  sendEmailOTP,
+  verifyOTP
 };

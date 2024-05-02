@@ -1,6 +1,6 @@
 module.exports = {
   env: {
-    commonjs: true,
+    commonjs: false,
     es2021: true,
     node: true
   },
@@ -25,7 +25,7 @@ module.exports = {
     "no-restricted-imports": ["error", "underscore"],
     "no-restricted-modules": ["error", "underscore"],
     "promise/catch-or-return": "error",
-    "eqeqeq": "error",
+    // "eqeqeq": "error",
     "strict": ["error", "global"],
     // "no-console": "off",
     "consistent-return": "error",
