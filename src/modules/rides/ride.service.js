@@ -1,8 +1,9 @@
-import {ObjectId} from "mongoose";
-import User from "../users/user.model";
-import Rides from "./ride.model";
-import Reviews from "../reviews/review.model";
+import Mongoose from "mongoose";
+import User from "../users/user.model.js";
+import Rides from "./ride.model.js";
+import Reviews from "../reviews/review.model.js";
 
+const {ObjectId} = Mongoose;
 
 
 // Returns all rides in the ride schema
@@ -118,7 +119,10 @@ const getRide = function (rideId, callback) {
 };
 
 // Adds a ride given the user inputs
-const addRide = function (userId, origin, destination, departure_time, total_capacity, transport, ride_type, luggage_type, callback) {
+const addRide = function (rideDetails, callback) {
+
+    const { userId, origin, destination, departure_time, total_capacity, transport, ride_type, luggage_type } = rideDetails;
+
     const areaOneOrigin = {type: 'Point', coordinates: [origin.longitude, origin.latitude]};
     const wuseDestination = {type: 'Point', coordinates: [destination.longitude, destination.latitude]};
 

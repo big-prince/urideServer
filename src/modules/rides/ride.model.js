@@ -17,13 +17,13 @@ const pointSchema = new Mongoose.Schema({
 });
 
 const rideSchema = new Mongoose.Schema({
-
-    name: {type: String, required: false},
     origin: {
+        name: {type: String, required: false},
         type: pointSchema,
         index: "2dsphere"
     },
     destination: {
+        name: {type: String, required: false},
         type: pointSchema,
         index: "2dsphere"
     },

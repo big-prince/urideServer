@@ -2,6 +2,9 @@ import nodemailer from "nodemailer";
 import { welcomeEmail } from "./templs/welcome.js";
 import { passwordResetEmail } from './templs/reset.js';
 import {sendOtpEmailTemplate} from "./templs/otp.js";
+import User from "../../users/user.model.js";
+import httpStatus from "http-status";
+import ApiError from "../../../utils/ApiError.js";
 
 let config = {
 	service: "gmail", // your email domain
@@ -60,18 +63,22 @@ export const sendForgotPasswordEmail = async (receiverEmail, resetPasswordToken)
 	}
 };
 
-// send forgot password email
+// send otp to email
 export const sendOTPEmail = async (receiverEmail, otp) => {
+	const user = await User.findOne({email: receiverEmail});
+	if (!user) {
+		throw new ApiError(httpStatus.NOT_FOUND, "User not Found")
+	}
 	const message = {
 	  from: process.env.EMAIL_FROM,
 	  to: receiverEmail,
 	  subject: 'OTP from uRide',
-	  html: sendOtpEmailTemplate(receiverEmail, otp),
+	  html: sendOtpEmailTemplate(user.firstName, otp),
 	};
 
 	try {
 	  const info = await fireEmail(message);
-	  console.log(info); // Add this line to log the info object
+	  // console.log(info); // Add this line to log the info object
 	  return {
 		msg: 'Email sent',
 		info: info.messageId,

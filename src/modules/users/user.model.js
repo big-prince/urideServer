@@ -4,6 +4,8 @@ import Bcrypt from "bcryptjs";
 import toJSON from "../../plugins/toJSON.plugin.js";
 import paginate from "../../plugins/paginate.plugin.js";
 import Roles from "../../config/roles.js";
+import httpStatus from "http-status";
+import ApiError from "../../utils/ApiError.js";
 
 const userSchema = new Mongoose.Schema(
 	{
@@ -25,7 +27,7 @@ const userSchema = new Mongoose.Schema(
 			lowercase: true,
 			validate(value) {
 				if (!Validator.isEmail(value)) {
-					throw new Error("Invalid email");
+					throw new ApiError(httpStatus.BAD_REQUEST, "Invalid email");
 				}
 			},
 		},
@@ -36,8 +38,7 @@ const userSchema = new Mongoose.Schema(
 			minlength: 5,
 			validate(value) {
 				if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
-					throw new Error(
-						"Password must contain at least one letter and one number"
+					throw new ApiError(httpStatus.BAD_REQUEST, "Password must contain at least one letter and one number"
 					);
 				}
 			},

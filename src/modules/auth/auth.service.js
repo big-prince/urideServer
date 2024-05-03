@@ -120,7 +120,6 @@ const sendOTP = async (email) => {
     return {
       success: true,
       message: `OTP Sent Successfully`,
-      otp,
     };
   } catch (error) {
     console.log(error.message);

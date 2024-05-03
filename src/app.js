@@ -23,10 +23,10 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-if (env !== "test") {
+// if (env !== "test") {
   app.use(Morgan.successHandler);
   app.use(Morgan.errorHandler);
-}
+// }
 
 app.use(express.static(__dirname + "/public"));
 

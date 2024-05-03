@@ -12,5 +12,6 @@ router.post('/refresh-tokens', validate(validator.refreshTokens), authController
 router.post('/forgot-password', validate(validator.forgotPassword), authController.forgotPassword);
 router.post('/reset-password', validate(validator.resetPassword), authController.resetPassword);
 router.post('/send-otp', authController.sendEmailOTP);
+router.post('/verify-otp', authController.verifyOTP);
 
 export default router;

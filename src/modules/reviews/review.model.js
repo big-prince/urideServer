@@ -2,7 +2,8 @@ import Mongoose from "mongoose";
 import toJSON from "../../plugins/toJSON.plugin.js";
 import paginate from "../../plugins/paginate.plugin.js";
 
-const reviewSchema = new Schema({
+let ObjectId = Mongoose.Types.ObjectId;
+const reviewSchema = new Mongoose.Schema({
 	ride: { type: ObjectId, ref: "rideSchema", required: true },
 	reviewer: { type: ObjectId, ref: "userSchema", required: true },
 	reviewee: { type: ObjectId, ref: "userSchema", required: true },
@@ -12,12 +13,12 @@ const reviewSchema = new Schema({
 
 
 // add plugin that converts mongoose to json
-rideSchema.plugin(toJSON);
-rideSchema.plugin(paginate);
+reviewSchema.plugin(toJSON);
+reviewSchema.plugin(paginate);
 
 /**
- * @typedef Rides
+ * @typedef Reviews
  */
-const Reviews = Mongoose.model("Reviews", rideSchema);
+const Reviews = Mongoose.model("Reviews", reviewSchema);
 
 export default Reviews;
