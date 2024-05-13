@@ -2,17 +2,17 @@
 // These methods abstract out the basic mechanism
 // of creating server responses with some content
 // (error code, message, etc.).
-var utils = (function () {
+const Response = (function () {
 
-  var _utils = {};
+  let _utils = {};
 
   /*
     Send a 200 OK with success:true in the request body to the
     response argument provided.
     The caller of this function should return after calling
   */
-  _utils.sendSuccessResponse = function(res, content) {
-    res.status(200).json({
+  _utils.sendSuccessResponse = function(res, statusCode, content) {
+    res.status(statusCode).json({
       success: true,
       content: content
     }).end();
@@ -35,4 +35,4 @@ var utils = (function () {
 
 })();
 
-module.exports = utils;
+export default Response;

@@ -98,7 +98,7 @@ const sendOTP = async (email) => {
     // if (checkUserPresent.isEmailVerified) {
     //
     // }
-
+    ////
     let otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
@@ -123,7 +123,7 @@ const sendOTP = async (email) => {
     };
   } catch (error) {
     console.log(error.message);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(httpStatus.EXPECTATION_FAILED).send({ success: false, error: error.message });
   }
 }
 

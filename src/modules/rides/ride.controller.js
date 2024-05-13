@@ -3,18 +3,31 @@ import catchAsync from '../../utils/catchAsync.js';
 import rideService from "./ride.service.js";
 import Logger from "../../config/logger.js";
 import ApiError from "../../utils/ApiError.js";
+import Response from "../../utils/utils.js";
 
 const bookRide = catchAsync(async (req, res) => {
-    await rideService.addRide(req.body, function (result){
-        if (result instanceof Error) {
-            Logger.info("Result :: " + result);
-            throw new ApiError(httpStatus.EXPECTATION_FAILED, result);
-            res.status(httpStatus.EXPECTATION_FAILED, result).send();
+    await rideService.addRide(req.body, function (result) {
+        Logger.info(result);
+        if (result === null){
+            Response.sendErrResponse(res, httpStatus.EXPECTATION_FAILED, "Ensure all fields are filled")
+        }else{
+            Response.sendSuccessResponse(res, httpStatus.OK, result);
         }
-    });
-    // res.status(httpStatus.CREATED).send();
+    })
 })
 
+const allRides = catchAsync(async (req, res) => {
+    await rideService.getAllOpenRides(function (result) {
+        if (result === null){
+            Response.sendErrResponse(res, httpStatus.NOT_FOUND, result)
+        }else {
+            Response.sendSuccessResponse(res, httpStatus.OK, result)
+        }
+    })
+})
+
+
 export default {
-    bookRide
+    bookRide,
+    allRides
 }

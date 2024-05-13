@@ -1,14 +1,14 @@
 import JOI from 'joi';
 import validator from './custom.validation.js';
 
-const register = {
-  body: JOI.object().keys({
-    email: JOI.string().required().email(),
-    password: JOI.string().required().custom(validator.password),
-    firstName: JOI.string().required(),
-    lastName: JOI.string().required(),
-  }),
-};
+// const register = {
+//   body: JOI.object().keys({
+//     email: JOI.string().required().email(),
+//     password: JOI.string().required().custom(validator.password),
+//     firstName: JOI.string().required(),
+//     lastName: JOI.string().required(),
+//   }),
+// };
 
 const login = {
   body: JOI.object().keys({
@@ -45,7 +45,7 @@ const resetPassword = {
 };
 
 export default {
-  register,
+  // register,
   login,
   logout,
   refreshTokens,

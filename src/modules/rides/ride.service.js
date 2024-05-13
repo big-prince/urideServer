@@ -2,6 +2,7 @@ import Mongoose from "mongoose";
 import User from "../users/user.model.js";
 import Rides from "./ride.model.js";
 import Reviews from "../reviews/review.model.js";
+import Logger from "../../config/logger.js";
 
 const {ObjectId} = Mongoose;
 
@@ -33,7 +34,7 @@ const inRide = function (userId, rideId, callback) {
 
 // Gets all rides with remaining capacity
 const getAllOpenRides = function (callback) {
-    var now = new Date();
+    let now = new Date();
     Rides
         .find({})
         .where("remaining_capacity")
@@ -128,6 +129,9 @@ const addRide = function (rideDetails, callback) {
 
     const finalOrigin = {name: origin.name, location: areaOneOrigin}
     const finalDestination = {name: destination.name, location: wuseDestination}
+
+    Logger.info("Area1 :: " + JSON.stringify(areaOneOrigin))
+    Logger.info("Wuse :: " + JSON.stringify(wuseDestination))
 
     Rides.create({
         origin: finalOrigin,

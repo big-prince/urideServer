@@ -14,6 +14,8 @@ const router = Router();
  */
 router.post("/book_ride", rideController.bookRide);
 
+router.get("/open", rideController.allRides)
+
 router.post("/booking_detail")
 router.post("/ride_request_accept")
 router.post("/ride_request_decline")
