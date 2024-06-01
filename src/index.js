@@ -3,8 +3,7 @@ import app from "./app.js";
 import Config from "./config/config.js";
 import Logger from "./config/logger.js";
 
-
-
+console.log(Logger.info);
 let server;
 Mongoose.connect(Config.mongoose.url, Config.mongoose.options).then(() => {
   Logger.info("Connected to MongoDB");

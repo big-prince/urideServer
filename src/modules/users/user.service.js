@@ -1,7 +1,7 @@
-import httpStatus from 'http-status';
-import User from './user.model.js';
-import ApiError from '../../utils/ApiError.js';
-import { sendWelcomeEmail } from '../com/emails/email.service.js';
+import httpStatus from "http-status";
+import User from "./user.model.js";
+import ApiError from "../../utils/ApiError.js";
+import { sendWelcomeEmail } from "../com/emails/email.service.js";
 
 /**
  * Create a user
@@ -10,15 +10,15 @@ import { sendWelcomeEmail } from '../com/emails/email.service.js';
  */
 const createUser = async (userBody) => {
   if (await User.isEmailTaken(userBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
   }
   const user = await User.create(userBody);
 
   if (user) {
     let emailResponse = sendWelcomeEmail(user.email, user.firstName);
     // if (emailResponse.info) {
-      user.message = "Welcome email sent"
-      return user;
+    user.message = "Welcome email sent";
+    return user;
     // }
   }
   // return user;
@@ -65,10 +65,10 @@ const getUserByEmail = async (email) => {
 const updateUserById = async (userId, updateBody) => {
   const user = await getUserById(userId);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
   if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
   }
   Object.assign(user, updateBody);
   await user.save();
@@ -83,7 +83,7 @@ const updateUserById = async (userId, updateBody) => {
 const deleteUserById = async (userId) => {
   const user = await getUserById(userId);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
   await user.remove();
   return user;
