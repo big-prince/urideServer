@@ -15,28 +15,28 @@ const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await authService.loginUserWithEmailAndPassword(email, password);
   const tokens = await tokenService.generateAuthTokens(user);
-  res.send({ user, tokens });
+  res.status(httpStatus.OK).send({ user, tokens });
 });
 
 const logout = catchAsync(async (req, res) => {
   await authService.logout(req.body.refreshToken);
-  res.status(httpStatus.NO_CONTENT).send();
+  res.status(httpStatus.NO_CONTENT).send({status: httpStatus.NOT_FOUND});
 });
 
 const refreshTokens = catchAsync(async (req, res) => {
   const tokens = await authService.refreshAuth(req.body.refreshToken);
-  res.send({ ...tokens });
+  res.status(httpStatus.OK).send({ ...tokens });
 });
 
 const forgotPassword = catchAsync(async (req, res) => {
   const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email);
   await sendForgotPasswordEmail(req.body.email, resetPasswordToken);
-  res.status(httpStatus.NO_CONTENT).send();
+  res.status(httpStatus.NO_CONTENT).send({status: httpStatus.NO_CONTENT, message: "Password reset email has been sent."});
 });
 
 const resetPassword = catchAsync(async (req, res) => {
   await authService.resetPassword(req.query.token, req.body.password);
-  res.status(httpStatus.NO_CONTENT).send();
+  res.status(httpStatus.NO_CONTENT).json({status: httpStatus.NOT_FOUND, message: "Password reset successfully"});
 });
 
 const sendEmailOTP = catchAsync(async (req, res) => {
@@ -46,7 +46,7 @@ const sendEmailOTP = catchAsync(async (req, res) => {
 
 const verifyOTP = catchAsync(async (req, res) => {
   await authService.verifyOTP(req.body.otp);
-  res.status(httpStatus.OK).send();
+  res.status(httpStatus.OK).json({status: httpStatus.OK, message: "Verification Completed"});
 })
 
 export default {
