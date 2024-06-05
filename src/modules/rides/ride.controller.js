@@ -37,6 +37,7 @@ const allRides = catchAsync(async (req, res) => {
   if (result === null) {
     Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
   } else {
+    console.log(result);
     Response.sendSuccessResponse(res, httpStatus.OK, result);
   }
 });

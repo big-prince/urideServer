@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const mapboxToken =
-  "pk.eyJ1IjoibWFpbmx5cHJpbmNlIiwiYSI6ImNsd3l6MDd5eTAxdmMya3NmNnByczk0NHUifQ.XrrLGqiI6CwZCdoggSB2CQ";
+  "pk.eyJ1IjoibWFpbmx5cHJpbmNlIiwiYSI6ImNsd3l6NnlqYTAyOHMycHF1ZW05eW5nbTAifQ.cjhrRXM6D-Cm9Ivk-NrOlg";
 
 const getCordinates = async (location) => {
   try {

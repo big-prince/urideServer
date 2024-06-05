@@ -93,7 +93,6 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
       .gte(1)
       .where("departure_time")
       .gte(now);
-    // .populate("creator", "email");
 
     if (!rides) {
       console.log("No Ridess");
@@ -118,8 +117,10 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
         transport,
       } = ride;
 
-      //find creator details using creator
-      const userDetails = await User.findOne({ email: creator });
+      // Fetch additional details of the creator using the email
+      const creatorDetails = await User.findOne({
+        email: ride.creator,
+      });
 
       // Format the ride object with additional creator details
       rideArray.push({
@@ -130,17 +131,19 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
         total_capacity,
         remaining_capacity,
         creator: {
-          firstName: userDetails.firstName,
-          lastName: userDetails.lastName,
-          email: userDetails.email,
+          email: creatorDetails.email,
+          name: {
+            firstName: creatorDetails.firstName,
+            lastName: creatorDetails.lastName,
+          },
         },
         riders,
         luggage_type,
         transport,
       });
     }
-    console.log(rideArray);
 
+    // Return the formatted ride array
     return rideArray;
   } catch (error) {
     return callback(error);
