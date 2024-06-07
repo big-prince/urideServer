@@ -1,9 +1,9 @@
-import httpStatus from 'http-status';
-import catchAsync from '../../utils/catchAsync.js';
-import authService from './auth.service.js';
-import userService from '../users/user.service.js';
-import tokenService from './token.service.js';
-import { sendForgotPasswordEmail } from '../com/emails/email.service.js';
+import httpStatus from "http-status";
+import catchAsync from "../../utils/catchAsync.js";
+import authService from "./auth.service.js";
+import userService from "../users/user.service.js";
+import tokenService from "./token.service.js";
+import { sendForgotPasswordEmail } from "../com/emails/email.service.js";
 
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -15,7 +15,8 @@ const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await authService.loginUserWithEmailAndPassword(email, password);
   const tokens = await tokenService.generateAuthTokens(user);
-  res.status(httpStatus.OK).send({ user, tokens });
+  console.log("Login Successfull");
+  res.send({ user, tokens });
 });
 
 const logout = catchAsync(async (req, res) => {
@@ -29,7 +30,9 @@ const refreshTokens = catchAsync(async (req, res) => {
 });
 
 const forgotPassword = catchAsync(async (req, res) => {
-  const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email);
+  const resetPasswordToken = await tokenService.generateResetPasswordToken(
+    req.body.email
+  );
   await sendForgotPasswordEmail(req.body.email, resetPasswordToken);
   res.status(httpStatus.NO_CONTENT).send({status: httpStatus.NO_CONTENT, message: "Password reset email has been sent."});
 });
@@ -42,12 +45,12 @@ const resetPassword = catchAsync(async (req, res) => {
 const sendEmailOTP = catchAsync(async (req, res) => {
   let result = await authService.sendOTP(req.body.email);
   res.status(httpStatus.OK).json(result);
-})
+});
 
 const verifyOTP = catchAsync(async (req, res) => {
-  await authService.verifyOTP(req.body.otp);
-  res.status(httpStatus.OK).json({status: httpStatus.OK, message: "Verification Completed"});
-})
+  const { result, sendData } = await authService.verifyOTP(req.body.otp);
+  res.status(httpStatus.OK).send(sendData);
+});
 
 export default {
   register,
@@ -57,5 +60,5 @@ export default {
   forgotPassword,
   resetPassword,
   sendEmailOTP,
-  verifyOTP
+  verifyOTP,
 };
