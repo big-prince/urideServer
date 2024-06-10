@@ -4,38 +4,46 @@ import paginate from "../../plugins/paginate.plugin.js";
 
 let ObjectId = Mongoose.Types.ObjectId;
 
-const pointSchema = new Mongoose.Schema({
-    type: {
-        type: String,
-        enum: ['Point'],
-        required: true
-    },
-    coordinates: {
-        type: [Number],
-        required: true
-    }
-});
-
 const rideSchema = new Mongoose.Schema({
-    origin: {
-        name: {type: String, required: false},
-        location: pointSchema,
-        // index: "2dsphere"
+  origin: {
+    name: { type: String, required: false },
+    location: {
+      type: {
+        type: String, // This should be String
+        enum: ["Point"], // 'Point' is the only allowed value
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
     },
-    destination: {
-        name: {type: String, required: false},
-        location: pointSchema,
-        // index: "2dsphere"
+  },
+  destination: {
+    name: { type: String, required: false },
+    location: {
+      type: {
+        type: String, // This should be String
+        enum: ["Point"], // 'Point' is the only allowed value
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
     },
-    departure_time: {type: Date, required: true},
-    total_capacity: {type: Number, required: true},
-    remaining_capacity: {type: Number, required: true},
-    creator: {type: ObjectId, ref: "userSchema"},
-    riders: [{type: ObjectId, ref: "userSchema"}],
-    transport: String,
+  },
+  departure_time: { type: Date, required: true },
+  total_capacity: { type: Number, required: true },
+  remaining_capacity: { type: Number, required: true },
+  creator: { type: String, ref: "userSchema" },
+  riders: [{ type: ObjectId, ref: "userSchema" }],
+  luggage_type: String,
+  transport: String,
 });
 
-rideSchema.index({origin: "2dsphere", destination: "2dsphere"})
+rideSchema.index({ "origin.location": "2dsphere" });
+rideSchema.index({ "destination.location": "2dsphere" });
 
 // add plugin that converts mongoose to json
 rideSchema.plugin(toJSON);
