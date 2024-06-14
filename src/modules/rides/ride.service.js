@@ -4,6 +4,7 @@ import Rides from "./ride.model.js";
 import Reviews from "../reviews/review.model.js";
 import Logger from "../../config/logger.js";
 import getCordinates from "../../utils/geocode.js";
+import moment from "moment";
 
 const { ObjectId } = Mongoose;
 
@@ -112,6 +113,7 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
         total_capacity,
         remaining_capacity,
         creator,
+        price,
         riders,
         luggage_type,
         transport,
@@ -121,6 +123,14 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
       const creatorDetails = await User.findOne({
         email: ride.creator,
       });
+
+      if (creatorDetails.role !== "passenger") {
+        //switch role to driver
+        creatorDetails.role = "passenger";
+        await creatorDetails.save().then(() => {
+          console.log("Role Changed to Passenger!");
+        });
+      }
 
       // Format the ride object with additional creator details
       rideArray.push({
@@ -137,6 +147,7 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
             lastName: creatorDetails.lastName,
           },
         },
+        price,
         riders,
         luggage_type,
         transport,
@@ -203,6 +214,11 @@ const addRide = async function (rideDetails, callback) {
   const {
     origin,
     destination,
+    stops,
+    type,
+    other,
+    price,
+    brs,
     departure_time,
     total_capacity,
     creator,
@@ -211,9 +227,33 @@ const addRide = async function (rideDetails, callback) {
     transport,
   } = rideDetails;
 
+  //check creators role
+  const creatorRole = await User.findOne({ email: creator });
+
+  if (creatorRole.role !== "driver") {
+    //switch role to driver
+    creatorRole.role = "driver";
+    await creatorRole.save().then(() => {
+      console.log("Role Changed to Driver!");
+    });
+  }
+
   //get cordinates
-  const originCordinates = await getCordinates(origin.name);
-  const destinationCordinates = await getCordinates(destination.name);
+  const originCordinates = await getCordinates(origin);
+  const destinationCordinates = await getCordinates(destination);
+  //destruxture date function
+  function parseDateWithMoment(dateString) {
+    // Parse the date string using moment with a specific format
+    const parsedDate = moment(dateString, "M/D/YYYY h:mmA");
+
+    // Check if the parsed date is valid
+    if (!parsedDate.isValid()) {
+      console.log("Invalid date format");
+    }
+
+    // Return a JavaScript Date object
+    return parsedDate.toDate();
+  }
 
   const MainOrigin = {
     type: "Point",
@@ -224,77 +264,95 @@ const addRide = async function (rideDetails, callback) {
     coordinates: destinationCordinates,
   };
 
-  //clean location
-  const cleanLocation = (locationObject) => {
-    return {
-      ...locationObject,
-      _id: undefined, // Remove or set to null
-    };
-  };
-  const cleanOriginlocation = cleanLocation(MainOrigin);
-  const cleanDestinationLocation = cleanLocation(MainDestination);
-
   const finalOrigin = {
-    name: origin.name,
+    name: origin,
     location: MainOrigin,
   };
   const finalDestination = {
-    name: destination.name,
+    name: destination,
     location: MainDestination,
   };
+
+  const formattedStops = await Promise.all(
+    stops.map(async (stop) => {
+      const coordinates = await getCordinates(stop);
+      return {
+        name: stop,
+        location: {
+          type: "Point",
+          coordinates: coordinates,
+        },
+      };
+    })
+  );
+  //destructure the time received
+  const departureTime = parseDateWithMoment(departure_time);
+  console.log(departureTime);
+
   Logger.info(`${origin.name}: ` + JSON.stringify(MainOrigin));
   Logger.info(`${destination.name}: ` + JSON.stringify(MainDestination));
 
   const options = {
     origin: finalOrigin,
     destination: finalDestination,
-    departure_time: departure_time,
+    stops: formattedStops,
+    type: type,
+    other: other,
+    price: price,
+    brs: brs,
+    departure_time: departureTime,
     total_capacity: total_capacity,
     remaining_capacity: total_capacity,
     creator: creator,
-    riders: [],
+    riders: riders,
     luggage_type: luggage_type,
     transport: transport,
   };
 
-  // test ride
-  // const testRide = {
-  //   origin: {
-  //     name: "Port Harcourt",
-  //     location: {
-  //       type: "Point",
-  //       coordinates: [7.018569, 4.766129],
-  //     },
-  //   },
-  //   destination: {
-  //     name: "Eneka",
-  //     location: {
-  //       type: "Point",
-  //       coordinates: [7.2556619, 4.5085784], // Adjusted to be realistic
-  //     },
-  //   },
-  //   departure_time: new Date(),
-  //   total_capacity: 4,
-  //   remaining_capacity: 4,
-  //   creator: "60d0fe4f5311236168a109ca",
-  //   luggage_type: "Small",
-  //   transport: "Car",
-  // };
+  // console.log(options);
 
+  // // test ride
+  // // const testRide = {
+  // //   origin: {
+  // //     name: "Port Harcourt",
+  // //     location: {
+  // //       type: "Point",
+  // //       coordinates: [7.018569, 4.766129],
+  // //     },
+  // //   },
+  // //   destination: {
+  // //     name: "Eneka",
+  // //     location: {
+  // //       type: "Point",
+  // //       coordinates: [7.2556619, 4.5085784], // Adjusted to be realistic
+  // //     },
+  // //   },
+  // //   departure_time: new Date(),
+  // //   total_capacity: 4,
+  // //   remaining_capacity: 4,
+  // //   creator: "60d0fe4f5311236168a109ca",
+  // //   luggage_type: "Small",
+  // //   transport: "Car",
+  // // };
   try {
-    const ride = await Rides.create(options);
-    console.log("Ride created", ride);
-    if (!ride) {
-      return callback({ message: "Ride not created" });
+    //only save if ride is "One-Time"
+    if (type === "One-time") {
+      const ride = await Rides.create(options);
+      console.log("Ride created");
+      if (!ride) {
+        return callback({ message: "Ride not created" });
+      }
+      // // update the creators rides
+      const updateDriver = await User.findOneAndUpdate(
+        { email: creator },
+        {
+          $push: { ridesCreated: ride._id },
+        },
+        { new: true }
+      );
+
+      return ride;
     }
-    //update the user part
-    const userRides = await User.findOneAndUpdate(
-      { email: creator },
-      { $set: { rides: ride._id } },
-      { new: true }
-    );
-    console.log(userRides);
-    return ride;
   } catch (error) {
     console.log("There is an error", { message: error.message });
   }
