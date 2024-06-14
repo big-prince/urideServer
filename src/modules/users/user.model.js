@@ -8,6 +8,8 @@ import httpStatus from "http-status";
 import ApiError from "../../utils/ApiError.js";
 import Response from "../../utils/utils.js";
 
+let ObjectId = Mongoose.Types.ObjectId;
+
 const userSchema = new Mongoose.Schema(
   {
     firstName: {
@@ -50,10 +52,18 @@ const userSchema = new Mongoose.Schema(
       enum: Roles.roles,
       default: "passenger",
     },
-    rides: {
-      type: String,
-      ref: "Rides",
-    },
+    rides: [
+      {
+        type: ObjectId,
+        ref: "Rides",
+      },
+    ],
+    ridesCreated: [
+      {
+        type: ObjectId,
+        ref: "Rides",
+      },
+    ],
     carName: {
       type: String,
       trim: true,

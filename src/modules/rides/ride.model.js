@@ -9,8 +9,8 @@ const rideSchema = new Mongoose.Schema({
     name: { type: String, required: false },
     location: {
       type: {
-        type: String, // This should be String
-        enum: ["Point"], // 'Point' is the only allowed value
+        type: String,
+        enum: ["Point"],
         required: true,
       },
       coordinates: {
@@ -23,8 +23,8 @@ const rideSchema = new Mongoose.Schema({
     name: { type: String, required: false },
     location: {
       type: {
-        type: String, // This should be String
-        enum: ["Point"], // 'Point' is the only allowed value
+        type: String,
+        enum: ["Point"],
         required: true,
       },
       coordinates: {
@@ -32,6 +32,41 @@ const rideSchema = new Mongoose.Schema({
         required: true,
       },
     },
+  },
+  stops: [
+    {
+      name: { type: String, required: false },
+      location: {
+        type: {
+          type: String,
+          enum: ["Point"],
+          required: true,
+        },
+        coordinates: {
+          type: [Number],
+          required: true,
+        },
+      },
+    },
+  ],
+  type: {
+    type: String,
+    enum: ["One-time", "Recurring"],
+    required: true,
+  },
+  other: {
+    type: String,
+    enum: ["Bikes", "Pets", "Skates", "None"],
+    required: false,
+  },
+  price: {
+    //price per seat
+    type: Number,
+    required: true,
+  },
+  brs: {
+    type: Number,
+    required: true,
   },
   departure_time: { type: Date, required: true },
   total_capacity: { type: Number, required: true },
