@@ -22,6 +22,7 @@ jobs:
       with:
         node-version: "20.x"
         cache: 'npm'
+        cache-dependency-path: './_uRide_Backend/package-lock.json'
         
       # Starting deployment
     - name: Slack Notification - Deployment Inititated
