@@ -74,7 +74,18 @@ const rideSchema = new Mongoose.Schema({
   creator: { type: String, ref: "userSchema" },
   riders: [{ type: ObjectId, ref: "userSchema" }],
   luggage_type: String,
-  transport: String,
+  carName: {
+    type: String,
+    trim: true,
+  },
+  carColor: {
+    type: String,
+    trim: true,
+  },
+  carNumber: {
+    type: String,
+    trim: true,
+  },
 });
 
 rideSchema.index({ "origin.location": "2dsphere" });

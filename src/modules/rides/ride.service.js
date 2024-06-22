@@ -112,11 +112,16 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
         departure_time,
         total_capacity,
         remaining_capacity,
+        brs,
+        stops,
         creator,
         price,
         riders,
         luggage_type,
-        transport,
+        carName,
+        carNumber,
+        type,
+        other,
       } = ride;
 
       // Fetch additional details of the creator using the email
@@ -140,6 +145,8 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
         departure_time,
         total_capacity,
         remaining_capacity,
+        brs,
+        stops,
         creator: {
           email: creatorDetails.email,
           name: {
@@ -150,7 +157,10 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
         price,
         riders,
         luggage_type,
-        transport,
+        carName,
+        carNumber,
+        type,
+        other,
       });
     }
 
@@ -224,9 +234,11 @@ const addRide = async function (rideDetails, callback) {
     creator,
     riders,
     luggage_type,
-    transport,
+    carName,
+    carColor,
+    carNumber,
   } = rideDetails;
-
+  console.log(rideDetails);
   //check creators role
   const creatorRole = await User.findOne({ email: creator });
 
@@ -306,34 +318,11 @@ const addRide = async function (rideDetails, callback) {
     creator: creator,
     riders: riders,
     luggage_type: luggage_type,
-    transport: transport,
+    carName: carName,
+    carColor: carColor,
+    carNumber: carNumber,
   };
 
-  // console.log(options);
-
-  // // test ride
-  // // const testRide = {
-  // //   origin: {
-  // //     name: "Port Harcourt",
-  // //     location: {
-  // //       type: "Point",
-  // //       coordinates: [7.018569, 4.766129],
-  // //     },
-  // //   },
-  // //   destination: {
-  // //     name: "Eneka",
-  // //     location: {
-  // //       type: "Point",
-  // //       coordinates: [7.2556619, 4.5085784], // Adjusted to be realistic
-  // //     },
-  // //   },
-  // //   departure_time: new Date(),
-  // //   total_capacity: 4,
-  // //   remaining_capacity: 4,
-  // //   creator: "60d0fe4f5311236168a109ca",
-  // //   luggage_type: "Small",
-  // //   transport: "Car",
-  // // };
   try {
     //only save if ride is "One-Time"
     if (type === "One-time") {
@@ -342,15 +331,19 @@ const addRide = async function (rideDetails, callback) {
       if (!ride) {
         return callback({ message: "Ride not created" });
       }
-      // // update the creators rides
+      // update the creators rides
       const updateDriver = await User.findOneAndUpdate(
         { email: creator },
         {
           $push: { ridesCreated: ride._id },
+          carName: carName,
+          carNumber: carNumber,
         },
         { new: true }
       );
 
+      //update car details for driver
+      console.log(updateDriver);
       return ride;
     }
   } catch (error) {
