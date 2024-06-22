@@ -1,10 +1,12 @@
-const app = require("./app")
-const supertest = require("supertest")
+import app from "../src/app"
+import supertest from "supertest"
+
 const request = supertest(app)
+
 describe("Testing root", () => {
-    it("should be equal", async () => {
+    it("should return a response", async () => {
         const response = await request.get("/")
-        expect(2 + 2).toBe(4)
+        expect(response.status).toBe(200)
         // expect(response.text).toBe("Hello there!");
     })
 })
