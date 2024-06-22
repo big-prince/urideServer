@@ -66,13 +66,6 @@ jobs:
           password: Eneyohwei1!
           script: |
             sh deploy.sh
-            
-      # - uses: actions/checkout@v3
-      # - uses: akhileshns/heroku-deploy@v3.12.12 
-      #   with:
-      #     heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-      #     heroku_app_name: "HEORKU_APP_NAME"
-      #     heroku_email: "OWNER_EMAIL"
     
     # Deployment completes
       - name: Slack Notification - Deployment Success
