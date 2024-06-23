@@ -1,4 +1,3 @@
-// test/app.test.js
 import request from "supertest";
 import app from "../src/app";
 
@@ -29,3 +28,4 @@ describe("uride app", () => {
 		expect(res.body.message).toBe("Not found");
 	});
 });
+

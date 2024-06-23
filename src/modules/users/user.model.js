@@ -8,78 +8,92 @@ import httpStatus from "http-status";
 import ApiError from "../../utils/ApiError.js";
 import Response from "../../utils/utils.js";
 
+let ObjectId = Mongoose.Types.ObjectId;
+
 const userSchema = new Mongoose.Schema(
-    {
-        firstName: {
-            type: String,
-            required: [true, "Firstname is required!"],
-            trim: true,
-        },
-        lastName: {
-            type: String,
-            required: [true, "Lastname is required!"],
-            trim: true,
-        },
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-            trim: true,
-            lowercase: true,
-            // validate(value) {
-            //     if (!Validator.isEmail(value)) {
-            //         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid email");
-            //     }
-            // },
-        },
-        password: {
-            type: String,
-            required: true,
-            trim: true,
-            minlength: 5,
-            // validate(value) {
-            //     if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
-            //         Response.password(httpStatus.BAD_REQUEST, "Password must contain at least one letter and one number"
-            //         );
-            //     }
-            // },
-            private: true, // used by the toJSON plugin
-        },
-        role: {
-            type: String,
-            enum: Roles.roles,
-            default: "passenger",
-        },
-        carName: {
-            type: String,
-            trim: true,
-        },
-        carColor: {
-            type: String,
-            trim: true,
-        },
-        carNumber: {
-            type: String,
-            trim: true,
-        },
-        luggageType: {
-            type: String,
-            trim: true,
-        },
-        backRowSeatNumber: {
-            type: Number,
-            min: 0,
-        },
-        isEmailVerified: {
-            type: Boolean
-        },
-        isPhoneVeirified: {
-            type: Boolean
-        }
+  {
+    firstName: {
+      type: String,
+      required: [true, "Firstname is required!"],
+      trim: true,
     },
-    {
-        timestamps: true,
-    }
+    lastName: {
+      type: String,
+      required: [true, "Lastname is required!"],
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      // validate(value) {
+      //     if (!Validator.isEmail(value)) {
+      //         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid email");
+      //     }
+      // },
+    },
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 5,
+      // validate(value) {
+      //     if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
+      //         Response.password(httpStatus.BAD_REQUEST, "Password must contain at least one letter and one number"
+      //         );
+      //     }
+      // },
+      private: true, // used by the toJSON plugin
+    },
+    role: {
+      type: String,
+      enum: Roles.roles,
+      default: "passenger",
+    },
+    rides: [
+      {
+        type: ObjectId,
+        ref: "Rides",
+      },
+    ],
+    ridesCreated: [
+      {
+        type: ObjectId,
+        ref: "Rides",
+      },
+    ],
+    carName: {
+      type: String,
+      trim: true,
+    },
+    carColor: {
+      type: String,
+      trim: true,
+    },
+    carNumber: {
+      type: String,
+      trim: true,
+    },
+    luggageType: {
+      type: String,
+      trim: true,
+    },
+    backRowSeatNumber: {
+      type: Number,
+      min: 0,
+    },
+    isEmailVerified: {
+      type: Boolean,
+    },
+    isPhoneVeirified: {
+      type: Boolean,
+    },
+  },
+  {
+    timestamps: true,
+  }
 );
 
 // add plugin that converts mongoose to json
@@ -93,8 +107,8 @@ userSchema.plugin(paginate);
  * @returns {Promise<boolean>}
  */
 userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
-    const user = await this.findOne({email, _id: {$ne: excludeUserId}});
-    return !!user;
+  const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
+  return !!user;
 };
 
 /**
@@ -103,16 +117,16 @@ userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
  * @returns {Promise<boolean>}
  */
 userSchema.methods.isPasswordMatch = async function (password) {
-    const user = this;
-    return Bcrypt.compare(password, user.password);
+  const user = this;
+  return Bcrypt.compare(password, user.password);
 };
 
 userSchema.pre("save", async function (next) {
-    const user = this;
-    if (user.isModified("password")) {
-        user.password = await Bcrypt.hash(user.password, 8);
-    }
-    next();
+  const user = this;
+  if (user.isModified("password")) {
+    user.password = await Bcrypt.hash(user.password, 8);
+  }
+  next();
 });
 
 /**

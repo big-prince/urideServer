@@ -148,11 +148,14 @@ const verifyOTP = async (otp) => {
   //find user details using the email from otp done
   const userEmail = result.email;
   const user = await User.findOne({ email: userEmail });
+  const userToken = await tokenModel.findOne({ user: user._id });
   const sendData = {
     email: userEmail,
     firstName: user.firstName,
     lastName: user.lastName,
     role: user.role,
+    Bearer_token: userToken.token,
+    token_type: userToken.type,
     emailVerified: true,
   };
 
