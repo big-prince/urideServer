@@ -71,6 +71,7 @@ jobs:
             export NVM_DIR=~/.nvm
             source ~/.nvm/nvm.sh
             npm --help
+            sh deploy.sh
               
     # Deployment completes
       - name: Slack Notification - Deployment Success
