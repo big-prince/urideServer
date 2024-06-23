@@ -29,3 +29,6 @@ describe("uride app", () => {
 		expect(res.body.message).toBe("Not found");
 	});
 });
+
+
+//This are just some sample tests
