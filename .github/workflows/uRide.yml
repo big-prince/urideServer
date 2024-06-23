@@ -3,19 +3,16 @@
 
 # Paste your workflow YAML to this code editor
 
-name: Node.js CI
+name: uRide-Deploy
 
 on:
   push:
-    branches: [ zabilal-patch-1 ]
+    branches: [ main ]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-    # defaults:
-    #    run:
-    #      working-directory: ./_uRide_Backend/
 
     steps:
     - uses: actions/checkout@v4
@@ -24,8 +21,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: "20.x"
-        # cache: 'npm'
-        # cache-dependency-path: '**/package-lock.json'
         
       # Starting deployment
     - name: Slack Notification - Deployment Inititated
@@ -60,7 +55,6 @@ jobs:
     steps:
       - name: Executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@master
-        # uses: webfactory/ssh-agent@v0.5.3
         with:
           host: 142.93.40.82
           username: zabilal
