@@ -59,14 +59,15 @@ jobs:
     
     steps:
       - name: Executing remote ssh commands using ssh key
-        # uses: appleboy/ssh-action@master
-        uses: webfactory/ssh-agent@v0.5.3
+        uses: appleboy/ssh-action@master
+        # uses: webfactory/ssh-agent@v0.5.3
         with:
           host: 142.93.40.82
           username: zabilal
           password: Eneyohwei1!
           script: |
-            sh deploy.sh
+            #sh deploy.sh
+            echo $PATH
     
     # Deployment completes
       - name: Slack Notification - Deployment Success
