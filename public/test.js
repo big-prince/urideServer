@@ -1,38 +1,31 @@
-document
-	.getElementById("phoneNumberForm")
-	.addEventListener("submit", function (event) {
-		console.log("sksndjsdnskjdnsjkdsfjhsdfhsfsdjh");
-		event.preventDefault(); // Prevent default form submission
+// test/app.test.js
+import request from "supertest";
+import app from "../src/app";
 
-		// Get phone number from input field
-		var phoneNumber = document.getElementById("phoneNumber").value;
-		console.log(phoneNumber);
-
-		// Send phone number to Node.js Express route
-		fetch("/submitPhoneNumber", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ phoneNumber: phoneNumber }),
-		})
-			.then((response) => {
-				if (!response.ok) {
-					throw new Error("Network response was not ok");
-				}
-				return response.json();
-			})
-			.then((data) => {
-				// Handle success response
-				console.log(
-					"Phone number submitted successfully:",
-					data
-				);
-				// Optionally, you can redirect the user to a thank you page or display a success message
-			})
-			.catch((error) => {
-				// Handle error
-				console.error("Error submitting phone number:", error);
-				// Optionally, you can display an error message to the user
-			});
+describe("uride app", () => {
+	it("should respond to GET /ping with status 200", async () => {
+		const res = await request(app).get("/ping");
+		expect(res.statusCode).toEqual(200);
+		expect(res.text).toBe("uRide Server is Up n Running");
 	});
+
+	it("should respond to GET / with status 200 and serve index.html", async () => {
+		const res = await request(app).get("/");
+		expect(res.statusCode).toEqual(200);
+		expect(res.header["content-type"]).toContain("text/html");
+	});
+
+	it("should handle POST /submitPhoneNumber and respond with a success message", async () => {
+		const res = await request(app)
+			.post("/submitPhoneNumber")
+			.send({ phoneNumber: "1234567890" });
+		expect(res.statusCode).toEqual(200);
+		expect(res.body.message).toBe("Phone number received successfully");
+	});
+
+	it("should return 404 for unknown routes", async () => {
+		const res = await request(app).get("/unknown-route");
+		expect(res.statusCode).toEqual(404);
+		expect(res.body.message).toBe("Not found");
+	});
+});
