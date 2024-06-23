@@ -76,5 +76,5 @@ jobs:
         env:
           SLACK_COLOR: ${{ job.status }}
           SLACK_MESSAGE: "Success :rocket: commit: ${{ github.event.head_commit.message }}"
-          SLACK_WEBHOOK:: https://hooks.slack.com/services/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
+          SLACK_WEBHOOK: https://hooks.slack.com/services/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
           # SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
