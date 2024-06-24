@@ -322,7 +322,7 @@ const addRide = async function (rideDetails, callback) {
     carColor: carColor,
     carNumber: carNumber,
   };
-
+  console.log(options);
   try {
     //only save if ride is "One-Time"
     if (type === "One-time") {
