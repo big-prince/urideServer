@@ -22,6 +22,13 @@ router.post("/book_ride", rideController.bookRide);
  */
 router.get("/open", rideController.allRides);
 
+// router.get("/allrides", rideController.openRides);
+
+//Post for all rides
+router.post("/allrides", rideController.allRides);
+
+//driver upload car picture
+
 router.post("/booking_detail");
 router.post("/ride_request_accept");
 router.post("/ride_request_decline");
