@@ -16,16 +16,11 @@ jobs:
         run: |
           echo "Stating the current directory"
           pwd
-          echo "Listing directory contents..."
-          ls la
 
       - name: Start SSH Agent and Add SSH Key
         env:
           SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }} # Make sure your passphrase is stored as a secret in GitHub Actions
         run: |
-          echo "Navigating to the repository..."
-          cd /newhome/prince/new_backend/_uRide_Backend || exit 1  # Ensure the path is correct and exits if it fails
-
           echo "Starting SSH agent..."
           eval "$(ssh-agent -s)"
 
