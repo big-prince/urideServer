@@ -58,17 +58,17 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
   const { origin, destination } = rideDetails;
   Logger.info(rideDetails);
 
-  async function clearIndexes() {
-    try {
-      // Drop all indexes for the Rides collection
-      await Rides.collection.dropIndexes();
-      Logger.info("All indexes dropped for Rides collection.");
-    } catch (error) {
-      Logger.info("Error dropping indexes:", error);
-      throw error; // Throw the error to handle it elsewhere, if needed
-    }
-  }
-  clearIndexes();
+  // async function clearIndexes() {
+  //   try {
+  //     // Drop all indexes for the Rides collection
+  //     await Rides.collection.dropIndexes();
+  //     Logger.info("All indexes dropped for Rides collection.");
+  //   } catch (error) {
+  //     Logger.info("Error dropping indexes:", error);
+  //     throw error; // Throw the error to handle it elsewhere, if needed
+  //   }
+  // }
+  // clearIndexes();
   //get the cordinates of the input
   const originCordinates = await getCordinates(origin);
   const destinationCordinates = await getCordinates(destination);
