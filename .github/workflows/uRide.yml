@@ -12,6 +12,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: List Directory contents
+        run: |
+          echo "Stating the current directory"
+          pwd
+          echo "Listing directory contents..."
+          ls la
+
       - name: Start SSH Agent and Add SSH Key
         env:
           SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }} # Make sure your passphrase is stored as a secret in GitHub Actions
