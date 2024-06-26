@@ -18,14 +18,12 @@ jobs:
           pwd
 
       - name: Start SSH Agent and Add SSH Key
-        env:
-          SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }} # Make sure your passphrase is stored as a secret in GitHub Actions
         run: |
           echo "Starting SSH agent..."
           eval "$(ssh-agent -s)"
 
           echo "Adding SSH key with passphrase..."
-          ssh-add - <<< ilovetocodebackend  # Ensure your SSH key passphrase is securely stored in GitHub Secrets
+          echo "ilovetocodebackend" | ssh-add -
 
       - name: Pull Latest Changes from Repository
         run: |
