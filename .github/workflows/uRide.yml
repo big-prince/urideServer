@@ -25,7 +25,7 @@ jobs:
           eval "$(ssh-agent -s)"
 
           echo "Adding SSH key with passphrase..."
-          ssh-add - <<< "${{ secrets.SSH_PASSPHRASE }}"  # Ensure your SSH key passphrase is securely stored in GitHub Secrets
+          ssh-add - <<< ilovetocodebackend  # Ensure your SSH key passphrase is securely stored in GitHub Secrets
 
       - name: Pull Latest Changes from Repository
         run: |
