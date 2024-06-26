@@ -3,6 +3,7 @@ import toJSON from "../../plugins/toJSON.plugin.js";
 import paginate from "../../plugins/paginate.plugin.js";
 //import Logger
 import Logger from "../../config/logger.js";
+import logger from "../../config/logger.js";
 
 let ObjectId = Mongoose.Types.ObjectId;
 
@@ -90,12 +91,9 @@ const rideSchema = new Mongoose.Schema({
   },
 });
 
-rideSchema.dropIndexes().then(() => {
-  Logger.info("Dropped all indexes");
-});
-rideSchema.getIndexed().then(() => {
-  Logger.info("Indexes done");
-});
+rideSchema.dropIndexes();
+rideSchema.getIndexed();
+logger.info("Done");
 // add compound indexes
 rideSchema.index({ "origin.location": "2dsphere" });
 rideSchema.index({ "destination.location": "2dsphere" });
