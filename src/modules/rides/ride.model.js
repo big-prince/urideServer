@@ -91,9 +91,6 @@ const rideSchema = new Mongoose.Schema({
   },
 });
 
-rideSchema.dropIndexes();
-rideSchema.getIndexed();
-logger.info("Done");
 // add compound indexes
 rideSchema.index({ "origin.location": "2dsphere" });
 rideSchema.index({ "destination.location": "2dsphere" });
