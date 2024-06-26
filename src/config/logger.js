@@ -1,7 +1,7 @@
 // import winston,{ format as _format, createLogger, transports as _transports } from 'winston';
 import * as winston from "winston";
 import "winston-daily-rotate-file";
-import env from './config.js';
+import env from "./config.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -9,32 +9,30 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Define the log directory
-const logDirectory = path.join(__dirname, '..', 'logs');
-
+const logDirectory = path.join(__dirname, "..", "logs");
 
 // Create a Daily Rotate File Transport
 const transport = new winston.transports.DailyRotateFile({
   dirname: logDirectory,
-  filename: '%DATE%.log',
-  datePattern: 'YYYY-MM-DD',
+  filename: "%DATE%.log",
+  datePattern: "YYYY-MM-DD",
   zippedArchive: true,
-  maxSize: '20m',
-  maxFiles: '2d'  // Adjust the file retention period as needed
+  maxSize: "20m",
+  maxFiles: "2d", // Adjust the file retention period as needed
 });
 
 // Create the Winston Logger
 const logger = winston.createLogger({
-  level: 'info',
+  level: "info",
   format: winston.format.combine(
     winston.format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss'
+      format: "YYYY-MM-DD HH:mm:ss",
     }),
-    winston.format.printf(info => `${info.timestamp} ${info.level.toUpperCase()}: ${info.message}`)
+    winston.format.printf(
+      (info) => `${info.timestamp} ${info.level.toUpperCase()}: ${info.message}`
+    )
   ),
-  transports: [
-    new winston.transports.Console(),
-    transport
-  ],
+  transports: [new winston.transports.Console(), transport],
 });
 
 // const enumerateErrorFormat = _format((info) => {

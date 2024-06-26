@@ -19,7 +19,7 @@ import routes from "./modules/index.js";
 import Errors from "./middlewares/error.js";
 import ApiError from "./utils/ApiError.js";
 import { swaggerConfigOptions } from "./config/swagger.js";
-import authenticateApiKey from "./config/logger.auth.js";
+// import authenticateApiKey from "./config/logger.auth.js";
 import logger from "./config/logger.js";
 import fs from "fs";
 
@@ -97,30 +97,30 @@ app.get("/logme", (req, res) => {
 });
 
 // Secure endpoint to download log files
-app.get("/logs", authenticateApiKey, (req, res) => {
-  const { date } = req.query; // Expected date format: YYYY-MM-DD
+// app.get("/logs", authenticateApiKey, (req, res) => {
+//   const { date } = req.query; // Expected date format: YYYY-MM-DD
 
-  if (!date) {
-    return res
-      .status(400)
-      .json({ message: "Date query parameter is required" });
-  }
+//   if (!date) {
+//     return res
+//       .status(400)
+//       .json({ message: "Date query parameter is required" });
+//   }
 
-  const logDirectory = path.join(__dirname, "..", "src/logs");
-  // const logFilePath = path.join(logDirectory, date.replace(/-/g, '/')) + '.log';
-  const logFilePath = path.join(logDirectory, date) + ".log";
+//   const logDirectory = path.join(__dirname, "..", "src/logs");
+//   // const logFilePath = path.join(logDirectory, date.replace(/-/g, '/')) + '.log';
+//   const logFilePath = path.join(logDirectory, date) + ".log";
 
-  if (!fs.existsSync(logFilePath)) {
-    return res.status(404).json({ message: "Log file not found" });
-  }
+//   if (!fs.existsSync(logFilePath)) {
+//     return res.status(404).json({ message: "Log file not found" });
+//   }
 
-  res.download(logFilePath, `${date}.log`, (err) => {
-    if (err) {
-      logger.error(`Error downloading log file: ${err.message}`);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-});
+//   res.download(logFilePath, `${date}.log`, (err) => {
+//     if (err) {
+//       logger.error(`Error downloading log file: ${err.message}`);
+//       res.status(500).json({ message: "Internal server error" });
+//     }
+//   });
+// });
 
 // Error handling middleware
 app.use((err, req, res, next) => {

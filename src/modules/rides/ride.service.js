@@ -56,7 +56,7 @@ const getAllOpenRides = function (callback) {
 // Gets all rides with remaining capacity in a certain Location
 const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
   const { origin, destination } = rideDetails;
-
+  Logger.info(rideDetails);
   //get the cordinates of the input
   const originCordinates = await getCordinates(origin);
   const destinationCordinates = await getCordinates(destination);
@@ -74,6 +74,14 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
     location: mainOrigin,
     name: origin,
   };
+  Logger.info(
+    `Origin: ${origin}, ${originCordinates}, ${JSON.stringify(finalOrigin)}`
+  );
+  Logger.info(
+    `Destination: ${destination}, ${destinationCordinates}, ${JSON.stringify(
+      mainDestination
+    )}`
+  );
 
   const distInRadians = 25 / 3963.2; //converts the distance from miles to radians by dividing by the approximate equatorial radius of the earth
 
@@ -94,9 +102,9 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
       .gte(1)
       .where("departure_time")
       .gte(now);
-
+    Logger.info(`Rides: ${JSON.stringify(rides)}`);
     if (!rides) {
-      console.log("No Ridess");
+      Logger.info(`No rides found for ${origin} and ${destination}`);
       return callback({ message: "No rides found" });
     }
 
@@ -238,10 +246,15 @@ const addRide = async function (rideDetails, callback) {
     carColor,
     carNumber,
   } = rideDetails;
-  console.log(rideDetails);
+
+  Logger.info(
+    `Ride Details: ${origin}, ${destination}, ${stops}, ${type}, ${other}, ${price}, ${brs}, ${departure_time}, ${total_capacity}, ${creator}, ${riders}, ${luggage_type}, ${carName}, ${carColor}, ${carNumber}`
+  );
   //check creators role
   const creatorRole = await User.findOne({ email: creator });
-
+  if (!creatorRole) {
+    return callback({ message: "User not found" });
+  }
   if (creatorRole.role !== "driver") {
     //switch role to driver
     creatorRole.role = "driver";
@@ -249,6 +262,7 @@ const addRide = async function (rideDetails, callback) {
       console.log("Role Changed to Driver!");
     });
   }
+  Logger.info(creatorRole);
 
   //get cordinates
   const originCordinates = await getCordinates(origin);
@@ -303,6 +317,7 @@ const addRide = async function (rideDetails, callback) {
 
   Logger.info(`${origin.name}: ` + JSON.stringify(MainOrigin));
   Logger.info(`${destination.name}: ` + JSON.stringify(MainDestination));
+  Logger.info(`Stops: ` + JSON.stringify(formattedStops));
 
   const options = {
     origin: finalOrigin,
@@ -322,13 +337,14 @@ const addRide = async function (rideDetails, callback) {
     carColor: carColor,
     carNumber: carNumber,
   };
-  console.log(options);
+
   try {
     //only save if ride is "One-Time"
     if (type === "One-time") {
       const ride = await Rides.create(options);
-      console.log("Ride created");
+      Logger.info(`Ride created: ${ride.id}`);
       if (!ride) {
+        Logger.info("Ride not created");
         return callback({ message: "Ride not created" });
       }
       // update the creators rides
@@ -343,7 +359,7 @@ const addRide = async function (rideDetails, callback) {
       );
 
       //update car details for driver
-      console.log(updateDriver);
+      Logger.info("Everything done..");
       return ride;
     }
   } catch (error) {
