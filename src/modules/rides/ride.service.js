@@ -378,6 +378,84 @@ const addRide = async function (rideDetails, callback) {
     console.log("There is an error", { message: error.message });
   }
 };
+//get allrides creataed  by driver(manage rides)
+const driverRides = async function (email, callback) {
+  const driverRides = await User.findOne({ email: email.email });
+  // //check for driver role
+  if (!driverRides) {
+    Logger.info("NO user found");
+    return callback({ message: "User Found" });
+  }
+  //check role
+  if (driverRides.role !== "driver") {
+    //switch role to driver
+    driverRides.role = "driver";
+    await driverRides.save().then(() => {
+      Logger.info("Role Changed to Driver!");
+    });
+  }
+  const ridesCreated = driverRides.ridesCreated;
+
+  const rides = await Rides.find({ _id: { $in: ridesCreated } });
+  if (!rides) {
+    return callback({ message: "No rides found" });
+  }
+  Logger.info("Rides FOund...");
+  let FinalResult = [];
+  try {
+    for (const ride of rides) {
+      let {
+        origin,
+        destination,
+        departure_time,
+        total_capacity,
+        remaining_capacity,
+        brs,
+        stops,
+        creator,
+        price,
+        riders,
+        luggage_type,
+      } = ride;
+
+      let ridersDetails = [];
+      if (ride.riders.length != 0) {
+        const riders = await User.find({ _id: { $in: ride.riders } });
+        riders.map(({ email, firstName, lastName, role, _id }) => {
+          ridersDetails.push({
+            email,
+            firstName,
+            lastName,
+            role,
+            _id,
+          });
+        });
+        Logger.info("Rider details found and mapped.");
+      }
+
+      const options = {
+        origin,
+        destination,
+        departure_time,
+        total_capacity,
+        remaining_capacity,
+        brs,
+        stops,
+        creator,
+        price,
+        riders,
+        luggage_type,
+        riders: ridersDetails,
+      };
+      Logger.info("Options found and mapped.");
+      FinalResult.push(options);
+    }
+  } catch (error) {
+    Logger.info("Error in mapping riders details");
+  }
+  Logger.info("Everything worked Perfectly..");
+  return FinalResult;
+};
 
 // Gets the riders in a ride given the ride ID
 const getRiders = function (rideId, callback) {
@@ -475,84 +553,119 @@ const addRider = function (rideId, riderId, callback) {
 };
 
 // Removes a rider from a ride given their respective IDs
-const removeRider = function (rideId, riderId, callback) {
-  Rides.findByIdAndUpdate(
-    rideId,
-    { $inc: { remaining_capacity: 1 } },
-    function (err, result) {
-      if (err) {
-        callback(err, null);
-      } else {
-        Rides.findByIdAndUpdate(
-          rideId,
-          { $pull: { riders: ObjectId(riderId) } },
-          function (err, result) {
-            if (err) {
-              callback(err);
-            } else {
-              User.findByIdAndUpdate(
-                riderId,
-                {
-                  $pull: {
-                    rides: ObjectId(rideId),
-                  },
-                },
-                function (err, result) {
-                  if (err) {
-                    callback(err, null);
-                  } else {
-                    //delete ride if no more riders
-                    Rides.findById(rideId, function (err, ride) {
-                      if (ride.remaining_capacity === ride.total_capacity) {
-                        deleteRide(rideId, function (err) {
-                          if (err) {
-                            callback(err, null);
-                          } else {
-                            callback(null, null);
-                          }
-                        });
-                      } else {
-                        if (ride.creator === riderId) {
-                          Rides.findByIdAndUpdate(
-                            rideId,
-                            {
-                              $set: {
-                                creator: undefined,
-                              },
-                            },
-                            function (err, result) {
-                              if (err) {
-                                callback(err, null);
-                              } else {
-                                callback(null, null);
-                              }
-                            }
-                          );
-                        } else {
-                          callback(null, null);
-                        }
-                      }
-                    });
-                  }
-                }
-              );
-            }
-          }
-        );
-      }
-    }
-  );
+const removeRider = async function (details, callback) {
+  const { rideId, riderId } = details;
+
+  //check if ride exists
+  const exist = await Rides.findOne({ _id: rideId });
+  if (!exist) {
+    Logger.info("The ride doesnt exist");
+    return callback({ message: "Ride doesnt exist" });
+  }
+  //check if rider exists
+  const riderExist = await User.findOne({ _id: riderId });
+  if (!riderExist) {
+    Logger.info("The rider doesnt exist");
+    return callback({ message: "Rider doesnt exist" });
+  }
+
+  //remove rideId from riderslist
+  riderExist.rides = [];
+  await riderExist.save().then(() => {
+    Logger.info("Ride Removed From User, and user, not in any ride");
+  });
+
+  //remove riderId from the ride list
+  const ridersList = exist.riders;
+  console.log(ridersList.length);
+  const index = ridersList.indexOf(riderId);
+  if (index > -1) {
+    ridersList.splice(index, 1);
+    Logger.info("Rider Removed");
+  }
+
+  // increment remaining capacity
+  if (exist.remaining_capacity != 0) {
+    exist.remaining_capacity = exist.remaining_capacity + 1;
+    Logger.info("1 capacity added!");
+  }
+  await exist.save({}).then(() => {
+    Logger.info("Rider Removed and  Remaining Capacity Incremented.");
+  });
+
+  //check if the ride is now empty
+  if ((ridersList.length = 0)) {
+    deleteRide({ id: rideId });
+  }
+
+  const message = "Rider removed Sucessfully";
+  Logger.info(message);
+  return message;
 };
 
 // Deletes a ride from the ride schema
-const deleteRide = function (rideId, callback) {
-  Rides.findByIdAndRemove(rideId, function (err) {
-    if (err) {
-      callback(err);
-    } else {
-      callback(null);
+const deleteRide = async function (rideId, callback) {
+  console.log(rideId);
+  //find the ride
+  const exist = await Rides.findById({ _id: rideId.id });
+  if (!exist) {
+    Logger.info("The ride doesnt exist");
+    return callback({ message: "Ride doesnt exist" });
+  }
+
+  //clear the ride from the riders' rides
+  const riders = exist.riders;
+  if (riders.length != 0) {
+    for (const rider of riders) {
+      const riderExist = await User.findOne({ _id: rider });
+      if (!riderExist) {
+        Logger.info("The rider doesnt exist");
+        return callback({ message: "Rider doesnt exist" });
+      }
+
+      // remove rideId from riderslist
+      riderExist.rides = [];
+      await riderExist.save().then(() => {
+        Logger.info("Ride Removed From User, and user, not in any ride");
+      });
     }
+  }
+  //clear the riders in the ride
+  exist.riders = [];
+  await exist
+    .save({
+      validateBeforeSave: false,
+    })
+    .then(() => {
+      Logger.info("Riders Cleared");
+    });
+
+  //find the creator and pop it off his array
+  const creator = await User.findOne({ email: exist.creator });
+  if (!creator) {
+    Logger.info("The creator doesnt exist");
+    return callback({ message: "Creator doesnt exist" });
+  }
+
+  //pop this ride out of ride Created
+  const rideCreated = creator.ridesCreated;
+  const index = rideCreated.indexOf(rideId.id);
+  if (index > -1) {
+    rideCreated.splice(index, 1);
+    Logger.info("Ride Removed");
+  }
+  //save the creator
+  await creator.save().then(() => {
+    Logger.info("Ride removed from creator");
   });
+
+  //delete the ride
+  await Rides.findByIdAndDelete(rideId.id).then(() => {
+    Logger.info("Ride Deleted");
+  });
+  const message = "Ride deleted Sucessfully";
+  Logger.info(message);
+  return message;
 };
 
 export default {
@@ -566,5 +679,8 @@ export default {
   addRider,
   deleteRide,
   inRide,
+  removeRider,
+  driverRides,
+  deleteRide,
   removeRider,
 };

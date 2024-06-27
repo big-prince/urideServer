@@ -27,7 +27,14 @@ router.get("/open", rideController.allRides);
 //Post for all rides
 router.post("/allrides", rideController.allRides);
 
-//driver upload car picture
+//return all driver rides for manage ride
+router.post("/driver_rides", rideController.driverRides);
+
+//delete ride
+router.post("/delete_ride", rideController.deleteRide);
+
+//remove rider from ride
+router.post("/remove_rider", rideController.removeRider);
 
 router.post("/booking_detail");
 router.post("/ride_request_accept");

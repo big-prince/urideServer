@@ -22,13 +22,11 @@ jobs:
           echo "Starting SSH agent..."
           eval "$(ssh-agent -s)"
 
-          echo "Adding SSH key with passphrase..."
-          echo "ilovetocodebackend" | ssh-add -
-
       - name: Pull Latest Changes from Repository
         run: |
           echo "Pulling the latest changes from the repository..."
           git pull origin main  # Make sure to pull from the correct branch and remote
+          #input paraphrase when the dialog shows up
 
       - name: Reload PM2 Processes
         run: |

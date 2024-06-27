@@ -39,8 +39,38 @@ const allRides = catchAsync(async (req, res) => {
   }
 });
 
+const driverRides = catchAsync(async (req, res) => {
+  const result = await rideService.driverRides(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+const deleteRide = catchAsync(async (req, res) => {
+  const result = await rideService.deleteRide(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+const removeRider = catchAsync(async (req, res) => {
+  const result = await rideService.removeRider(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
   openRides,
+  driverRides,
+  deleteRide,
+  removeRider,
 };
