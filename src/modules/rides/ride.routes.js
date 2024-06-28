@@ -36,6 +36,9 @@ router.post("/delete_ride", rideController.deleteRide);
 //remove rider from ride
 router.post("/remove_rider", rideController.removeRider);
 
+//add rider to ride
+router.post("/add_rider", rideController.addRider);
+
 router.post("/booking_detail");
 router.post("/ride_request_accept");
 router.post("/ride_request_decline");

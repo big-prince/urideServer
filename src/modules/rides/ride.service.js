@@ -509,47 +509,82 @@ const getOtherRiders = function (rideId, userId, callback) {
 };
 
 // Adds a rider to a ride given their respective IDs
-const addRider = function (rideId, riderId, callback) {
-  // checks if ride is full
-  Rides.findById(rideId, function (err, ride) {
-    if (!ride) {
-      callback({ msg: "Invalid ride." });
-    } else if (ride.remaining_capacity === 0) {
-      callback({ msg: "ride full" });
-    } else {
-      Rides.findByIdAndUpdate(
-        rideId,
-        { $inc: { remaining_capacity: -1 } },
-        function (err, result) {
-          Rides.findByIdAndUpdate(
-            rideId,
-            { $push: { riders: riderId } },
-            function (err, result) {
-              if (err) {
-                callback(err);
-              } else {
-                User.findByIdAndUpdate(
-                  riderId,
-                  {
-                    $push: {
-                      rides: rideId,
-                    },
-                  },
-                  function (err, result) {
-                    if (err) {
-                      callback(err, null);
-                    } else {
-                      callback(null, null);
-                    }
-                  }
-                );
-              }
-            }
-          );
-        }
-      );
-    }
+const addRider = async function (details, callback) {
+  const { rideId, riderId } = details;
+
+  const now = new Date();
+  //check if ride exists
+  const exists = await Rides.findOne({ _id: rideId })
+    .where("departure_time")
+    .gte(now);
+  if (!exists) {
+    Logger.info("No Ride found");
+    return callback({ message: "Ride not found" });
+  }
+
+  //check if rider exists
+  const rider = await User.findOne({ _id: riderId });
+  if (!rider) {
+    Logger.info("No rider found");
+    return callback({ message: "User not find" });
+  }
+
+  //check if the user is already in this Ride
+  const currentRiders = exists.riders;
+  const tIndex = currentRiders.indexOf(riderId);
+  if (tIndex > -1) {
+    Logger.info("User already in this ride");
+    return callback({ message: "User already in this ride" });
+  }
+
+  //check if the user is already in a ride
+  if (rider.rides.length != 0) {
+    Logger.info("User already in ride..");
+    return callback({ message: "User already in a ride.." });
+  } else {
+    console.log("User not in a ride.");
+  }
+
+  //check if the ride is filled up
+  const remC = exists.remaining_capacity;
+  const totC = exists.total_capacity;
+  if (remC == 0) {
+    Logger.info("Ride is already filled up");
+    return callback({ message: "Ride is filled up..." });
+  } else {
+    Logger.info(`Ride is not filled. Remaining Capacity:${remC}`);
+  }
+
+  //add the user to the riders array of the ride and decrement remaining_capacity
+  currentRiders.push(riderId);
+  exists.remaining_capacity = remC - 1;
+  await exists.save().then(() => {
+    Logger.info("Rider added to Ride Array.");
+    console.log("Done");
   });
+
+  //add the ride to the riders rides.
+  const currentUserRide = rider.rides;
+  currentUserRide.push(rideId);
+  await rider.save().then(() => {
+    Logger.info("Ride added to User array");
+    console.log("Done", "User Part");
+  });
+
+  const message = {
+    message: "User Succesfully added to ride",
+    remaining_capacity: exists.remaining_capacity,
+    total_capacity: totC,
+    rideID: rideId,
+    riderID: riderId,
+    rideDetails: {
+      origin: exists.origin,
+      destination: exists.destination,
+      stops: exists.stops,
+    },
+  };
+
+  return message;
 };
 
 // Removes a rider from a ride given their respective IDs
@@ -585,10 +620,16 @@ const removeRider = async function (details, callback) {
   }
 
   // increment remaining capacity
-  if (exist.remaining_capacity != 0) {
-    exist.remaining_capacity = exist.remaining_capacity + 1;
-    Logger.info("1 capacity added!");
+  const remC = exist.remaining_capcity;
+  const totC = exists.total_capacity;
+  if (remC >= totC) {
+    Logger.info("Ride is already filled up");
+    return callback({ message: "Ride is filled up..." });
+  } else {
+    exist.remaining_capcity = remC + 1;
+    Logger.info(`Ride is not filled. Remaining Capacity:${remC}`);
   }
+
   await exist.save({}).then(() => {
     Logger.info("Rider Removed and  Remaining Capacity Incremented.");
   });
@@ -674,12 +715,10 @@ export default {
   getAllOpenRidesWithLocation,
   getOtherRiders,
   getRide,
+  inRide,
   getRiders,
   addRide,
   addRider,
-  deleteRide,
-  inRide,
-  removeRider,
   driverRides,
   deleteRide,
   removeRider,

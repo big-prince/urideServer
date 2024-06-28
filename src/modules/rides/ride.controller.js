@@ -66,6 +66,15 @@ const removeRider = catchAsync(async (req, res) => {
   }
 });
 
+const addRider = catchAsync(async (req, res) => {
+  const result = await rideService.addRider(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
@@ -73,4 +82,5 @@ export default {
   driverRides,
   deleteRide,
   removeRider,
+  addRider,
 };
