@@ -1,5 +1,5 @@
 const ratings = [1, 2, 3, 4, 5];
-const ratingsWord = [
+const reviews = [
   "Satisfactory",
   "Driver was good",
   "Driver was not good",
@@ -9,5 +9,5 @@ const ratingsWord = [
 
 export default {
   ratings,
-  ratingsWord,
+  reviews,
 };
