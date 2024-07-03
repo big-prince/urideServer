@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 2
+    },
+    "auditLog": "C:\\Users\\user\\documents\\uRide\\_uRide_Backend\\src\\logs\\.aea0ad0ad8333204e713a535c20ecc6c8ea1dc4e-audit.json",
+    "files": [
+        {
+            "date": 1719821910281,
+            "name": "C:\\Users\\user\\documents\\uRide\\_uRide_Backend\\src\\logs\\2024-07-01.log",
+            "hash": "12a6d9d70be43333a543bbaa98e415ca93b556828d6e17241f3d831d1a70c4bc"
+        }
+    ],
+    "hashType": "sha256"
+}

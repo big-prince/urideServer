@@ -6,19 +6,14 @@
     "auditLog": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\.3b5841b3e17878911683dc356ecce76f75cdd8e2-audit.json",
     "files": [
         {
-            "date": 1719414545603,
-            "name": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\2024-06-26.log",
-            "hash": "0c3f2f5d0360ce371cfb68ed07faf0cff60d767cb7019ebf89457015c355587a"
+            "date": 1719867306628,
+            "name": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\2024-07-01.log",
+            "hash": "d177079f193d7003a7b166450e3d49e244a500708590eff41b37c5a7fb3ccb01"
         },
         {
-            "date": 1719447405699,
-            "name": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\2024-06-27.log",
-            "hash": "9444c22f125080d7e3c1be922978371c3d7aab3b8f378c772c1d0b9714328953"
-        },
-        {
-            "date": 1719565491422,
-            "name": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\2024-06-28.log",
-            "hash": "d1b365e81b182a00606ac0f484fceb585e4256edccf898fbb4ce66a7ecbf01d8"
+            "date": 1719918146295,
+            "name": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\2024-07-02.log",
+            "hash": "1a5f68af6229d1eb57b25578d634d84094ded28265f58faa75b5b1d66952ee9f"
         }
     ],
     "hashType": "sha256"
