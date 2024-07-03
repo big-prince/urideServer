@@ -14,4 +14,10 @@ router.post("/initialize_payment", walletController.initializePayment);
 //verify payment
 router.post("/verify_payment", walletController.paymentVerification);
 
+//send wallet details
+router.get("/wallet_details", walletController.getWallet);
+
+//send THistory
+router.get("/transaction_history", walletController.getTransactionHistory);
+
 export default router;

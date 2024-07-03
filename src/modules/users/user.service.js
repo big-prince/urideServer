@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import User from "./user.model.js";
 import ApiError from "../../utils/ApiError.js";
 import { sendWelcomeEmail } from "../com/emails/email.service.js";
+import Wallet from "../wallet/wallet.model.js";
 
 /**
  * Create a user
@@ -13,6 +14,14 @@ const createUser = async (userBody) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
   }
   const user = await User.create(userBody);
+  //set the persons wallet to be 0
+  const wallet = new Wallet({
+    userId: user._id,
+    balance: 0,
+  });
+  await wallet.save().then(() => {
+    console.log("Wallet created");
+  });
 
   if (user) {
     let emailResponse = sendWelcomeEmail(user.email, user.firstName);
