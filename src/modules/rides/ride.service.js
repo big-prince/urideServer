@@ -401,11 +401,13 @@ const driverRides = async function (email, callback) {
     return callback({ message: "No rides found" });
   }
   Logger.info("Rides FOund...");
+
   let FinalResult = [];
   try {
     for (const ride of rides) {
       let {
         origin,
+        _id,
         destination,
         departure_time,
         total_capacity,
@@ -445,6 +447,7 @@ const driverRides = async function (email, callback) {
         price,
         riders,
         luggage_type,
+        mainID: _id,
         riders: ridersDetails,
       };
       Logger.info("Options found and mapped.");
