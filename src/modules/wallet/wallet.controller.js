@@ -44,11 +44,51 @@ export const initializePayment = catchAsync(async (req, res) => {
 
 //payment verification
 const paymentVerification = catchAsync(async (req, res) => {
-  console.log(req.body);
-  const response = await walletService.intitializePayment(req.body);
+  try {
+    const details = req.body;
+    const headers = req.headers;
+
+    // Call the service function to handle the webhook
+    await walletService.webhookVerification(details, headers);
+
+    // Respond to Paystack to acknowledge receipt of the event
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Error processing Paystack webhook:", error);
+    res.sendStatus(500); // Internal server error
+  }
 });
+
+//send wallet details
+export const getWallet = catchAsync(async (req, res) => {
+  const wallet = await walletService.sendWalletDetails(req);
+  if (!wallet) {
+    return Response.sendErrResponse(
+      res,
+      httpStatus.NOT_FOUND,
+      "Wallet not found"
+    );
+  }
+  return Response.sendSuccessResponse(res, httpStatus.OK, wallet);
+});
+
+//send transaction history
+export const getTransactionHistory = catchAsync(async (req, res) => {
+  const history = await walletService.sendTransactionHistory(req);
+  if (!history) {
+    return Response.sendErrResponse(
+      res,
+      httpStatus.NOT_FOUND,
+      "Transaction history not found"
+    );
+  }
+  return Response.sendSuccessResponse(res, httpStatus.OK, history);
+});
+
 export default {
   paystackCallback,
   initializePayment,
   paymentVerification,
+  getWallet,
+  getTransactionHistory,
 };
