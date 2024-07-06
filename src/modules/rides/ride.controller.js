@@ -75,6 +75,16 @@ const addRider = catchAsync(async (req, res) => {
   }
 });
 
+const requestToDriver = catchAsync(async (req, res) => {
+  const details = req.body;
+  const result = await rideService.requestToDriver(details);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
@@ -83,4 +93,5 @@ export default {
   deleteRide,
   removeRider,
   addRider,
+  requestToDriver,
 };

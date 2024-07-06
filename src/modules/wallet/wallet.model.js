@@ -18,6 +18,14 @@ const walletSchema = new Mongoose.Schema(
       type: Number,
       default: 0,
     },
+    currency: {
+      type: String,
+      default: "NGN",
+    },
+    held_funds: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

@@ -39,6 +39,9 @@ router.post("/remove_rider", rideController.removeRider);
 //add rider to ride
 router.post("/add_rider", rideController.addRider);
 
+//request to driver
+router.post("/request_ride", rideController.requestToDriver);
+
 router.post("/booking_detail");
 router.post("/ride_request_accept");
 router.post("/ride_request_decline");

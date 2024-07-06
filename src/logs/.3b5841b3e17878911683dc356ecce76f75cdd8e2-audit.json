@@ -6,19 +6,9 @@
     "auditLog": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\.3b5841b3e17878911683dc356ecce76f75cdd8e2-audit.json",
     "files": [
         {
-            "date": 1719867306628,
-            "name": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\2024-07-01.log",
-            "hash": "d177079f193d7003a7b166450e3d49e244a500708590eff41b37c5a7fb3ccb01"
-        },
-        {
-            "date": 1719918146295,
-            "name": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\2024-07-02.log",
-            "hash": "1a5f68af6229d1eb57b25578d634d84094ded28265f58faa75b5b1d66952ee9f"
-        },
-        {
-            "date": 1719992432768,
-            "name": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\2024-07-03.log",
-            "hash": "55c3b4d4eb113b05945b04df713210cbe9bf1873b294122c0b902af74df3ed5b"
+            "date": 1720275221016,
+            "name": "C:\\Users\\user\\Documents\\uRide\\_uRide_Backend\\src\\logs\\2024-07-06.log",
+            "hash": "7358702f7b16cb0b8c1ca4e8a5b95581a99872859070a2c432e6d68dee4f2a64"
         }
     ],
     "hashType": "sha256"
