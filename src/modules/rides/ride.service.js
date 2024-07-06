@@ -1,6 +1,7 @@
 import Mongoose from "mongoose";
 import User from "../users/user.model.js";
 import Rides from "./ride.model.js";
+import Wallet from "../wallet/wallet.model.js";
 import Reviews from "../reviews/review.model.js";
 import Logger from "../../config/logger.js";
 import getCordinates from "../../utils/geocode.js";
@@ -712,6 +713,71 @@ const deleteRide = async function (rideId, callback) {
   return message;
 };
 
+//request to driver
+const requestToDriver = async function (details, callback) {
+  const { price, rideId, riderId } = details;
+
+  //check if ride exists
+  const exist = await Rides.findOne({ _id: rideId });
+  if (!exist) {
+    Logger.info("The ride doesnt exist");
+    return callback({ message: "Ride doesnt exist" });
+  }
+  //check if rider exists
+  const riderExist = await User.findOne({ _id: riderId });
+
+  //find rideCreator
+  const creator = await User.findOne({ email: exist.creator });
+
+  if (!riderExist) {
+    Logger.info("The rider doesnt exist");
+    return callback({ message: "Rider doesnt exist" });
+  }
+
+  //search for the users wallet
+  const userWallet = await Wallet.findOne({ userId: riderId });
+  const creatorWallet = await Wallet.findOne({ userId: creator._id });
+  if (!userWallet) {
+    Logger.info("The wallet doesnt exist");
+    return callback({ message: "Wallet doesnt exist" });
+  }
+
+  //deduct amount from user-balance
+  const balance = userWallet.balance;
+  if (balance < price) {
+    Logger.info("Insufficient funds");
+    return callback({ message: "Insufficient funds" });
+  }
+  userWallet.balance = balance - price;
+  await userWallet.save().then(() => {
+    Logger.info("Amount deducted from wallet");
+  });
+
+  //add the amount to the driver hold-funds
+  const driverHold = creatorWallet.held_funds;
+  creatorWallet.held_funds = driverHold + price;
+  await creatorWallet.save().then(() => {
+    Logger.info("Amount added to driver hold funds");
+  });
+
+  const message = {
+    message: "Request sent to driver",
+    riderDetails: {
+      name: riderExist.firstName + " " + riderExist.lastName,
+      email: riderExist.email,
+      id: riderExist._id,
+    },
+    rideDetails: {
+      id: rideId,
+      origin: exist.origin,
+      destination: exist.destination,
+    },
+    price: price,
+  };
+
+  return message;
+};
+
 export default {
   getAllOpenRides,
   getAllRides,
@@ -725,4 +791,5 @@ export default {
   driverRides,
   deleteRide,
   removeRider,
+  requestToDriver,
 };
