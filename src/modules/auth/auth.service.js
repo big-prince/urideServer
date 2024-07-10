@@ -20,6 +20,7 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   if (!user || !(await user.isPasswordMatch(password))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect email or password");
   }
+  console.log(user);
   return user;
 };
 
@@ -153,6 +154,7 @@ const verifyOTP = async (otp) => {
     email: userEmail,
     firstName: user.firstName,
     lastName: user.lastName,
+    id: user._id,
     role: user.role,
     Bearer_token: userToken.token,
     token_type: userToken.type,
