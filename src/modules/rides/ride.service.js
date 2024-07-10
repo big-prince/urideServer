@@ -174,6 +174,7 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
             firstName: creatorDetails.firstName,
             lastName: creatorDetails.lastName,
           },
+          id: creatorDetails._id,
         },
         price,
         riders,
