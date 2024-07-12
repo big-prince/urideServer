@@ -2,6 +2,7 @@ import Mongoose from "mongoose";
 import User from "../users/user.model.js";
 import Rides from "./ride.model.js";
 import Wallet from "../wallet/wallet.model.js";
+import TransactionHistory from "../wallet/transactionHistory.model.js";
 import Reviews from "../reviews/review.model.js";
 import Logger from "../../config/logger.js";
 import getCordinates from "../../utils/geocode.js";
@@ -752,6 +753,22 @@ const requestToDriver = async function (details, callback) {
   userWallet.balance = balance - price;
   await userWallet.save().then(() => {
     Logger.info("Amount deducted from wallet");
+  });
+  //record transacion history
+  const transaction = {
+    userId: riderId,
+    data: {
+      reference: "ref_local",
+      amount: price,
+      status: "success",
+      currency: "NGN",
+      transactionDate: new Date(),
+      gatewayResponse: "Successful Local Transaction",
+    },
+    transactionType: "Debit",
+  };
+  await TransactionHistory.create(transaction).then(() => {
+    Logger.info("Transaction History recorded");
   });
 
   //add the amount to the driver hold-funds

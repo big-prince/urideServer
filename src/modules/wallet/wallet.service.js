@@ -112,11 +112,13 @@ const webhookVerification = async function (details, headers) {
         });
 
         // Record transaction history
-        await recordTransactionHistory(transaction.userId, event.data).then(
-          () => {
-            Logger.info("Transaction history recorded.");
-          }
-        );
+        await recordTransactionHistory({
+          userId: transaction.userId,
+          data: event.data,
+          transactionType: "Credit",
+        }).then(() => {
+          Logger.info("Transaction history recorded.");
+        });
       }
     }
   }

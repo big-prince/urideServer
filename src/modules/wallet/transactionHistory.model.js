@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import tType from "../../config/transaction.type.js";
 
 const transactionHistorySchema = new mongoose.Schema(
   {
@@ -7,12 +8,19 @@ const transactionHistorySchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    reference: { type: String, required: true, unique: true },
-    amount: { type: Number, required: true },
-    status: { type: String, required: true },
-    currency: { type: String, required: true },
-    transactionDate: { type: Date, required: true },
-    gatewayResponse: { type: String, required: true },
+    data: {
+      reference: { type: String, required: true, unique: true },
+      amount: { type: Number, required: true },
+      status: { type: String, required: true },
+      currency: { type: String, required: true },
+      transactionDate: { type: Date, required: true },
+      gatewayResponse: { type: String, required: true },
+    },
+    transactionType: {
+      type: String,
+      enum: tType,
+      required: true,
+    },
   },
   { timestamps: true }
 );
