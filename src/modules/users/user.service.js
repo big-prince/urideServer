@@ -17,7 +17,7 @@ const createUser = async (userBody) => {
   //set the persons wallet to be 0
   const wallet = new Wallet({
     userId: user._id,
-    balance: 0,
+    balance: 0.0,
   });
   await wallet.save().then(() => {
     console.log("Wallet created");

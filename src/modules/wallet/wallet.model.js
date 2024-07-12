@@ -16,7 +16,8 @@ const walletSchema = new Mongoose.Schema(
     },
     balance: {
       type: Number,
-      default: 0,
+      default: 0.0,
+      set: (v) => parseFloat(v),
     },
     currency: {
       type: String,
