@@ -65,20 +65,20 @@ const initializePayment = async function (details, callback) {
 // Function to record transaction history
 const recordTransactionHistory = async (userId, data) => {
   Logger.info(data, userId)
-  const transactionHistory = new TransactionHistory({
-    userId,
-    data: {
-      reference: data.reference,
-      amount: data.amount / 100,
-      status: data.status,
-      currency: data.currency,
-      transactionDate: data.paid_at,
-      gatewayResponse: data.gateway_response,
-    }
-    transactionType: "Credit",
-  });
+  // const transactionHistory = new TransactionHistory({
+  //   userId,
+  //   data: {
+  //     reference: data.reference,
+  //     amount: data.amount / 100,
+  //     status: data.status,
+  //     currency: data.currency,
+  //     transactionDate: data.paid_at,
+  //     gatewayResponse: data.gateway_response,
+  //   }
+  //   transactionType: "Credit",
+  // });
 
-  await transactionHistory.save();
+  // await transactionHistory.save();
 };
 
 //webhook for verification
