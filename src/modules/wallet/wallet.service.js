@@ -64,14 +64,18 @@ const initializePayment = async function (details, callback) {
 
 // Function to record transaction history
 const recordTransactionHistory = async (userId, data) => {
+  Logger.info(data, userId)
   const transactionHistory = new TransactionHistory({
     userId,
-    reference: data.reference,
-    amount: data.amount / 100,
-    status: data.status,
-    currency: data.currency,
-    transactionDate: data.paid_at,
-    gatewayResponse: data.gateway_response,
+    data: {
+      reference: data.reference,
+      amount: data.amount / 100,
+      status: data.status,
+      currency: data.currency,
+      transactionDate: data.paid_at,
+      gatewayResponse: data.gateway_response,
+    }
+    transactionType: "Credit",
   });
 
   await transactionHistory.save();
@@ -118,10 +122,10 @@ const webhookVerification = async function (details, headers) {
         });
 
         // Record transaction history
+        Logger.info(event.data, transaction.userId)
         await recordTransactionHistory({
           userId: transaction.userId,
           data: event.data,
-          transactionType: "Credit",
         }).then(() => {
           Logger.info("Transaction history recorded.");
         });
