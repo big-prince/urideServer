@@ -123,12 +123,12 @@ const webhookVerification = async function (details, headers) {
 
         // Record transaction history
         Logger.info(event.data, transaction.userId, "The history details" )
-        await recordTransactionHistory({
-          userId: transaction.userId,
-          data: event.data,
-        }).then(() => {
-          Logger.info("Transaction history recorded.");
-        });
+        // await recordTransactionHistory({
+        //   userId: transaction.userId,
+        //   data: event.data,
+        // }).then(() => {
+        //   Logger.info("Transaction history recorded.");
+        // });
       }
     }
   }
