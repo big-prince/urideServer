@@ -106,6 +106,12 @@ const webhookVerification = async function (details, headers) {
 
         // Update the user's wallet balance
         const wallet = await Wallet.findOne({ userId: transaction.userId });
+        Logger.info(transaction)
+        Logger.info(transaction.id)
+        if(!wallet){
+          Logger.info("Wallet not found")
+        }
+        Logger.info(wallet)
         wallet.balance += event.data.amount / 100; // Assuming the amount is in kobo, converting to Naira
         await wallet.save().then(() => {
           Logger.info("Wallet updated");
