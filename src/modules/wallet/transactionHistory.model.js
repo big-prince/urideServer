@@ -9,7 +9,7 @@ const transactionHistorySchema = new mongoose.Schema(
       required: true,
     },
     data: {
-      reference: { type: String, required: true, unique: true },
+      reference: { type: String, required: true },
       amount: { type: Number, required: true },
       status: { type: String, required: true },
       currency: { type: String, required: true },
