@@ -24,6 +24,7 @@ const transactionHistorySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+transactionHistorySchema.index({ "data.reference": 1 }, { unique: true });
 
 const TransactionHistory = mongoose.model(
   "TransactionHistory",
