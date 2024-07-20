@@ -63,23 +63,23 @@ const initializePayment = async function (details, callback) {
 };
 
 // Function to record transaction history
-const recordTransactionHistory = async (userId, data) => {
-  Logger.info(data, userId)
-  // const transactionHistory = new TransactionHistory({
-  //   userId,
-  //   data: {
-  //     reference: data.reference,
-  //     amount: data.amount / 100,
-  //     status: data.status,
-  //     currency: data.currency,
-  //     transactionDate: data.paid_at,
-  //     gatewayResponse: data.gateway_response,
-  //   }
-  //   transactionType: "Credit",
-  // });
+// const recordTransactionHistory = async (userId, data) => {
+//   console.log(`the user id${userId}`, data)
+//   const transactionHistory = new TransactionHistory({
+//     userId,
+//     data: {
+//       reference: data.reference,
+//       amount: data.amount / 100,
+//       status: data.status,
+//       currency: data.currency,
+//       transactionDate: data.paid_at,
+//       gatewayResponse: data.gateway_response,
+//     },
+//     transactionType: "Credit",
+//   });
 
-  // await transactionHistory.save();
-};
+//   // await transactionHistory.save();
+// };
 
 //webhook for verification
 const webhookVerification = async function (details, headers) {
@@ -110,24 +110,35 @@ const webhookVerification = async function (details, headers) {
 
         // Update the user's wallet balance
         const wallet = await Wallet.findOne({ userId: transaction.userId });
-        Logger.info(transaction)
-        Logger.info(transaction.id)
-        if(!wallet){
-          Logger.info("Wallet not found")
+        Logger.info(transaction);
+        Logger.info(transaction.id);
+        if (!wallet) {
+          Logger.info("Wallet not found");
         }
-        Logger.info(wallet)
+        Logger.info(wallet);
         wallet.balance += event.data.amount / 100; // Assuming the amount is in kobo, converting to Naira
         await wallet.save().then(() => {
           Logger.info("Wallet updated");
         });
 
         // Record transaction history
-        Logger.info(event.data, transaction.userId, "The history details" )
-        await recordTransactionHistory({
+        const data = event.data;
+        const transactionHistory = new TransactionHistory({
           userId: transaction.userId,
-          data: event.data,
-        }).then(() => {
-          Logger.info("Transaction history recorded.");
+          data: {
+            reference: data.reference,
+            amount: data.amount / 100,
+            status: data.status,
+            currency: data.currency,
+            transactionDate: data.paid_at,
+            gatewayResponse: data.gateway_response,
+          },
+          transactionType: "credit",
+        });
+        Logger.info(transactionHistory);
+
+        await transactionHistory.save().then(() => {
+          Logger.info("Transaction history saved");
         });
       }
     }
