@@ -121,16 +121,16 @@ const webhookVerification = async function (details, headers) {
           Logger.info("Wallet updated");
         });
 
-        // async function clearIndexes() {
-        //   try {
-        //     // Drop all indexes for the Rides collection
-        //     await TransactionHistory.collection.dropIndexes();
-        //     Logger.info("All indexes dropped for this collection.");
-        //   } catch (error) {
-        //     Logger.info("Error dropping indexes:", error); // Throw the error to handle it elsewhere, if needed
-        //   }
-        // }
-        // clearIndexes();
+        async function clearIndexes() {
+          try {
+            // Drop all indexes for the Rides collection
+            await TransactionHistory.collection.dropIndexes();
+            Logger.info("All indexes dropped for this collection.");
+          } catch (error) {
+            Logger.info("Error dropping indexes:", error); // Throw the error to handle it elsewhere, if needed
+          }
+        }
+        clearIndexes();
 
         // Record transaction history
         const data = event.data;
