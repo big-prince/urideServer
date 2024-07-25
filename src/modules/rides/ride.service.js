@@ -6,6 +6,7 @@ import TransactionHistory from "../wallet/transactionHistory.model.js";
 import Reviews from "../reviews/review.model.js";
 import Logger from "../../config/logger.js";
 import getCordinates from "../../utils/geocode.js";
+import geoDistance from "../../utils/geoDistance.js";
 import moment from "moment";
 
 const { ObjectId } = Mongoose;
@@ -398,8 +399,11 @@ const driverRides = async function (email, callback) {
     });
   }
   const ridesCreated = driverRides.ridesCreated;
-
-  const rides = await Rides.find({ _id: { $in: ridesCreated } });
+  const now = new Date();
+  const rides = await Rides.find({
+    _id: { $in: ridesCreated },
+    departure_time: { $gte: now },
+  });
   if (!rides) {
     return callback({ message: "No rides found" });
   }
@@ -797,6 +801,116 @@ const requestToDriver = async function (details, callback) {
 };
 
 //start the ride
+const startRide = async function (details, callback) {
+  const { driverID, rideID } = details;
+
+  //check if driver exists
+  const driver = await User.findOne({ _id: driverID });
+  if (!driver) {
+    Logger.info("The driver doesnt exist");
+    return callback({ message: "Driver doesnt exist" });
+  } else {
+    Logger.info("Driver Exists...");
+  }
+  //check if ride exists
+  const now = new Date();
+  const exist = await Rides.findOne({
+    _id: rideID,
+    departure_time: { $gte: now },
+    ride_status: "Not_Started",
+  });
+  if (!exist) {
+    Logger.info("The ride doesnt exist");
+    return callback({ message: "Ride doesnt exist" });
+  } else {
+    Logger.info("Ride Exists...");
+  }
+
+  //check driver role
+  if (driver.role !== "driver") {
+    //switch role to driver
+    driver.role = "driver";
+    await driver.save().then(() => {
+      Logger.info("Role Changed to Driver!");
+    });
+  } else {
+    Logger.info("Driver is a driver");
+  }
+
+  //check if rideID in drivers rideCreated
+  const ridesCreated = driver.ridesCreated;
+  const index = ridesCreated.indexOf(rideID);
+  if (index < 0) {
+    Logger.info("Ride not found in drivers rides");
+    return callback({ message: "Ride not found in drivers rides" });
+  } else {
+    Logger.info("Ride Found in drivers rides");
+  }
+
+  //check if the time now matches the departure_time
+  const departureTime = exist.departure_time;
+  if (now.getTime() !== departureTime.getTime()) {
+    Logger.info("Not yet departure_time");
+    return callback({ message: "Ride not yet started" });
+  } else {
+    Logger.info("Ride is to start");
+  }
+
+  //check if the ride has remaining seats
+  const remC = exist.remaining_capacity;
+  const totC = exist.total_capacity;
+  if (remC > 0) {
+    Logger.info("Ride is not filled up");
+    return callback({ message: "Ride is not filled up..." });
+  } else {
+    Logger.info("Ride is filled up");
+  }
+
+  //get distance between origin and destination
+  const origin = exist.origin.location.coordinates;
+  const destination = exist.destination.location.coordinates;
+  let originCordinates = {
+    lat: origin[0],
+    lon: origin[1],
+  };
+  let destinationCordinates = {
+    lat: destination[0],
+    lon: destination[1],
+  };
+  const distance = geoDistance(originCordinates, destinationCordinates);
+  Logger.info("Distance Found");
+
+  //change the status of the ride
+  exist.ride_status = "Started";
+  console.log("Changed");
+  await exist.save().then(() => {
+    Logger.info("Ride Status Changed to Started");
+  });
+
+  const message = {
+    message: "Ride Started",
+    rideDetails: {
+      origin: exist.origin,
+      destination: exist.destination,
+      stops: exist.stops,
+      IDs: {
+        rideID: rideID,
+        driverID: driverID,
+      },
+      distance: distance,
+    },
+    driverDetails: {
+      name: driver.firstName + " " + driver.lastName,
+      email: driver.email,
+      id: driver._id,
+    },
+    ridersDetails: {
+      riders: exist.riders,
+    },
+  };
+
+  return message;
+};
 
 export default {
   getAllOpenRides,
@@ -812,4 +926,5 @@ export default {
   deleteRide,
   removeRider,
   requestToDriver,
+  startRide,
 };
