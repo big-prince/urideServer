@@ -42,6 +42,9 @@ router.post("/add_rider", rideController.addRider);
 //request to driver
 router.post("/request_ride", rideController.requestToDriver);
 
+//start ride
+router.post("/start_ride", rideController.startRide);
+
 router.post("/booking_detail");
 router.post("/ride_request_accept");
 router.post("/ride_request_decline");

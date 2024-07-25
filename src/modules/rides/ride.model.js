@@ -4,6 +4,7 @@ import paginate from "../../plugins/paginate.plugin.js";
 //import Logger
 import Logger from "../../config/logger.js";
 import logger from "../../config/logger.js";
+import rideStatus from "../../config/ride.status.js";
 
 let ObjectId = Mongoose.Types.ObjectId;
 
@@ -74,6 +75,11 @@ const rideSchema = new Mongoose.Schema({
   departure_time: { type: Date, required: true },
   total_capacity: { type: Number, required: true },
   remaining_capacity: { type: Number, required: true },
+  ride_status: {
+    type: String,
+    enum: rideStatus.status,
+    default: "Not_Started",
+  },
   creator: { type: String, ref: "userSchema" },
   riders: [{ type: ObjectId, ref: "userSchema" }],
   luggage_type: String,
