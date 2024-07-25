@@ -796,6 +796,8 @@ const requestToDriver = async function (details, callback) {
   return message;
 };
 
+//start the ride
+
 export default {
   getAllOpenRides,
   getAllRides,
