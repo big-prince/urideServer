@@ -94,6 +94,15 @@ const startRide = catchAsync(async (req, res) => {
   }
 });
 
+const waitingList = catchAsync(async (req, res) => {
+  const result = await rideService.getWaitingList(req);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
@@ -104,4 +113,5 @@ export default {
   addRider,
   requestToDriver,
   startRide,
+  waitingList,
 };
