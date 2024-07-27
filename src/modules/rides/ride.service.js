@@ -3,6 +3,7 @@ import User from "../users/user.model.js";
 import Rides from "./ride.model.js";
 import Wallet from "../wallet/wallet.model.js";
 import TransactionHistory from "../wallet/transactionHistory.model.js";
+import Awaiting from "./awaiting.model.js";
 import Reviews from "../reviews/review.model.js";
 import Logger from "../../config/logger.js";
 import getCordinates from "../../utils/geocode.js";
@@ -373,6 +374,16 @@ const addRide = async function (rideDetails, callback) {
         },
         { new: true }
       );
+
+      //create a waiting list for that ride
+      const awaiting = {
+        driverId: updateDriver._id,
+        rideId: ride._id,
+        users: [],
+      };
+      await Awaiting.create(awaiting).then(() => {
+        Logger.info("Awaiting list created");
+      });
 
       //update car details for driver
       Logger.info("Everything done..");
@@ -758,6 +769,18 @@ const requestToDriver = async function (details, callback) {
   await userWallet.save().then(() => {
     Logger.info("Amount deducted from wallet");
   });
+
+  async function clearIndexes() {
+    try {
+      // Drop all indexes for the Rides collection
+      await TransactionHistory.collection.dropIndexes();
+      Logger.info("All indexes dropped for this collection.");
+    } catch (error) {
+      Logger.info("Error dropping indexes:", error); // Throw the error to handle it elsewhere, if needed
+    }
+  }
+  clearIndexes();
+
   //record transacion history
   const transaction = {
     userId: riderId,
@@ -769,17 +792,54 @@ const requestToDriver = async function (details, callback) {
       transactionDate: new Date(),
       gatewayResponse: "Successful Local Transaction",
     },
-    transactionType: "Debit",
+    transactionType: "debit",
   };
   await TransactionHistory.create(transaction).then(() => {
     Logger.info("Transaction History recorded");
   });
 
-  //add the amount to the driver hold-funds
-  const driverHold = creatorWallet.held_funds;
-  creatorWallet.held_funds = driverHold + price;
+  //add the amount to the driver wallet balance
+  const creatorBalance = creatorWallet.balance;
+  creatorWallet.balance = creatorBalance + price;
   await creatorWallet.save().then(() => {
-    Logger.info("Amount added to driver hold funds");
+    Logger.info("Amount added to creator wallet");
+  });
+  //sve thistory for creator
+  const creatorTransaction = {
+    userId: creator._id,
+    data: {
+      reference: "ref_local",
+      amount: price,
+      status: "success",
+      currency: "NGN",
+      transactionDate: new Date(),
+      gatewayResponse: "Successful Local Transaction",
+    },
+    transactionType: "credit",
+  };
+  await TransactionHistory.create(creatorTransaction).then(() => {
+    Logger.info("Transaction History recorded for creator");
+  });
+
+  //add user to awaiting model of the driver
+  const awaiting = await Awaiting.findOne({ rideId: rideId });
+  if (!awaiting) {
+    Logger.info("The awaiting doesnt exist");
+    return callback({ message: "Awaiting doesnt exist" });
+  } else {
+    Logger.info("Awaiting exists");
+  }
+  //check if the user is already in the list
+  const users = awaiting.users;
+  if (users.includes(riderId)) {
+    Logger.info("User already in the list");
+    return callback({ message: "User already in the list" });
+  } else {
+    Logger.info("User not in the list");
+  }
+  users.push(riderId);
+  await awaiting.save().then(() => {
+    Logger.info("User added to awaiting list");
   });
 
   const message = {
@@ -912,6 +972,45 @@ const startRide = async function (details, callback) {
   return message;
 };
 
+//get waiting list
+const getWaitingList = async function (req) {
+  const rideId = req.query.rideId;
+
+  //chek if ride exists
+  const exist = await Rides.findOne({
+    _id: rideId,
+  });
+  if (!exist) {
+    Logger.info("The ride doesnt exist");
+    return callback({ message: "Ride doesnt exist" });
+  } else {
+    Logger.info("Ride Exists...");
+  }
+
+  //get the awaiting list
+  const awaiting = await Awaiting.findOne({
+    rideId: rideId,
+  })
+    .populate({
+      path: "users",
+      select: "firstName lastName email id",
+    })
+    .exec();
+  if (!awaiting) {
+    Logger.info("The awaiting doesnt exist");
+    return callback({ message: "Awaiting doesnt exist" });
+  } else {
+    Logger.info("Awaiting Exists...");
+  }
+  const users = awaiting.users;
+  Logger.info("Users found...");
+
+  const message = {
+    users: users,
+    status: "Paid",
+  };
+  return message;
+};
 export default {
   getAllOpenRides,
   getAllRides,
@@ -927,4 +1026,5 @@ export default {
   removeRider,
   requestToDriver,
   startRide,
+  getWaitingList,
 };
