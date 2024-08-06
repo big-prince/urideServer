@@ -997,9 +997,7 @@ const getWaitingList = async function (req) {
   const rideId = req.query.rideId;
 
   //chek if ride exists
-  const exist = await Rides.findOne({
-    _id: rideId,
-  });
+  const exist = await Rides.findOne({ _id: rideId });
   if (!exist) {
     Logger.info("The ride doesnt exist");
     return callback({ message: "Ride doesnt exist" });
