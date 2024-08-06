@@ -770,7 +770,13 @@ const requestToDriver = async function (details, callback) {
     Logger.info("Wallet exists");
     Logger.info(creatorWallet);
   }
-
+  //check if the amount equals the ride price
+  if (price !== exist.price) {
+    Logger.info("Price doesnt match");
+    return callback({ message: "Price doesnt match" });
+  } else {
+    Logger.info("Price matches");
+  }
   //deduct amount from user-balance
   const balance = userWallet.balance;
   if (balance < price) {
