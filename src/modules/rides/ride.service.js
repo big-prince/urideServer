@@ -739,12 +739,21 @@ const requestToDriver = async function (details, callback) {
   if (!exist) {
     Logger.info("The ride doesnt exist");
     return callback({ message: "Ride doesnt exist" });
+  } else {
+    Logger.info("Ride Exists...");
   }
   //check if rider exists
   const riderExist = await User.findOne({ _id: riderId });
 
   //find rideCreator
   const creator = await User.findOne({ email: exist.creator });
+  if (!creator) {
+    Logger.info("The creator doesnt exist");
+    return callback({ message: "Creator doesnt exist" });
+  } else {
+    Logger.info("Creator Exists");
+    Logger.info(creator, "The Creator");
+  }
 
   if (!riderExist) {
     Logger.info("The rider doesnt exist");
