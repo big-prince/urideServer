@@ -757,6 +757,9 @@ const requestToDriver = async function (details, callback) {
   if (!userWallet) {
     Logger.info("The wallet doesnt exist");
     return callback({ message: "Wallet doesnt exist" });
+  } else {
+    Logger.info("Wallet exists");
+    Logger.info(creatorWallet);
   }
 
   //deduct amount from user-balance
@@ -799,6 +802,8 @@ const requestToDriver = async function (details, callback) {
   });
 
   //add the amount to the driver wallet balance
+  //check if the creator balance exists
+
   const creatorBalance = creatorWallet.balance;
   creatorWallet.balance = creatorBalance + price;
   await creatorWallet.save().then(() => {
