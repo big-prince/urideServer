@@ -818,7 +818,6 @@ const requestToDriver = async function (details, callback) {
 
   //add the amount to the driver wallet balance
   //check if the creator balance exists
-
   const creatorBalance = creatorWallet.balance;
   creatorWallet.balance = creatorBalance + price;
   await creatorWallet.save().then(() => {
@@ -1029,6 +1028,75 @@ const getWaitingList = async function (req) {
   };
   return message;
 };
+
+//delete user from waitinglist
+const deleteWaitingList = async function (details, callback) {
+  const { rideId, userId } = details;
+  console.log(details);
+  //check if ride exists
+  const exist = await Rides.findOne({
+    _id: rideId,
+  })
+    .where("departure_time")
+    .gte(new Date());
+
+  if (!exist) {
+    Logger.info("The ride doesnt exist");
+    return callback({ message: "Ride doesnt exist" });
+  } else {
+    Logger.info("Ride Exists...");
+  }
+
+  //check if user exists
+  const user = await User.findOne({
+    _id: userId,
+  });
+  if (!user) {
+    Logger.info("The user doesnt exist");
+    return callback({ message: "User doesnt exist" });
+  } else {
+    Logger.info("User Exists...");
+  }
+
+  //get the waiting list
+  const awaiting = await Awaiting.findOne({
+    rideId: rideId,
+  });
+  if (!awaiting) {
+    Logger.info("The awaiting doesnt exist");
+    return callback({ message: "Awaiting doesnt exist" });
+  } else {
+    Logger.info("Awaiting Exists...");
+  }
+
+  //check if user in that ride already
+  const riders = exist.riders;
+  const index = riders.indexOf(userId);
+  if (index > -1) {
+    Logger.info("User already in the ride");
+    return callback({ message: "User already in the ride" });
+  } else {
+    Logger.info("User not in the ride");
+  }
+
+  //check if user in that waitng list
+  const users = awaiting.users;
+  const index2 = users.indexOf(userId);
+  if (index2 < 0) {
+    Logger.info("User not in the waiting list");
+    return callback({ message: "User not in the waiting list" });
+  }
+
+  //delete user from the waiting list
+  users.splice(index2, 1);
+  await awaiting.save().then(() => {
+    Logger.info("User removed from the waiting list");
+  });
+
+  const message = `User${userId} removed from the waiting list`;
+  return message;
+};
+
 export default {
   getAllOpenRides,
   getAllRides,
@@ -1045,4 +1113,5 @@ export default {
   requestToDriver,
   startRide,
   getWaitingList,
+  deleteWaitingList,
 };

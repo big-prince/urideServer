@@ -103,6 +103,16 @@ const waitingList = catchAsync(async (req, res) => {
   }
 });
 
+//delete user from waiting list
+const deleteWaitingList = catchAsync(async (req, res) => {
+  const result = await rideService.deleteWaitingList(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
@@ -114,4 +124,5 @@ export default {
   requestToDriver,
   startRide,
   waitingList,
+  deleteWaitingList,
 };

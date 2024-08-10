@@ -48,6 +48,9 @@ router.post("/start_ride", rideController.startRide);
 //get waiting list
 router.get("/waiting_list", rideController.waitingList);
 
+//delete user from waiting list
+router.post("/delete_waiting", rideController.deleteWaitingList);
+
 router.post("/booking_detail");
 router.post("/ride_request_accept");
 router.post("/ride_request_decline");
