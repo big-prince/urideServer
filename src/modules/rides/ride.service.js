@@ -1,10 +1,16 @@
 import Mongoose from "mongoose";
+//models
 import User from "../users/user.model.js";
 import Rides from "./ride.model.js";
 import Wallet from "../wallet/wallet.model.js";
+import CODE from "./securityCode.model.js";
 import TransactionHistory from "../wallet/transactionHistory.model.js";
 import Awaiting from "./awaiting.model.js";
 import Reviews from "../reviews/review.model.js";
+
+//usefiles
+import codeGenerator from "../../utils/codeGenerator.js";
+import clearIndex from "../../utils/clearIndex.js";
 import Logger from "../../config/logger.js";
 import getCordinates from "../../utils/geocode.js";
 import geoDistance from "../../utils/geoDistance.js";
@@ -569,6 +575,7 @@ const addRider = async function (details, callback) {
   //check if the ride is filled up
   const remC = exists.remaining_capacity;
   const totC = exists.total_capacity;
+  console.log(remC, totC);
   if (remC == 0) {
     Logger.info("Ride is already filled up");
     return callback({ message: "Ride is filled up..." });
@@ -592,6 +599,25 @@ const addRider = async function (details, callback) {
     console.log("Done", "User Part");
   });
 
+  //find creator details
+  const creator = await User.findOne({ email: exists.creator });
+  if (!creator) {
+    Logger.info("The creator doesnt exist");
+    return callback({ message: "Creator doesnt exist" });
+  } else {
+    Logger.info("Creator Exists");
+  }
+
+  //codeLogic
+  const code = await codeGenerator(
+    riderId,
+    creator._id,
+    rideId,
+    exists.departure_time
+  ).then(() => {
+    Logger.info("Code Generated and Sent to User");
+  });
+
   const message = {
     message: "User Succesfully added to ride",
     remaining_capacity: exists.remaining_capacity,
@@ -603,6 +629,7 @@ const addRider = async function (details, callback) {
       destination: exists.destination,
       stops: exists.stops,
     },
+    codeStatus: "Code sent to users Email",
   };
 
   return message;
@@ -611,7 +638,7 @@ const addRider = async function (details, callback) {
 // Removes a rider from a ride given their respective IDs
 const removeRider = async function (details, callback) {
   const { rideId, riderId } = details;
-
+  console.log(rideId);
   //check if ride exists
   const exist = await Rides.findOne({ _id: rideId });
   if (!exist) {
@@ -633,7 +660,6 @@ const removeRider = async function (details, callback) {
 
   //remove riderId from the ride list
   const ridersList = exist.riders;
-  console.log(ridersList.length);
   const index = ridersList.indexOf(riderId);
   if (index > -1) {
     ridersList.splice(index, 1);
@@ -641,19 +667,16 @@ const removeRider = async function (details, callback) {
   }
 
   // increment remaining capacity
-  const remC = exist.remaining_capcity;
-  const totC = exists.total_capacity;
-  if (remC >= totC) {
-    Logger.info("Ride is already filled up");
-    return callback({ message: "Ride is filled up..." });
-  } else {
-    exist.remaining_capcity = remC + 1;
-    Logger.info(`Ride is not filled. Remaining Capacity:${remC}`);
-  }
-
-  await exist.save({}).then(() => {
+  console.log(exist.remaining_capacity);
+  exist.remaining_capacity + 1;
+  console.log(exist.remaining_capacity);
+  await exist.save().then(() => {
     Logger.info("Rider Removed and  Remaining Capacity Incremented.");
   });
+
+  Logger.info(
+    `Ride is not filled. Remaining Capacity:${exist.remaining_capacity}`
+  );
 
   //check if the ride is now empty
   if ((ridersList.length = 0)) {
@@ -1097,6 +1120,11 @@ const deleteWaitingList = async function (details, callback) {
   return message;
 };
 
+//make 4digit code
+const codemaker = async function (details, callback) {
+  console.log(details);
+};
+
 export default {
   getAllOpenRides,
   getAllRides,
@@ -1114,4 +1142,5 @@ export default {
   startRide,
   getWaitingList,
   deleteWaitingList,
+  codemaker,
 };
