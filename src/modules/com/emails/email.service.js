@@ -67,9 +67,7 @@ export const sendForgotPasswordEmail = async (
 
 // send otp to email
 export const sendOTPEmail = async (receiverEmail, otp) => {
-  const user = await User.findOne({ email: receiverEmail }).then(() => {
-    console.log("USer FOund");
-  });
+  const user = await User.findOne({ email: receiverEmail });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not Found");
   }
