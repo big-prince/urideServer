@@ -113,6 +113,16 @@ const deleteWaitingList = catchAsync(async (req, res) => {
   }
 });
 
+//veridy security code
+const verifySecurityCode = catchAsync(async (req, res) => {
+  const result = await rideService.verifySecurityCode(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
@@ -125,4 +135,5 @@ export default {
   startRide,
   waitingList,
   deleteWaitingList,
+  verifySecurityCode,
 };

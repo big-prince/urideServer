@@ -81,7 +81,17 @@ const rideSchema = new Mongoose.Schema({
     default: "Not_Started",
   },
   creator: { type: String, ref: "userSchema" },
-  riders: [{ type: ObjectId, ref: "userSchema" }],
+  riders: [
+    {
+      type: ObjectId,
+      ref: "userSchema",
+      status: {
+        type: String,
+        enum: ["Pending", "Verified", "Not Verified"],
+        default: "Pending",
+      },
+    },
+  ],
   luggage_type: String,
   carName: {
     type: String,

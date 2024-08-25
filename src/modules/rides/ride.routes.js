@@ -51,6 +51,9 @@ router.get("/waiting_list", rideController.waitingList);
 //delete user from waiting list
 router.post("/delete_waiting", rideController.deleteWaitingList);
 
+//verify security code
+router.post("/verify_code", rideController.verifySecurityCode);
+
 router.post("/booking_detail");
 router.post("/ride_request_accept");
 router.post("/ride_request_decline");

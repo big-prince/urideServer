@@ -14,6 +14,7 @@ import clearIndex from "../../utils/clearIndex.js";
 import Logger from "../../config/logger.js";
 import getCordinates from "../../utils/geocode.js";
 import geoDistance from "../../utils/geoDistance.js";
+import sendCode from "../../utils/sendcode.js";
 import moment from "moment";
 
 const { ObjectId } = Mongoose;
@@ -381,14 +382,23 @@ const addRide = async function (rideDetails, callback) {
         { new: true }
       );
 
-      //create a waiting list for that ride
-      const awaiting = {
-        driverId: updateDriver._id,
-        rideId: ride._id,
-        users: [],
-      };
-      await Awaiting.create(awaiting).then(() => {
-        Logger.info("Awaiting list created");
+      // //create a waiting list for that ride
+      // const awaiting = {
+      //   driverId: updateDriver._id,
+      //   rideId: ride._id,
+      //   users: [],
+      // };
+      // await Awaiting.create(awaiting).then(() => {
+      //   Logger.info("Awaiting list created");
+      // });
+
+      //generate security code for the ride
+      const code = await codeGenerator(
+        creatorRole._id,
+        ride._id,
+        ride.departure_time
+      ).then(() => {
+        Logger.info("Code Generated for Ride.");
       });
 
       //update car details for driver
@@ -537,7 +547,7 @@ const getOtherRiders = function (rideId, userId, callback) {
 
 // Adds a rider to a ride given their respective IDs
 const addRider = async function (details, callback) {
-  const { rideId, riderId } = details;
+  const { price, rideId, riderId } = details;
 
   const now = new Date();
   //check if ride exists
@@ -554,6 +564,14 @@ const addRider = async function (details, callback) {
   if (!rider) {
     Logger.info("No rider found");
     return callback({ message: "User not find" });
+  }
+  //find creator details
+  const creator = await User.findOne({ email: exists.creator });
+  if (!creator) {
+    Logger.info("The creator doesnt exist");
+    return callback({ message: "Creator doesnt exist" });
+  } else {
+    Logger.info("Creator Exists");
   }
 
   //check if the user is already in this Ride
@@ -583,6 +601,86 @@ const addRider = async function (details, callback) {
     Logger.info(`Ride is not filled. Remaining Capacity:${remC}`);
   }
 
+  //search for the users wallet
+  const userWallet = await Wallet.findOne({ userId: riderId });
+  const creatorWallet = await Wallet.findOne({ userId: creator._id });
+  if (!userWallet) {
+    Logger.info("The wallet doesnt exist");
+    return callback({ message: "Wallet doesnt exist" });
+  } else {
+    Logger.info("Wallet exists");
+    Logger.info(creatorWallet);
+  }
+  //check if the amount equals the ride price
+  if (price !== exists.price) {
+    Logger.info("Price doesnt match");
+    return callback({ message: "Price doesnt match" });
+  } else {
+    Logger.info("Price matches");
+  }
+  //deduct amount from user-balance
+  const balance = userWallet.balance;
+  if (balance < price) {
+    Logger.info("Insufficient funds");
+    return callback({ message: "Insufficient funds" });
+  }
+  userWallet.balance = balance - price;
+  await userWallet.save().then(() => {
+    Logger.info("Amount deducted from wallet");
+  });
+
+  async function clearIndexes() {
+    try {
+      // Drop all indexes for the Rides collection
+      await TransactionHistory.collection.dropIndexes();
+      Logger.info("All indexes dropped for this collection.");
+    } catch (error) {
+      Logger.info("Error dropping indexes:", error); // Throw the error to handle it elsewhere, if needed
+    }
+  }
+  clearIndexes();
+
+  //record transacion history
+  const transaction = {
+    userId: riderId,
+    data: {
+      reference: "ref_local",
+      amount: price,
+      status: "success",
+      currency: "NGN",
+      transactionDate: new Date(),
+      gatewayResponse: "Successful Local Transaction",
+    },
+    transactionType: "debit",
+  };
+  await TransactionHistory.create(transaction).then(() => {
+    Logger.info("Transaction History recorded");
+  });
+
+  //add the amount to the driver wallet balance
+  //check if the creator balance exists
+  const creatorBalance = creatorWallet.balance;
+  creatorWallet.balance = creatorBalance + price;
+  await creatorWallet.save().then(() => {
+    Logger.info("Amount added to creator wallet");
+  });
+  //sve thistory for creator
+  const creatorTransaction = {
+    userId: creator._id,
+    data: {
+      reference: "ref_local",
+      amount: price,
+      status: "success",
+      currency: "NGN",
+      transactionDate: new Date(),
+      gatewayResponse: "Successful Local Transaction",
+    },
+    transactionType: "credit",
+  };
+  await TransactionHistory.create(creatorTransaction).then(() => {
+    Logger.info("Transaction History recorded for creator");
+  });
+
   //add the user to the riders array of the ride and decrement remaining_capacity
   currentRiders.push(riderId);
   exists.remaining_capacity = remC - 1;
@@ -599,23 +697,14 @@ const addRider = async function (details, callback) {
     console.log("Done", "User Part");
   });
 
-  //find creator details
-  const creator = await User.findOne({ email: exists.creator });
-  if (!creator) {
-    Logger.info("The creator doesnt exist");
-    return callback({ message: "Creator doesnt exist" });
-  } else {
-    Logger.info("Creator Exists");
+  //codeLogic to send rides code to user
+  const rideCode = await CODE.findOne({ rideID: exists.id });
+  if (!rideCode) {
+    Logger.info("No code for this ride");
+    return callback({ message: "Code not found" });
   }
-
-  //codeLogic
-  const code = await codeGenerator(
-    riderId,
-    creator._id,
-    rideId,
-    exists.departure_time
-  ).then(() => {
-    Logger.info("Code Generated and Sent to User");
+  await sendCode(rideCode.code, rider.email, creator.email, rideId).then(() => {
+    Logger.info("Ride code sent to user");
   });
 
   const message = {
@@ -1125,6 +1214,43 @@ const codemaker = async function (details, callback) {
   console.log(details);
 };
 
+//verify security code
+const verifySecurityCode = async function (details, callback) {
+  const { rideId, userId, code } = details;
+  console.log(rideId);
+  const searchCode = await CODE.findOne({ rideID: rideId });
+  console.log(searchCode);
+  if (!searchCode) {
+    return callback({ message: "Code doesnt exist" });
+  }
+  const rideExist = await Rides.findOne({
+    _id: rideId,
+  });
+  if (!rideExist) {
+    Logger.info("Ride not found");
+    return callback({ message: "Ride doesnt exist" });
+  } else {
+    Logger.info("Ride found");
+  }
+  if (exist.code !== code) {
+    return callback({ message: "Code doesnt match" });
+  }
+
+  //change user status to verified in the riders Section
+  const riders = rideExist.riders;
+  console.log(riders);
+  const index = riders.indexOf(userId);
+  //change particular riders status to verified
+  riders[index].verified = true;
+
+  //save the ride
+  await rideExist.save().then(() => {
+    Logger.info("Ride updated");
+  });
+
+  return callback({ message: "Code matches" });
+};
+
 export default {
   getAllOpenRides,
   getAllRides,
@@ -1143,4 +1269,5 @@ export default {
   getWaitingList,
   deleteWaitingList,
   codemaker,
+  verifySecurityCode,
 };

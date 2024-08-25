@@ -3,19 +3,24 @@ import clearIndex from "./clearIndex.js";
 import logger from "../config/logger.js";
 
 //code generator function
-const codeGenerator = async (userID, driverID, rideID, departure_time) => {
+const codeGenerator = async (driverID, rideID, departure_time) => {
+  console.log(driverID, rideID, departure_time, "Function Details");
   const code = Math.floor(1000 + Math.random() * 9000);
   const newCode = new CODE({
-    userID: userID,
     driverID: driverID,
     rideID: rideID,
     code: code,
     expiresAt: departure_time,
   });
   await newCode.save().then(() => {
-    logger.info(`code generated for ${userID}, code${code}`);
+    logger.info(`code generated for ${rideID}, code${code}`);
   });
-  return code;
+
+  //search for code
+  const searchCode = await CODE.findOne({ rideID: rideID }).then(() => {
+    logger.info("CodeExists");
+  });
+  return searchCode;
 };
 
 export default codeGenerator;
