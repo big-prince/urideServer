@@ -84,7 +84,7 @@ const rideSchema = new Mongoose.Schema({
   riders: [
     {
       type: ObjectId,
-      ref: "userSchema",
+      ref: "users",
       status: {
         type: String,
         enum: ["Pending", "Verified", "Not Verified"],

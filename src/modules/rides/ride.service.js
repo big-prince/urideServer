@@ -16,6 +16,7 @@ import getCordinates from "../../utils/geocode.js";
 import geoDistance from "../../utils/geoDistance.js";
 import sendCode from "../../utils/sendcode.js";
 import moment from "moment";
+import logger from "../../config/logger.js";
 
 const { ObjectId } = Mongoose;
 
@@ -1116,27 +1117,28 @@ const getWaitingList = async function (req) {
     Logger.info("Ride Exists...");
   }
 
-  //get the awaiting list
-  const awaiting = await Awaiting.findOne({
-    rideId: rideId,
-  })
-    .populate({
-      path: "users",
-      select: "firstName lastName email id",
+  //get all the riders in the ride
+  const riders = exist.riders;
+  //find details for each user
+  const ridersDetails = await Promise.all(
+    riders.map(async (user) => {
+      console.log(user);
+      const userExist = await User.findOne({ _id: user });
+      if (userExist) {
+        return {
+          name: userExist.firstName + " " + userExist.lastName,
+          email: userExist.email,
+          id: userExist._id,
+        };
+      } else {
+        Logger.info("User doesnt exist");
+      }
     })
-    .exec();
-  if (!awaiting) {
-    Logger.info("The awaiting doesnt exist");
-    return callback({ message: "Awaiting doesnt exist" });
-  } else {
-    Logger.info("Awaiting Exists...");
-  }
-  const users = awaiting.users;
-  Logger.info("Users found...");
+  );
 
   const message = {
-    users: users,
-    status: "Paid",
+    riders: ridersDetails,
+    status: "All Paid",
   };
   return message;
 };
