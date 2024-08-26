@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import User from "./user.model.js";
 import ApiError from "../../utils/ApiError.js";
 import { sendWelcomeEmail } from "../com/emails/email.service.js";
+import logger from "../../config/logger.js";
 import Wallet from "../wallet/wallet.model.js";
 
 /**
@@ -84,18 +85,12 @@ const updateUserById = async (userId, updateBody) => {
   return user;
 };
 
-/**
- * Delete user by id
- * @param {ObjectId} userId
- * @returns {Promise<User>}
- */
-const deleteUserById = async (userId) => {
-  const user = await getUserById(userId);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
-  }
-  await user.remove();
-  return user;
+//delete user by email
+const deleteUserByEmail = async (email) => {
+  console.log(email);
+  const user = await User.findOneAndDelete({ email: email }).then(() => {
+    logger.info("User Deleted");
+  });
 };
 
 const updateToDriverProfile = async (userId, driverDetails) => {
@@ -116,6 +111,6 @@ export default {
   getUserById,
   getUserByEmail,
   updateUserById,
-  deleteUserById,
+  deleteUserByEmail,
   updateToDriverProfile,
 };
