@@ -1238,7 +1238,7 @@ const codemaker = async function (details, callback) {
 //verify security code
 const verifySecurityCode = async function (details, callback) {
   const { rideId, userId, code } = details;
-
+  Logger.info("🚀 ~ verifySecurityCode ~ details:", details);
   const searchCode = await CODE.findOne({ rideID: rideId });
   console.log("🚀 ~ verifySecurityCode ~ searchCode:", searchCode);
   if (!searchCode) {
@@ -1250,6 +1250,7 @@ const verifySecurityCode = async function (details, callback) {
   const rideExist = await Rides.findOne({
     _id: rideId,
   });
+  Logger.info("🚀 ~ verifySecurityCode ~ rideExist:", rideExist);
   if (!rideExist) {
     Logger.info("Ride not found");
     return callback({ message: "Ride doesnt exist" });
