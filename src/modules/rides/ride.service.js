@@ -1266,7 +1266,9 @@ const verifySecurityCode = async function (details, callback) {
 
   // Find index of the user in the riders array
   const riders = rideExist.riders; // Assuming this is an array of user IDs
+  Logger.info("🚀 ~ verifySecurityCode ~ riders:", riders);
   const ridersStatus = rideExist.riderStatus;
+  Logger.info("🚀 ~ verifySecurityCode ~ ridersStatus:", ridersStatus);
   const riderIndex = riders.findIndex(
     (rider) => rider.toString() === userId.toString()
   );
