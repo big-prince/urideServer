@@ -17,7 +17,7 @@ const codeSchema = new Mongoose.Schema({
     ref: "Ride",
   },
   code: {
-    type: String,
+    type: Number,
     required: true,
   },
   createdAt: {

@@ -501,7 +501,7 @@ const getRiders = function (rideId, callback) {
     if (err) {
       callback(err, null);
     } else {
-      var riderIds = ride.riders;
+      var riderIds = ride.riders.user;
       User.find({ _id: { $in: riderIds } }, function (err, riders) {
         callback(err, riders);
       });
@@ -682,15 +682,26 @@ const addRider = async function (details, callback) {
     Logger.info("Transaction History recorded for creator");
   });
 
-  //add the user to the riders array of the ride and decrement remaining_capacity
-  currentRiders.push(riderId);
-  exists.remaining_capacity = remC - 1;
+  //add the user to the riders array of the ride(with status) and decrement remaining_capacity
+  exists.riders.push(riderId);
+  const status = {
+    rider: riderId,
+    status: "Pending",
+  };
+  exists.riderStatus.push(status);
+  exists.remaining_capacity -= 1;
   await exists.save().then(() => {
-    Logger.info("Rider added to Ride Array.");
-    console.log("Done");
+    Logger.info("User added to ride");
   });
 
-  //add the ride to the riders rides.
+  //verifyer
+  console.log({
+    remainingCapacity: exists.remaining_capacity,
+    ridersStatusLength: exists.riderStatus.length,
+    ridersLength: exists.riders.length,
+  });
+
+  //add the ride to the riders rides
   const currentUserRide = rider.rides;
   currentUserRide.push(rideId);
   await rider.save().then(() => {
@@ -748,26 +759,33 @@ const removeRider = async function (details, callback) {
     Logger.info("Ride Removed From User, and user, not in any ride");
   });
 
-  //remove riderId from the ride list
-  const ridersList = exist.riders;
-  const index = ridersList.indexOf(riderId);
-  if (index > -1) {
-    ridersList.splice(index, 1);
-    Logger.info("Rider Removed");
-  }
-
-  // increment remaining capacity
-  console.log(exist.remaining_capacity);
-  exist.remaining_capacity + 1;
-  console.log(exist.remaining_capacity);
+  //remove riderId from the ride list using pull
+  exist.riders.pull(riderId);
   await exist.save().then(() => {
-    Logger.info("Rider Removed and  Remaining Capacity Incremented.");
+    Logger.info("Rider Removed From Ride");
+  });
+  //remove rider from the status list
+  const ridersList = exist.riderStatus;
+  await Rides.findByIdAndUpdate(
+    rideId,
+    { $pull: { riderStatus: { rider: riderId } } },
+    { new: true }
+  ).then(() => {
+    Logger.info("Rider Removed From Status");
   });
 
-  Logger.info(
-    `Ride is not filled. Remaining Capacity:${exist.remaining_capacity}`
-  );
+  // increment remaining capacity
+  exist.remaining_capacity += 1;
+  await exist.save().then(() => {
+    Logger.info("Ride Updated");
+  });
 
+  //verifyer
+  console.log({
+    remainingCapacity: exist.remaining_capacity,
+    ridersStatusLength: ridersList,
+    ridersLength: exist.riders.length,
+  });
   //check if the ride is now empty
   if ((ridersList.length = 0)) {
     deleteRide({ id: rideId });
@@ -1142,6 +1160,7 @@ const getWaitingList = async function (req) {
   };
   return message;
 };
+console.log("🚀 ~ getWaitingList ~ getWaitingList:", getWaitingList);
 
 //delete user from waitinglist
 const deleteWaitingList = async function (details, callback) {
@@ -1219,11 +1238,14 @@ const codemaker = async function (details, callback) {
 //verify security code
 const verifySecurityCode = async function (details, callback) {
   const { rideId, userId, code } = details;
-  console.log(rideId);
+
   const searchCode = await CODE.findOne({ rideID: rideId });
-  console.log(searchCode);
+  console.log("🚀 ~ verifySecurityCode ~ searchCode:", searchCode);
   if (!searchCode) {
-    return callback({ message: "Code doesnt exist" });
+    Logger.info("Code not found");
+    return callback({ message: "Code not found" });
+  } else {
+    Logger.info("Code found");
   }
   const rideExist = await Rides.findOne({
     _id: rideId,
@@ -1234,23 +1256,49 @@ const verifySecurityCode = async function (details, callback) {
   } else {
     Logger.info("Ride found");
   }
-  if (exist.code !== code) {
+  //check if code is thesame
+  if (searchCode.code !== code) {
+    Logger.info("Code doesnt match");
     return callback({ message: "Code doesnt match" });
+  } else {
+    Logger.info("Code matches");
   }
 
-  //change user status to verified in the riders Section
-  const riders = rideExist.riders;
-  console.log(riders);
-  const index = riders.indexOf(userId);
-  //change particular riders status to verified
-  riders[index].verified = true;
+  // Find index of the user in the riders array
+  const riders = rideExist.riders; // Assuming this is an array of user IDs
+  const ridersStatus = rideExist.riderStatus;
+  const riderIndex = riders.findIndex(
+    (rider) => rider.toString() === userId.toString()
+  );
 
-  //save the ride
+  if (riderIndex === -1) {
+    Logger.info("User not found in ride");
+    return callback({ message: "User not found in ride" });
+  } else {
+    Logger.info("User Found in ride");
+  }
+
+  // Update the status of the user in ridersStatus
+  ridersStatus[riderIndex].status = "Verified";
+
+  // Save the updated ride document
   await rideExist.save().then(() => {
-    Logger.info("Ride updated");
+    Logger.info("User status updated to Verified");
   });
 
-  return callback({ message: "Code matches" });
+  //verifyer
+  console.log({
+    ridersStatus: ridersStatus[riderIndex],
+    ridersLength: riders.length,
+  });
+
+  return {
+    message: "Code Verified",
+    user: {
+      id: userId,
+      status: "Verified",
+    },
+  };
 };
 
 export default {
