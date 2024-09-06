@@ -123,6 +123,26 @@ const verifySecurityCode = catchAsync(async (req, res) => {
   }
 });
 
+//end ride
+const endRide = catchAsync(async (req, res) => {
+  const result = await rideService.endRide(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//test code
+const test = catchAsync(async (req, res) => {
+  const result = await rideService.testCode(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
@@ -136,4 +156,6 @@ export default {
   waitingList,
   deleteWaitingList,
   verifySecurityCode,
+  endRide,
+  test,
 };

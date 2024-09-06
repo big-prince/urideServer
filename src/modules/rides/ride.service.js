@@ -12,7 +12,8 @@ import Reviews from "../reviews/review.model.js";
 import codeGenerator from "../../utils/codeGenerator.js";
 import clearIndex from "../../utils/clearIndex.js";
 import Logger from "../../config/logger.js";
-import getCordinates from "../../utils/geocode.js";
+// import getCordinates from "../../utils/geocode.js";
+import getCordinates from "../../utils/geocode.google.js";
 import geoDistance from "../../utils/geoDistance.js";
 import sendCode from "../../utils/sendcode.js";
 import moment from "moment";
@@ -98,6 +99,7 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
     location: mainOrigin,
     name: origin,
   };
+
   Logger.info(
     `Origin: ${origin}, ${originCordinates}, ${JSON.stringify(finalOrigin)}`
   );
@@ -291,7 +293,9 @@ const addRide = async function (rideDetails, callback) {
 
   //get cordinates
   const originCordinates = await getCordinates(origin);
+  console.log("🚀 ~ addRide ~ originCordinates:", originCordinates);
   const destinationCordinates = await getCordinates(destination);
+  console.log("🚀 ~ addRide ~ destinationCordinates:", destinationCordinates);
   //destruxture date function
   function parseDateWithMoment(dateString) {
     // Parse the date string using moment with a specific format
@@ -310,10 +314,12 @@ const addRide = async function (rideDetails, callback) {
     type: "Point",
     coordinates: originCordinates,
   };
+  console.log("🚀 ~ addRide ~ MainOrigin:", MainOrigin);
   const MainDestination = {
     type: "Point",
     coordinates: destinationCordinates,
   };
+  console.log("🚀 ~ addRide ~ MainDestination:", MainDestination);
 
   const finalOrigin = {
     name: origin,
@@ -1266,12 +1272,17 @@ const verifySecurityCode = async function (details, callback) {
   }
 
   // Find index of the user in the riders array
-  const riders = rideExist.riders; // Assuming this is an array of user IDs
+  const riders = rideExist.riders || []; // Ensure it's an array
   Logger.info("🚀 ~ verifySecurityCode ~ riders:", riders);
+
   const ridersStatus = rideExist.riderStatus;
-  Logger.info("🚀 ~ verifySecurityCode ~ ridersStatus:", ridersStatus);
+  if (!riders || !Array.isArray(riders)) {
+    Logger.info("Riders array is invalid or not found");
+    return callback({ message: "Riders array not found" });
+  }
+
   const riderIndex = riders.findIndex(
-    (rider) => rider.toString() === userId.toString()
+    (rider) => rider && rider.toString() === userId.toString()
   );
 
   if (riderIndex === -1) {
@@ -1304,6 +1315,125 @@ const verifySecurityCode = async function (details, callback) {
   };
 };
 
+//end ride
+const endRide = async function (details, callback) {
+  const { rideId, driverId } = details;
+  console.log("🚀 ~ endRide ~ { rideId, driverId }:", { rideId, driverId });
+
+  //check if ride exists and have started
+  const exist = await Rides.findOne({
+    _id: rideId,
+    ride_status: "Started",
+  });
+  if (!exist) {
+    Logger.info("The ride doesnt exist");
+    return callback({ message: "Ride doesnt exist" });
+  } else {
+    Logger.info("Ride Exists...");
+  }
+
+  //check if driver exists
+  const driver = await User.findOne({
+    _id: driverId,
+  });
+  if (!driver) {
+    Logger.info("The driver doesnt exist");
+    return callback({ message: "Driver doesnt exist" });
+  } else {
+    Logger.info("Driver Exists...");
+  }
+
+  //check if driver in that ride
+  const ridesCreated = driver.ridesCreated;
+  const index = ridesCreated.indexOf(rideId);
+  if (index < 0) {
+    Logger.info("Driver not in the ride");
+    return callback({ message: "Driver not in the ride" });
+  } else {
+    Logger.info("Driver in the ride");
+  }
+
+  //get the distance between origin and destination
+  const origin = exist.origin.location.coordinates;
+  const destination = exist.destination.location.coordinates;
+  let originCordinates = {
+    lat: origin[0],
+    lon: origin[1],
+  };
+  let destinationCordinates = {
+    lat: destination[0],
+    lon: destination[1],
+  };
+  const distance = geoDistance(originCordinates, destinationCordinates);
+  Logger.info("Distance Found");
+
+  //check if the ride is currentl at destination
+  // const now = new Date();
+  // const departureTime = exist.departure_time;
+  // if (now.getTime() !== departureTime.getTime()) {
+  //   Logger.info("Not yet departure_time");
+  //   return callback({ message: "Ride not yet started" });
+  // } else {
+  //   Logger.info("Ride is to start");
+  // }
+
+  //check if current cordinates now match with destination cordinates(driver now at destination)
+  // const driverCordinates = driver.location.coordinates;
+  // if (
+  //   driverCordinates.lat !== destinationCordinates.lat &&
+  //   driverCordinates.lon !== destinationCordinates.lon
+  // ) {
+  //   Logger.info("Driver not at destination");
+  //   return callback({ message: "Driver not at destination" });
+  // } else {
+  //   Logger.info("Driver at destination");
+  // }
+
+  //change the status of the ride
+  exist.ride_status = "Ended";
+  console.log("Changed");
+  await exist.save().then(() => {
+    Logger.info("Ride Status Changed to Ended");
+  });
+
+  //delete ride from drivers list
+  ridesCreated.splice(index, 1);
+  await driver.save().then(() => {
+    Logger.info("Ride removed from driver");
+  });
+
+  const message = {
+    message: "Ride Ended",
+    rideDetails: {
+      origin: exist.origin,
+      destination: exist.destination,
+      stops: exist.stops,
+      IDs: {
+        rideID: rideId,
+        driverID: driverId,
+      },
+      distance: distance,
+    },
+    driverDetails: {
+      name: driver.firstName + " " + driver.lastName,
+      email: driver.email,
+      id: driver._id,
+    },
+    ridersDetails: {
+      riders: exist.riders,
+    },
+  };
+};
+
+//test geocode getter
+const testCode = async function (details, callback) {
+  const { origin, destination } = details;
+  const originCordinates = await getCordinates(origin);
+  console.log("🚀 ~ testCode ~ originCordinates:", originCordinates);
+  const destinationCordinates = await getCordinates(destination);
+  console.log("🚀 ~ testCode ~ destinationCordinates:", destinationCordinates);
+};
+
 export default {
   getAllOpenRides,
   getAllRides,
@@ -1323,4 +1453,6 @@ export default {
   deleteWaitingList,
   codemaker,
   verifySecurityCode,
+  endRide,
+  testCode,
 };

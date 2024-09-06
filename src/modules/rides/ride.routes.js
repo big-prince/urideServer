@@ -54,6 +54,12 @@ router.post("/delete_waiting", rideController.deleteWaitingList);
 //verify security code
 router.post("/verify_code", rideController.verifySecurityCode);
 
+//end ride
+router.post("/end_ride", rideController.endRide);
+
+//test code
+router.post("/test", rideController.test);
+
 router.post("/booking_detail");
 router.post("/ride_request_accept");
 router.post("/ride_request_decline");

@@ -18,7 +18,7 @@ const rideSchema = new Mongoose.Schema({
         required: true,
       },
       coordinates: {
-        type: [Number],
+        type: { String },
         required: true,
       },
     },
@@ -32,7 +32,7 @@ const rideSchema = new Mongoose.Schema({
         required: true,
       },
       coordinates: {
-        type: [Number],
+        type: { String },
         required: true,
       },
     },
@@ -47,7 +47,7 @@ const rideSchema = new Mongoose.Schema({
           required: true,
         },
         coordinates: {
-          type: [Number],
+          type: { String },
           required: true,
         },
       },
