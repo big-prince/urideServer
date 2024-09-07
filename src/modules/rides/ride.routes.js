@@ -60,6 +60,12 @@ router.post("/end_ride", rideController.endRide);
 //test code
 router.post("/test", rideController.test);
 
+//test distance
+router.post("/test_distance", rideController.testDistance);
+
+//get user ride
+router.get("/user_ride", rideController.getUserRide);
+
 router.post("/booking_detail");
 router.post("/ride_request_accept");
 router.post("/ride_request_decline");

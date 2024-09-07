@@ -1093,7 +1093,11 @@ const startRide = async function (details, callback) {
     lat: destination[0],
     lon: destination[1],
   };
-  const distance = geoDistance(originCordinates, destinationCordinates);
+  const distance = geoDistance(exist.origin.name, exist.destination.name).then(
+    (result) => {
+      console.log("Distance", result);
+    }
+  );
   Logger.info("Distance Found");
 
   //change the status of the ride
@@ -1425,6 +1429,65 @@ const endRide = async function (details, callback) {
   };
 };
 
+//manage ride(passenger)
+const userRide = async function (req, callback) {
+  const userId = req.query.userId;
+  const user = await User.findOne({ _id: userId });
+  if (!user) {
+    Logger.info("NO user found");
+    return callback({ message: "No User Found" });
+  } else {
+    Logger.info("User Found");
+  }
+  const rides = user.rides;
+  if (!rides || rides.length === 0) {
+    Logger.info("No ride found");
+    return callback({ message: "No ride found" });
+  } else {
+    Logger.info("Ride Found");
+  }
+  //fnd ride and populate creator field to ge creator details
+  const userRides = await Rides.find({ _id: { $in: rides } });
+  const ridesWithCreatorDetails = await Promise.all(
+    userRides.map(async (ride) => {
+      const creatorDetails = await User.findOne({ email: ride.creator });
+      let creatorFullName = `${creatorDetails.firstName} ${creatorDetails.lastName}`;
+      return {
+        ...ride.toObject(), // Convert ride to a plain object
+
+        creator: {
+          creatorName: creatorFullName,
+        }, // Replace the creator field with full user details
+      };
+    })
+  );
+
+  console.log(ridesWithCreatorDetails);
+
+  if (!userRides) {
+    Logger.info("No ride found");
+    return callback({ message: "No ride found" });
+  } else {
+    Logger.info("Ride Found");
+  }
+  //find creator
+
+  const message = {
+    status: "User in a ride and Ride, found",
+    ride: {
+      origin: ridesWithCreatorDetails[0].origin.name,
+      destination: ridesWithCreatorDetails[0].destination.name,
+      departureTime: ridesWithCreatorDetails[0].depature_time,
+      creator: ridesWithCreatorDetails[0].creator,
+      stops: ridesWithCreatorDetails[0].stops,
+      price: ridesWithCreatorDetails[0].price,
+      remainingCapacity: ridesWithCreatorDetails[0].remaining_capacity,
+      LuggageType: ridesWithCreatorDetails[0].luggage_type,
+    },
+  };
+
+  return message;
+};
 //test geocode getter
 const testCode = async function (details, callback) {
   const { origin, destination } = details;
@@ -1432,6 +1495,18 @@ const testCode = async function (details, callback) {
   console.log("🚀 ~ testCode ~ originCordinates:", originCordinates);
   const destinationCordinates = await getCordinates(destination);
   console.log("🚀 ~ testCode ~ destinationCordinates:", destinationCordinates);
+};
+
+//test geodistance
+const testDistance = async function (details, callback) {
+  const { origin, destination } = details;
+
+  //use geodistance function
+  geoDistance(origin, destination).then((result) => {
+    console.log("🚀 ~ testDistance ~ result:", result);
+  });
+
+  return "Done";
 };
 
 export default {
@@ -1455,4 +1530,6 @@ export default {
   verifySecurityCode,
   endRide,
   testCode,
+  testDistance,
+  userRide,
 };

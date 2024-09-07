@@ -80,8 +80,8 @@ const rideSchema = new Mongoose.Schema({
     enum: rideStatus.status,
     default: "Not_Started",
   },
-  creator: { type: String, ref: "userSchema" },
-  riders: [{ type: String, ref: "userSchema" }],
+  creator: { type: String, ref: "User" },
+  riders: [{ type: String, ref: "User" }],
   riderStatus: [
     {
       rider: { type: Mongoose.Schema.Types.ObjectId, ref: "User" },

@@ -143,6 +143,26 @@ const test = catchAsync(async (req, res) => {
   }
 });
 
+//test Distance
+const testDistance = catchAsync(async (req, res) => {
+  const result = await rideService.testDistance(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//get users Ride
+const getUserRide = catchAsync(async (req, res) => {
+  const result = await rideService.userRide(req);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
@@ -158,4 +178,6 @@ export default {
   verifySecurityCode,
   endRide,
   test,
+  testDistance,
+  getUserRide,
 };
