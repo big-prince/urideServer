@@ -1019,6 +1019,7 @@ const requestToDriver = async function (details, callback) {
 //start the ride
 const startRide = async function (details, callback) {
   const { driverID, rideID } = details;
+  console.log("🚀 ~ startRide ~ { driverID, rideID }:", { driverID, rideID });
 
   //check if driver exists
   const driver = await User.findOne({ _id: driverID });
@@ -1064,13 +1065,13 @@ const startRide = async function (details, callback) {
   }
 
   //check if the time now matches the departure_time
-  const departureTime = exist.departure_time;
-  if (now.getTime() !== departureTime.getTime()) {
-    Logger.info("Not yet departure_time");
-    return callback({ message: "Ride not yet started" });
-  } else {
-    Logger.info("Ride is to start");
-  }
+  // const departureTime = exist.departure_time;
+  // if (now.getTime() !== departureTime.getTime()) {
+  //   Logger.info("Not yet departure_time");
+  //   return callback({ message: "Ride not yet started" });
+  // } else {
+  //   Logger.info("Ride is to start");
+  // }
 
   //check if the ride has remaining seats
   const remC = exist.remaining_capacity;
@@ -1117,7 +1118,7 @@ const startRide = async function (details, callback) {
         rideID: rideID,
         driverID: driverID,
       },
-      distance: distance,
+      distance: distance.distanceText,
     },
     driverDetails: {
       name: driver.firstName + " " + driver.lastName,
@@ -1321,14 +1322,15 @@ const verifySecurityCode = async function (details, callback) {
 
 //end ride
 const endRide = async function (details, callback) {
-  const { rideId, driverId } = details;
-  console.log("🚀 ~ endRide ~ { rideId, driverId }:", { rideId, driverId });
+  const { rideID, driverID } = details;
+  console.log("🚀 ~ endRide ~ { rideId, driverId }:", { rideID, driverID });
 
   //check if ride exists and have started
   const exist = await Rides.findOne({
-    _id: rideId,
+    _id: rideID,
     ride_status: "Started",
   });
+  console.log("🚀 ~ endRide ~ exist:", exist);
   if (!exist) {
     Logger.info("The ride doesnt exist");
     return callback({ message: "Ride doesnt exist" });
@@ -1338,7 +1340,7 @@ const endRide = async function (details, callback) {
 
   //check if driver exists
   const driver = await User.findOne({
-    _id: driverId,
+    _id: driverID,
   });
   if (!driver) {
     Logger.info("The driver doesnt exist");
@@ -1349,7 +1351,7 @@ const endRide = async function (details, callback) {
 
   //check if driver in that ride
   const ridesCreated = driver.ridesCreated;
-  const index = ridesCreated.indexOf(rideId);
+  const index = ridesCreated.indexOf(rideID);
   if (index < 0) {
     Logger.info("Driver not in the ride");
     return callback({ message: "Driver not in the ride" });
@@ -1413,8 +1415,8 @@ const endRide = async function (details, callback) {
       destination: exist.destination,
       stops: exist.stops,
       IDs: {
-        rideID: rideId,
-        driverID: driverId,
+        rideID: rideID,
+        driverID: driverID,
       },
       distance: distance,
     },

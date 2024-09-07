@@ -1,4 +1,4 @@
-const status = ["Started", "Not_Started", "Cancelled"];
+const status = ["Started", "Not_Started", "Ended", "Cancelled"];
 
 export default {
   status,
