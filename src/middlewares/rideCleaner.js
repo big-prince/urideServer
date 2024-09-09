@@ -24,29 +24,29 @@ cron.schedule("* * * * *", async () => {
         const riders = ride.riders;
         if (riders.length != 0) {
           for (const rider of riders) {
-            const riderExist = await User.findOne({ _id: rider });
-            if (!riderExist) {
-              Logger.info("The rider doesnt exist");
-              throw new Error("Rider doesnt exist");
-            }
+            // const riderExist = await User.findOne({ _id: rider });
+            // if (!riderExist) {
+            //   Logger.info("The rider doesnt exist");
+            //   throw new Error("Rider doesnt exist");
+            // }
 
             // remove rideId from riderslist
-            riderExist.rides = [];
-            await riderExist.save().then(() => {
-              Logger.info("Ride Removed From User, and user, not in any ride");
-            });
-          }
-        }
+        //     riderExist.rides = [];
+        //     await riderExist.save().then(() => {
+        //       Logger.info("Ride Removed From User, and user, not in any ride");
+        //     });
+        //   }
+        // }
 
-        //clear the riders in the ride
-        ride.riders = [];
-        await ride
-          .save({
-            validateBeforeSave: false,
-          })
-          .then(() => {
-            Logger.info("Riders Cleared");
-          });
+        // //clear the riders in the ride
+        // ride.riders = [];
+        // await ride
+        //   .save({
+        //     validateBeforeSave: false,
+        //   })
+        //   .then(() => {
+        //     Logger.info("Riders Cleared");
+        //   });
 
         //find the creator and pop it off his array
         // const creator = await User.findOne({ email: ride.creator });
