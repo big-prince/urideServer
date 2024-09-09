@@ -21,16 +21,16 @@ cron.schedule("* * * * *", async () => {
         console.log(`Deleting ride with ID: ${ride._id}`);
         // Delete the ride
         //clear the ride from the riders' rides
-        const riders = ride.riders;
-        if (riders.length != 0) {
-          for (const rider of riders) {
-            // const riderExist = await User.findOne({ _id: rider });
-            // if (!riderExist) {
-            //   Logger.info("The rider doesnt exist");
-            //   throw new Error("Rider doesnt exist");
-            // }
+        // const riders = ride.riders;
+        // if (riders.length != 0) {
+        //   for (const rider of riders) {
+        //     const riderExist = await User.findOne({ _id: rider });
+        //     if (!riderExist) {
+        //       Logger.info("The rider doesnt exist");
+        //       throw new Error("Rider doesnt exist");
+        //     }
 
-            // remove rideId from riderslist
+        //     // remove rideId from riderslist
         //     riderExist.rides = [];
         //     await riderExist.save().then(() => {
         //       Logger.info("Ride Removed From User, and user, not in any ride");
@@ -48,21 +48,21 @@ cron.schedule("* * * * *", async () => {
         //     Logger.info("Riders Cleared");
         //   });
 
-        //find the creator and pop it off his array
+        // //find the creator and pop it off his array
         // const creator = await User.findOne({ email: ride.creator });
         // if (!creator) {
         //   Logger.info("The creator doesnt exist");
         //   throw new Error({ message: "Creator doesnt exist" });
         // }
 
-        //pop this ride out of ride Created
+        // //pop this ride out of ride Created
         // const rideCreated = creator.ridesCreated;
         // const index = rideCreated.indexOf(ride._id);
         // if (index > -1) {
         //   rideCreated.splice(index, 1);
         //   Logger.info("Ride Removed");
         // }
-        //save the creator
+        // //save the creator
         // await creator.save().then(() => {
         //   Logger.info("Ride removed from creator");
         // });
