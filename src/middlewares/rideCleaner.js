@@ -49,23 +49,23 @@ cron.schedule("* * * * *", async () => {
           });
 
         //find the creator and pop it off his array
-        const creator = await User.findOne({ email: ride.creator });
-        if (!creator) {
-          Logger.info("The creator doesnt exist");
-          throw new Error({ message: "Creator doesnt exist" });
-        }
+        // const creator = await User.findOne({ email: ride.creator });
+        // if (!creator) {
+        //   Logger.info("The creator doesnt exist");
+        //   throw new Error({ message: "Creator doesnt exist" });
+        // }
 
         //pop this ride out of ride Created
-        const rideCreated = creator.ridesCreated;
-        const index = rideCreated.indexOf(ride._id);
-        if (index > -1) {
-          rideCreated.splice(index, 1);
-          Logger.info("Ride Removed");
-        }
+        // const rideCreated = creator.ridesCreated;
+        // const index = rideCreated.indexOf(ride._id);
+        // if (index > -1) {
+        //   rideCreated.splice(index, 1);
+        //   Logger.info("Ride Removed");
+        // }
         //save the creator
-        await creator.save().then(() => {
-          Logger.info("Ride removed from creator");
-        });
+        // await creator.save().then(() => {
+        //   Logger.info("Ride removed from creator");
+        // });
 
         //delete the ride
         await Rides.findByIdAndDelete(ride._id).then(() => {
