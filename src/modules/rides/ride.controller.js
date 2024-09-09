@@ -163,6 +163,16 @@ const getUserRide = catchAsync(async (req, res) => {
   }
 });
 
+//ride expire checker
+const rideCleaner = catchAsync(async (req, res) => {
+  const result = await rideService.checkRideExpiration();
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
@@ -180,4 +190,5 @@ export default {
   test,
   testDistance,
   getUserRide,
+  rideCleaner,
 };

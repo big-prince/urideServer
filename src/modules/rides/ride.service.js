@@ -17,6 +17,7 @@ import getCordinates from "../../utils/geocode.google.js";
 import geoDistance from "../../utils/geoDistance.js";
 import sendCode from "../../utils/sendcode.js";
 import moment from "moment";
+import { format } from "date-fns";
 import logger from "../../config/logger.js";
 
 const { ObjectId } = Mongoose;
@@ -586,15 +587,28 @@ const addRider = async function (details, callback) {
   const tIndex = currentRiders.indexOf(riderId);
   if (tIndex > -1) {
     Logger.info("User already in this ride");
-    return callback({ message: "User already in this ride" });
+    throw new Error({ message: "User already in this ride" });
   }
 
   //check if the user is already in a ride
   if (rider.rides.length != 0) {
     Logger.info("User already in ride..");
-    return callback({ message: "User already in a ride.." });
+    //get the ride details
+    console.log(rider.rides[0]);
+    const ride = await Rides.findOne({ _id: rider.rides[0] });
+    if (!ride) {
+      Logger.info("Existing Ride, doesnt exist");
+      //delete id from the user list
+      rider.rides = [];
+      await rider.save().then(() => {
+        Logger.info("Ride Removed From User, and user, not in any ride");
+      });
+    } else {
+      Logger.info("Existing Ride, exists");
+      throw new Error(`User in ride ${ride._id}`);
+    }
   } else {
-    console.log("User not in a ride.");
+    Logger.info("User not in ride..");
   }
 
   //check if the ride is filled up
@@ -1444,12 +1458,23 @@ const userRide = async function (req, callback) {
   const rides = user.rides;
   if (!rides || rides.length === 0) {
     Logger.info("No ride found");
-    return callback({ message: "No ride found" });
+    return {
+      Message: "User not in a Ride",
+    };
   } else {
     Logger.info("Ride Found");
   }
+  const now = new Date();
   //fnd ride and populate creator field to ge creator details
   const userRides = await Rides.find({ _id: { $in: rides } });
+  //check if the ride has currently expired
+  const expiredRides = userRides.filter((ride) => ride.departure_time < now);
+  if (expiredRides.length > 0) {
+    Logger.info("Ride has expired");
+    return Error({ message: "Ride has expired" });
+  } else {
+    Logger.info("Ride has not expired");
+  }
   const ridesWithCreatorDetails = await Promise.all(
     userRides.map(async (ride) => {
       const creatorDetails = await User.findOne({ email: ride.creator });
@@ -1472,14 +1497,18 @@ const userRide = async function (req, callback) {
   } else {
     Logger.info("Ride Found");
   }
-  //find creator
+  //construct date and time
+  const formattedTime = format(
+    ridesWithCreatorDetails[0].departure_time,
+    "EEEE, MMMM do, yyyy 'at' hh:mm a"
+  );
 
   const message = {
     status: "User in a ride and Ride, found",
     ride: {
       origin: ridesWithCreatorDetails[0].origin.name,
       destination: ridesWithCreatorDetails[0].destination.name,
-      departureTime: ridesWithCreatorDetails[0].depature_time,
+      departureTime: formattedTime,
       creator: ridesWithCreatorDetails[0].creator,
       stops: ridesWithCreatorDetails[0].stops,
       price: ridesWithCreatorDetails[0].price,
@@ -1511,6 +1540,19 @@ const testDistance = async function (details, callback) {
   return "Done";
 };
 
+//check ride Expiration
+const checkRideExpiration = async function () {
+  const now = new Date();
+  //return all the rides inthe system by price
+  const rides = await Rides.find();
+  console.log(rides);
+  if (rides.length > 0) {
+    Logger.info("Ride has expired");
+    return rides;
+  } else {
+    Logger.info("Ride has not expired");
+  }
+};
 export default {
   getAllOpenRides,
   getAllRides,
@@ -1534,4 +1576,5 @@ export default {
   testCode,
   testDistance,
   userRide,
+  checkRideExpiration,
 };

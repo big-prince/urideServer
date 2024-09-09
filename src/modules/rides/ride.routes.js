@@ -66,6 +66,9 @@ router.post("/test_distance", rideController.testDistance);
 //get user ride
 router.get("/user_ride", rideController.getUserRide);
 
+//ride expire checker
+router.get("/ride_cleaner", rideController.rideCleaner);
+
 router.post("/booking_detail");
 router.post("/ride_request_accept");
 router.post("/ride_request_decline");

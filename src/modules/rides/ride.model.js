@@ -114,7 +114,6 @@ rideSchema.index({ "destination.location": "2dsphere" });
 // add plugin that converts mongoose to json
 rideSchema.plugin(toJSON);
 rideSchema.plugin(paginate);
-
 /**
  * @typedef Rides
  */
