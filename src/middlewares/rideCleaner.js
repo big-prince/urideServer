@@ -12,14 +12,19 @@ cron.schedule("* * * * *", async () => {
   try {
     const now = new Date();
     // Find expired rides (rides with past departure time)
-    const expiredRides = await Rides.find().where("departure_time").lt(now);
+    const expiredRides = await Rides.find()
+      .where("departure_time")
+      .lt(now)
+      .where("ride_status")
+      .equals("Not_Started");
 
     console.log(`Found ${expiredRides.length} expired rides.`);
 
     if (expiredRides.length > 0) {
       for (let ride of expiredRides) {
         console.log(`Deleting ride with ID: ${ride._id}`);
-        // Delete the ride
+        // check the ride status
+
         // clear the ride from the riders' rides
         const riders = ride.riders;
         if (riders.length != 0) {
