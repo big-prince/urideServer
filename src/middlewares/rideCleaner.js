@@ -20,52 +20,52 @@ cron.schedule("* * * * *", async () => {
       for (let ride of expiredRides) {
         console.log(`Deleting ride with ID: ${ride._id}`);
         // Delete the ride
-        //clear the ride from the riders' rides
-        // const riders = ride.riders;
-        // if (riders.length != 0) {
-        //   for (const rider of riders) {
-        //     const riderExist = await User.findOne({ _id: rider });
-        //     if (!riderExist) {
-        //       Logger.info("The rider doesnt exist");
-        //       throw new Error("Rider doesnt exist");
-        //     }
+        // clear the ride from the riders' rides
+        const riders = ride.riders;
+        if (riders.length != 0) {
+          for (const rider of riders) {
+            const riderExist = await User.findOne({ _id: rider });
+            if (!riderExist) {
+              Logger.info("The rider doesnt exist");
+              throw new Error("Rider doesnt exist");
+            }
 
-        //     // remove rideId from riderslist
-        //     riderExist.rides = [];
-        //     await riderExist.save().then(() => {
-        //       Logger.info("Ride Removed From User, and user, not in any ride");
-        //     });
-        //   }
-        // }
+            // remove rideId from riderslist
+            riderExist.rides = [];
+            await riderExist.save().then(() => {
+              Logger.info("Ride Removed From User, and user, not in any ride");
+            });
+          }
+        }
 
-        // //clear the riders in the ride
-        // ride.riders = [];
-        // await ride
-        //   .save({
-        //     validateBeforeSave: false,
-        //   })
-        //   .then(() => {
-        //     Logger.info("Riders Cleared");
-        //   });
+        //clear the riders in the ride
+        ride.riders = [];
+        await ride
+          .save({
+            validateBeforeSave: false,
+          })
+          .then(() => {
+            Logger.info("Riders Cleared");
+          });
 
-        // //find the creator and pop it off his array
-        // const creator = await User.findOne({ email: ride.creator });
-        // if (!creator) {
-        //   Logger.info("The creator doesnt exist");
-        //   throw new Error({ message: "Creator doesnt exist" });
-        // }
+        //find the creator and pop it off his array
+        const creator = await User.findOne({ email: ride.creator });
+        if (!creator) {
+          Logger.info("The creator doesnt exist");
+          throw new Error({ message: "Creator doesnt exist" });
+        }
 
-        // //pop this ride out of ride Created
-        // const rideCreated = creator.ridesCreated;
-        // const index = rideCreated.indexOf(ride._id);
-        // if (index > -1) {
-        //   rideCreated.splice(index, 1);
-        //   Logger.info("Ride Removed");
-        // }
-        // //save the creator
-        // await creator.save().then(() => {
-        //   Logger.info("Ride removed from creator");
-        // });
+        //pop this ride out of ride Created
+        const rideCreated = creator.ridesCreated;
+        const index = rideCreated.indexOf(ride._id);
+        if (index > -1) {
+          rideCreated.splice(index, 1);
+          Logger.info("Ride Removed");
+        }
+        //save the creator
+        await creator.save().then(() => {
+          Logger.info("Ride removed from creator");
+        });
 
         //delete the ride
         await Rides.findByIdAndDelete(ride._id).then(() => {
