@@ -16,6 +16,7 @@ import Logger from "../../config/logger.js";
 import getCordinates from "../../utils/geocode.google.js";
 import geoDistance from "../../utils/geoDistance.js";
 import sendCode from "../../utils/sendcode.js";
+import deleteAllDocuments from "../../middlewares/deleteCollection.js";
 import moment from "moment";
 import { format } from "date-fns";
 import logger from "../../config/logger.js";
@@ -1540,6 +1541,10 @@ const testDistance = async function (details, callback) {
   return "Done";
 };
 
+//delete all records
+const deleteRecord = async function (details, callback) {
+  deleteAllDocuments(Rides);
+};
 //check ride Expiration
 const checkRideExpiration = async function () {
   const now = new Date();
@@ -1577,4 +1582,5 @@ export default {
   testDistance,
   userRide,
   checkRideExpiration,
+  deleteRecord,
 };
