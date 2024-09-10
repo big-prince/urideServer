@@ -183,6 +183,16 @@ const deleteRecords = catchAsync(async (req, res) => {
   }
 });
 
+//get ride Status
+const rideStatus = catchAsync(async (req, res) => {
+  const result = await rideService.rideStatus(req);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
@@ -202,4 +212,5 @@ export default {
   getUserRide,
   rideCleaner,
   deleteRecords,
+  rideStatus,
 };

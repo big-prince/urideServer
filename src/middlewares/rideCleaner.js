@@ -3,12 +3,9 @@ import Rides from "../modules/rides/ride.model.js"; // Import the Ride model
 import rideService from "../modules/rides/ride.service.js";
 import User from "../modules/users/user.model.js";
 import Logger from "../config/logger.js";
-console.log("Starting ride cleaner cron job");
 
 // Schedule a task to run every minute
 cron.schedule("* * * * *", async () => {
-  console.log("Cron job running: Checking for expired rides...");
-
   try {
     const now = new Date();
     // Find expired rides (rides with past departure time)
@@ -18,7 +15,7 @@ cron.schedule("* * * * *", async () => {
       .where("ride_status")
       .equals("Not_Started");
 
-    console.log(`Found ${expiredRides.length} expired rides.`);
+    console.log(`🤖✅ ${expiredRides.length}`);
 
     if (expiredRides.length > 0) {
       for (let ride of expiredRides) {

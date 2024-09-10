@@ -1423,6 +1423,16 @@ const endRide = async function (details, callback) {
     Logger.info("Ride removed from driver");
   });
 
+  //delete ride
+  await deleteRide({ id: rideID })
+    .then(() => {
+      Logger.info("Ride Deleted");
+    })
+    .catch((error) => {
+      Logger.info("Error Deleting Ride", error);
+      throw new Error("Error Deleting Ride");
+    });
+
   const message = {
     message: "Ride Ended",
     rideDetails: {
@@ -1444,6 +1454,8 @@ const endRide = async function (details, callback) {
       riders: exist.riders,
     },
   };
+
+  return message;
 };
 
 //manage ride(passenger)
@@ -1558,6 +1570,33 @@ const checkRideExpiration = async function () {
     Logger.info("Ride has not expired");
   }
 };
+
+//Get ride Status
+const rideStatus = async function (req) {
+  const rideId = req.query.rideId;
+
+  //check if ride Exists
+  const exist = await Rides.findOne({ _id: rideId });
+  if (!exist) {
+    Logger.info("Ride doesnt exist");
+    throw new Error("Ride Doesnt Exist..");
+  } else {
+    Logger.info("Ride Exists");
+  }
+
+  //get the status of the ride
+  const status = exist.ride_status;
+  console.log(status);
+  Logger.info(status);
+
+  const message = {
+    ride: exist._id,
+    origin: exist.origin.name,
+    destination: exist.destination.name,
+    status: status,
+  };
+  return message;
+};
 export default {
   getAllOpenRides,
   getAllRides,
@@ -1583,4 +1622,5 @@ export default {
   userRide,
   checkRideExpiration,
   deleteRecord,
+  rideStatus,
 };

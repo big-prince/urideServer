@@ -69,8 +69,11 @@ router.get("/user_ride", rideController.getUserRide);
 //ride expire checker
 router.get("/ride_cleaner", rideController.rideCleaner);
 
-//clrar records
+//clear records
 router.get("/delete_records", rideController.deleteRecords);
+
+//get ride status
+router.get("/ride_status", rideController.rideStatus);
 
 router.post("/booking_detail");
 router.post("/ride_request_accept");
