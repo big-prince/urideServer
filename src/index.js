@@ -1,5 +1,7 @@
 import Mongoose from "mongoose";
 import app from "./app.js";
+import { Server } from "socket.io";
+import setupWebSocket from "./modules/websocket/socket.js";
 import Config from "./config/config.js";
 import Logger from "./config/logger.js";
 
@@ -14,6 +16,12 @@ Mongoose.connect(Config.mongoose.url, Config.mongoose.options).then(() => {
     `);
     Logger.info(`SMPT PORT ${Config.email.smtp.host}`);
   });
+  const io = new Server(server, {
+    cors: {
+      origin: "*",
+    },
+  });
+  setupWebSocket(io);
 });
 
 const exitHandler = () => {
