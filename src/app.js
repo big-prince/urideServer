@@ -137,7 +137,6 @@ app.use((err, req, res, next) => {
 });
 
 // v1 api routes
-// app.use('/v1', routes);
 routes(app);
 
 //swagger config
