@@ -6,13 +6,7 @@ import formatDepartureTime from "../../utils/convert.date.js";
 import Logged from "../../middlewares/logged.js";
 const router = Router();
 
-router.post(
-  "/book_ride",
-  Logged,
-  formatDepartureTime,
-  // validate(validator.createRide),
-  rideController.bookRide
-);
+router.post("/book_ride", rideController.bookRide);
 
 //Post for all rides
 router.post(
