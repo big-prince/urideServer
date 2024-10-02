@@ -295,9 +295,9 @@ const addRide = async function (rideDetails, callback) {
 
   //get cordinates
   const originCordinates = await getCordinates(origin);
-  console.log("🚀 ~ addRide ~ originCordinates:", originCordinates);
+
   const destinationCordinates = await getCordinates(destination);
-  console.log("🚀 ~ addRide ~ destinationCordinates:", destinationCordinates);
+
   //destruxture date function
   function parseDateWithMoment(dateString) {
     // Parse the date string using moment with a specific format
@@ -311,15 +311,15 @@ const addRide = async function (rideDetails, callback) {
     // Return a JavaScript Date object
     return parsedDate.toDate();
   }
-
+  console.log(originCordinates.lat);
   const MainOrigin = {
     type: "Point",
-    coordinates: originCordinates,
+    coordinates: [originCordinates.lat, originCordinates.lng],
   };
   console.log("🚀 ~ addRide ~ MainOrigin:", MainOrigin);
   const MainDestination = {
     type: "Point",
-    coordinates: destinationCordinates,
+    coordinates: [destinationCordinates.lat, destinationCordinates.lng],
   };
   console.log("🚀 ~ addRide ~ MainDestination:", MainDestination);
 
@@ -339,7 +339,7 @@ const addRide = async function (rideDetails, callback) {
         name: stop,
         location: {
           type: "Point",
-          coordinates: coordinates,
+          coordinates: [coordinates.lat, coordinates.lng],
         },
       };
     })

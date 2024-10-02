@@ -1,7 +1,7 @@
 import { Router } from "express";
-import validate from "../../middlewares/validate.js";
+// import validate from "../../middlewares/validate.js";
 import rideController from "./ride.controller.js";
-import validator from "../../validations/rides.validation.js";
+// import validator from "../../validations/rides.validation.js";
 import formatDepartureTime from "../../utils/convert.date.js";
 import Logged from "../../middlewares/logged.js";
 const router = Router();
@@ -9,81 +9,37 @@ const router = Router();
 router.post("/book_ride", rideController.bookRide);
 
 //Post for all rides
-router.post(
-  "/allrides",
-  Logged,
-  validate(validator.searchRides),
-  rideController.allRides
-);
+router.post("/allrides", Logged, rideController.allRides);
 
 //return all driver rides for manage ride
-router.post(
-  "/driver_rides",
-  Logged,
-  validate(validator.driverRides),
-  rideController.driverRides
-);
+router.post("/driver_rides", Logged, rideController.driverRides);
 
 //delete ride
-router.post(
-  "/delete_ride",
-  Logged,
-  validate(validator.deleteRide),
-  rideController.deleteRide
-);
+router.post("/delete_ride", Logged, rideController.deleteRide);
 
 //remove rider from ride
-router.post(
-  "/remove_rider",
-  Logged,
-  validate(validator.removeRider),
-  rideController.removeRider
-);
+router.post("/remove_rider", Logged, rideController.removeRider);
 
 //add rider to ride
-router.post(
-  "/add_rider",
-  validate(validator.addRider),
-  rideController.addRider
-);
+router.post("/add_rider", rideController.addRider);
 
 //request to driver
-router.post(
-  "/request_ride",
-  validate(validator.requestToDriver),
-  rideController.requestToDriver
-);
+router.post("/request_ride", rideController.requestToDriver);
 
 //start ride
-router.post(
-  "/start_ride",
-  validate(validator.startRide),
-  rideController.startRide
-);
+router.post("/start_ride", rideController.startRide);
 
 //get waiting list
-router.get(
-  "/waiting_list",
-  validate(validator.getWaitingList),
-  rideController.waitingList
-);
+router.get("/waiting_list", rideController.waitingList);
 
 //delete user from waiting list
-router.post(
-  "/delete_waiting",
-  validate(validator.deleteWaitingList),
-  rideController.deleteWaitingList
-);
+router.post("/delete_waiting", rideController.deleteWaitingList);
 
 //verify security code
-router.post(
-  "/verify_code",
-  validate(validator.verifySecurityCode),
-  rideController.verifySecurityCode
-);
+router.post("/verify_code", rideController.verifySecurityCode);
 
 //end ride
-router.post("/end_ride", validate(validator.endRide), rideController.endRide);
+router.post("/end_ride", rideController.endRide);
 
 //test code
 router.post("/test", rideController.test);
@@ -92,11 +48,7 @@ router.post("/test", rideController.test);
 router.post("/test_distance", rideController.testDistance);
 
 //get user ride
-router.get(
-  "/user_ride",
-  validate(validator.userRide),
-  rideController.getUserRide
-);
+router.get("/user_ride", rideController.getUserRide);
 
 //ride expire checker
 router.get("/ride_cleaner", rideController.rideCleaner);
