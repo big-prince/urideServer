@@ -10,7 +10,7 @@ router.post(
   "/book_ride",
   Logged,
   formatDepartureTime,
-  validate(validator.createRide),
+  // validate(validator.createRide),
   rideController.bookRide
 );
 
