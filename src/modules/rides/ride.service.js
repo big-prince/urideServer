@@ -257,11 +257,14 @@ const addRide = async function (rideDetails, callback) {
     });
   }
   Logger.info(creatorRole);
+  console.log("Got to this point");
 
   //get cordinates
   const originCordinates = await getCordinates(origin);
+  console.log("🚀 ~ addRide ~ originCordinates:", originCordinates);
 
   const destinationCordinates = await getCordinates(destination);
+  console.log("🚀 ~ addRide ~ destinationCordinates:", destinationCordinates);
 
   //destruxture date function
   function parseDateWithMoment(dateString) {
