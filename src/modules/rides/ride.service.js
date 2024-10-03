@@ -206,41 +206,6 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
   } catch (error) {
     return callback(error);
   }
-  // Rides.find({
-  //   origin: { $geoWithin: { $centerSphere: [areaOneOrigin, distInRadians] } },
-  //   destination: {
-  //     $geoWithin: { $centerSphere: [wuseDestination, distInRadians] },
-  //   },
-  // })
-  //   .where("remaining_capacity")
-  //   .gte(1)
-  //   .where("departure_time")
-  //   .gte(now)((err, rides) => {
-  //   //processing query results here
-  //   if (err) {
-  //     callback(err);
-  //   } else {
-  //     callback(null, rides);
-  //   }
-  // });
-
-  // Rides
-  //     .find({})
-  //     .where("longitude")
-  //     .equals(longitude)
-  //     .where("latitude")
-  //     .equals(latitude)
-  //     .where("remaining_capacity")
-  //     .gte(1)
-  //     .where("departure_time")
-  //     .gte(now)
-  //     .exec(function (err, rides) {
-  //         if (err) {
-  //             callback(err);
-  //         } else {
-  //             callback(null, rides);
-  //         }
-  //     });
 };
 
 // Returns a ride given the id
@@ -308,7 +273,6 @@ const addRide = async function (rideDetails, callback) {
       console.log("Invalid date format");
     }
 
-    // Return a JavaScript Date object
     return parsedDate.toDate();
   }
   console.log(originCordinates.lat);
@@ -316,12 +280,10 @@ const addRide = async function (rideDetails, callback) {
     type: "Point",
     coordinates: [originCordinates.lat, originCordinates.lng],
   };
-  console.log("🚀 ~ addRide ~ MainOrigin:", MainOrigin);
   const MainDestination = {
     type: "Point",
     coordinates: [destinationCordinates.lat, destinationCordinates.lng],
   };
-  console.log("🚀 ~ addRide ~ MainDestination:", MainDestination);
 
   const finalOrigin = {
     name: origin,
@@ -331,6 +293,8 @@ const addRide = async function (rideDetails, callback) {
     name: destination,
     location: MainDestination,
   };
+
+  console.log(finalOrigin, finalDestination);
 
   const formattedStops = await Promise.all(
     stops.map(async (stop) => {
@@ -370,6 +334,7 @@ const addRide = async function (rideDetails, callback) {
     carColor: carColor,
     carNumber: carNumber,
   };
+  console.log(options);
 
   try {
     //only save if ride is "One-Time"
