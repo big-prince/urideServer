@@ -88,11 +88,11 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
   const originCordinates = await getCordinates(origin);
   const destinationCordinates = await getCordinates(destination);
 
-  const MainOrigin = {
+  const mainOrigin = {
     type: "Point",
     coordinates: [originCordinates.lat, originCordinates.lng],
   };
-  const MainDestination = {
+  const mainDestination = {
     type: "Point",
     coordinates: [destinationCordinates.lat, destinationCordinates.lng],
   };

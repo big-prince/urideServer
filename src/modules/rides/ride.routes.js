@@ -9,16 +9,16 @@ const router = Router();
 router.post("/book_ride", rideController.bookRide);
 
 //Post for all rides
-router.post("/allrides", Logged, rideController.allRides);
+router.post("/allrides", rideController.allRides);
 
 //return all driver rides for manage ride
-router.post("/driver_rides", Logged, rideController.driverRides);
+router.post("/driver_rides", rideController.driverRides);
 
 //delete ride
-router.post("/delete_ride", Logged, rideController.deleteRide);
+router.post("/delete_ride", rideController.deleteRide);
 
 //remove rider from ride
-router.post("/remove_rider", Logged, rideController.removeRider);
+router.post("/remove_rider", rideController.removeRider);
 
 //add rider to ride
 router.post("/add_rider", rideController.addRider);
