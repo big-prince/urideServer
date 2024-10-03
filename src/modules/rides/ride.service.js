@@ -88,13 +88,13 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
   const originCordinates = await getCordinates(origin);
   const destinationCordinates = await getCordinates(destination);
 
-  const mainOrigin = {
+  const MainOrigin = {
     type: "Point",
-    coordinates: originCordinates,
+    coordinates: [originCordinates.lat, originCordinates.lng],
   };
-  const mainDestination = {
+  const MainDestination = {
     type: "Point",
-    coordinates: destinationCordinates,
+    coordinates: [destinationCordinates.lat, destinationCordinates.lng],
   };
 
   const finalOrigin = {
@@ -315,8 +315,8 @@ const addRide = async function (rideDetails, callback) {
   const departureTime = parseDateWithMoment(departure_time);
   console.log(departureTime);
 
-  Logger.info(`${origin.name}: ` + JSON.stringify(MainOrigin));
-  Logger.info(`${destination.name}: ` + JSON.stringify(MainDestination));
+  Logger.info(`${origin}: ` + JSON.stringify(MainOrigin));
+  Logger.info(`${destination}: ` + JSON.stringify(MainDestination));
   Logger.info(`Stops: ` + JSON.stringify(formattedStops));
 
   const options = {
