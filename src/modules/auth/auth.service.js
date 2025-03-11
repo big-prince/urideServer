@@ -1,9 +1,9 @@
-import httpStatus from 'http-status';
-import Tokenizer from './token.service.js';
-import userService from '../users/user.service.js';
-import tokenModel from './token.model.js';
-import ApiError from '../../utils/ApiError.js';
-import tokenTypes from '../../config/tokens.js';
+import httpStatus from "http-status";
+import Tokenizer from "./token.service.js";
+import userService from "../users/user.service.js";
+import tokenModel from "./token.model.js";
+import ApiError from "../../utils/ApiError.js";
+import tokenTypes from "../../config/tokens.js";
 import User from "../users/user.model.js";
 import otpGenerator from "otp-generator";
 import res from "passport/lib/errors/authenticationerror.js";
@@ -18,7 +18,7 @@ import OTP from "./otp.model.js";
 const loginUserWithEmailAndPassword = async (email, password) => {
   const user = await userService.getUserByEmail(email);
   if (!user || !(await user.isPasswordMatch(password))) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect email or password");
   }
   return user;
 };
@@ -29,9 +29,13 @@ const loginUserWithEmailAndPassword = async (email, password) => {
  * @returns {Promise}
  */
 const logout = async (refreshToken) => {
-  const refreshTokenDoc = await tokenModel.findOne({ token: refreshToken, type: tokenTypes.REFRESH, blacklisted: false });
+  const refreshTokenDoc = await tokenModel.findOne({
+    token: refreshToken,
+    type: tokenTypes.REFRESH,
+    blacklisted: false,
+  });
   if (!refreshTokenDoc) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
+    throw new ApiError(httpStatus.NOT_FOUND, "Not found");
   }
   await refreshTokenDoc.remove();
 };
@@ -43,7 +47,10 @@ const logout = async (refreshToken) => {
  */
 const refreshAuth = async (refreshToken) => {
   try {
-    const refreshTokenDoc = await Tokenizer.verifyToken(refreshToken, tokenTypes.REFRESH);
+    const refreshTokenDoc = await Tokenizer.verifyToken(
+      refreshToken,
+      tokenTypes.REFRESH
+    );
     const user = await userService.getUserById(refreshTokenDoc.user);
     if (!user) {
       throw new Error();
@@ -51,7 +58,7 @@ const refreshAuth = async (refreshToken) => {
     await refreshTokenDoc.remove();
     return Tokenizer.generateAuthTokens(user);
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Please authenticate");
   }
 };
 
@@ -63,24 +70,28 @@ const refreshAuth = async (refreshToken) => {
  */
 const resetPassword = async (resetPasswordToken, newPassword) => {
   try {
-    const resetPasswordTokenDoc = await Tokenizer.verifyToken(resetPasswordToken, tokenTypes.RESET_PASSWORD);
+    const resetPasswordTokenDoc = await Tokenizer.verifyToken(
+      resetPasswordToken,
+      tokenTypes.RESET_PASSWORD
+    );
     const user = await userService.getUserById(resetPasswordTokenDoc.user);
     if (!user) {
       throw new Error();
     }
-    await userService.deleteMany({ user: user.id, type: tokenTypes.RESET_PASSWORD });
+    await userService.deleteMany({
+      user: user.id,
+      type: tokenTypes.RESET_PASSWORD,
+    });
     await userService.updateUserById(user.id, { password: newPassword });
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Password reset failed');
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Password reset failed");
   }
 };
 
 const sendOTP = async (email) => {
-
   // Send OTP For Email Verification
   // exports.sendotp = async (req, res) => {
   try {
-
     // // Check if user is already present
     // // Find user with provided email
     // const checkUserPresent = await User.findOne({ email });
@@ -123,17 +134,33 @@ const sendOTP = async (email) => {
     };
   } catch (error) {
     console.log(error.message);
-    return res.status(httpStatus.EXPECTATION_FAILED).send({ success: false, error: error.message });
+    return res
+      .status(httpStatus.EXPECTATION_FAILED)
+      .send({ success: false, error: error.message });
   }
-}
+};
 
 const verifyOTP = async (otp) => {
   let result = await OTP.findOne({ otp: otp });
-  if (!result){
-    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid Code")
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid Code");
   }
-  return result;
-}
+  //find user details using the email from otp done
+  const userEmail = result.email;
+  const user = await User.findOne({ email: userEmail });
+  const userToken = await tokenModel.findOne({ user: user._id });
+  const sendData = {
+    email: userEmail,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+    Bearer_token: userToken.token,
+    token_type: userToken.type,
+    emailVerified: true,
+  };
+
+  return { result, sendData };
+};
 
 export default {
   loginUserWithEmailAndPassword,
@@ -141,5 +168,5 @@ export default {
   refreshAuth,
   resetPassword,
   sendOTP,
-  verifyOTP
+  verifyOTP,
 };
