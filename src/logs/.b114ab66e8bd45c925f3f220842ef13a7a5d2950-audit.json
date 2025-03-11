@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 2
+    },
+    "auditLog": "/home/ubuntu/_uRide_Backend/src/logs/.b114ab66e8bd45c925f3f220842ef13a7a5d2950-audit.json",
+    "files": [
+        {
+            "date": 1727427332529,
+            "name": "/home/ubuntu/_uRide_Backend/src/logs/2024-09-27.log",
+            "hash": "7b26b86d577084122c4d4b085725c32f9abb08ec0d1cc0d92d0d4f33ae5cbbe1"
+        }
+    ],
+    "hashType": "sha256"
+}

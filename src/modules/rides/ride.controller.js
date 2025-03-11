@@ -39,8 +39,178 @@ const allRides = catchAsync(async (req, res) => {
   }
 });
 
+const driverRides = catchAsync(async (req, res) => {
+  const result = await rideService.driverRides(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+const deleteRide = catchAsync(async (req, res) => {
+  const result = await rideService.deleteRide(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+const removeRider = catchAsync(async (req, res) => {
+  const result = await rideService.removeRider(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+const addRider = catchAsync(async (req, res) => {
+  const result = await rideService.addRider(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+const requestToDriver = catchAsync(async (req, res) => {
+  const details = req.body;
+  const result = await rideService.requestToDriver(details);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+const startRide = catchAsync(async (req, res) => {
+  const result = await rideService.startRide(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+const waitingList = catchAsync(async (req, res) => {
+  const result = await rideService.getWaitingList(req);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//delete user from waiting list
+const deleteWaitingList = catchAsync(async (req, res) => {
+  const result = await rideService.deleteWaitingList(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//veridy security code
+const verifySecurityCode = catchAsync(async (req, res) => {
+  const result = await rideService.verifySecurityCode(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//end ride
+const endRide = catchAsync(async (req, res) => {
+  const result = await rideService.endRide(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//test code
+const test = catchAsync(async (req, res) => {
+  const result = await rideService.testCode(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//test Distance
+const testDistance = catchAsync(async (req, res) => {
+  const result = await rideService.testDistance(req.body);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//get users Ride
+const getUserRide = catchAsync(async (req, res) => {
+  const result = await rideService.userRide(req);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//ride expire checker
+const rideCleaner = catchAsync(async (req, res) => {
+  const result = await rideService.checkRideExpiration();
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//delete records
+const deleteRecords = catchAsync(async (req, res) => {
+  const result = await rideService.deleteRecord();
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
+//get ride Status
+const rideStatus = catchAsync(async (req, res) => {
+  const result = await rideService.rideStatus(req);
+  if (result === null) {
+    Response.sendErrResponse(res, httpStatus.NOT_FOUND, result);
+  } else {
+    Response.sendSuccessResponse(res, httpStatus.OK, result);
+  }
+});
+
 export default {
   bookRide,
   allRides,
   openRides,
+  driverRides,
+  deleteRide,
+  removeRider,
+  addRider,
+  requestToDriver,
+  startRide,
+  waitingList,
+  deleteWaitingList,
+  verifySecurityCode,
+  endRide,
+  test,
+  testDistance,
+  getUserRide,
+  rideCleaner,
+  deleteRecords,
+  rideStatus,
 };

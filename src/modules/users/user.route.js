@@ -2,11 +2,11 @@ import { Router } from "express";
 import auth from "../../middlewares/auth.js";
 import validate from "../../middlewares/validate.js";
 import {
-	createUser,
-	getUsers,
-	getUser,
-	updateUser,
-	deleteUser,
+  createUser,
+  getUsers,
+  getUser,
+  updateUser,
+  deleteUser,
 } from "../../validations/user.validation.js";
 import userController from "./user.controller.js";
 
@@ -61,7 +61,7 @@ router.get("/:userId", validate(getUser), userController.getUser);
 
 /**
  * PATCH /api/v1/users/update-user/:userId
- * @summary This updates a user using the user id 
+ * @summary This updates a user using the user id
  * @tags Users
  * @param {User Request Object} request.body.required - song info
  * @return {User} 200 - User response
@@ -77,15 +77,19 @@ router.patch("/:userId", validate(updateUser), userController.updateUser);
  * @param userId
  * @return {object} 400 - Bad request response
  */
-router.delete("/:userId", validate(deleteUser), userController.deleteUser);
+router.delete("/delete/:email", userController.deleteUser);
 
 /**
  * PATCH /api/v1/users//update-driver-profile/:userId
- * @summary This updates a user using the user id 
+ * @summary This updates a user using the user id
  * @tags Users
  * @param {User Request Object} request.body.required - song info
  * @return {User} 200 - User response
  */
-router.patch("/update-driver-profile/:userId", validate(updateUser), userController.updateToDriverProfile);
+router.patch(
+  "/update-driver-profile/:userId",
+  validate(updateUser),
+  userController.updateToDriverProfile
+);
 
 export default router;
