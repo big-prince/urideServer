@@ -163,6 +163,8 @@ const sendOTP = async (email) => {
   // Send OTP to user email
   await sendOTPEmail(email, otp);
 
+  console.log(otp, otpPayload, "OTP sent successfully");
+
   return {
     success: true,
     message: "OTP sent successfully",
