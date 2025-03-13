@@ -108,6 +108,7 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
  * @returns {Promise<Object>} - Object with success status and message
  */
 const sendOTP = async (email) => {
+  console.log(email);
   if (!email || typeof email !== "string") {
     throw new ApiError(httpStatus.BAD_REQUEST, "Valid email is required");
   }

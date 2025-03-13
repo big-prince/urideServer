@@ -34,26 +34,21 @@ const forgotPassword = catchAsync(async (req, res) => {
     req.body.email
   );
   await sendForgotPasswordEmail(req.body.email, resetPasswordToken);
-  res
-    .status(httpStatus.NO_CONTENT)
-    .send({
-      status: httpStatus.NO_CONTENT,
-      message: "Password reset email has been sent.",
-    });
+  res.status(httpStatus.NO_CONTENT).send({
+    status: httpStatus.NO_CONTENT,
+    message: "Password reset email has been sent.",
+  });
 });
 
 const resetPassword = catchAsync(async (req, res) => {
   await authService.resetPassword(req.query.token, req.body.password);
-  res
-    .status(httpStatus.NO_CONTENT)
-    .json({
-      status: httpStatus.NOT_FOUND,
-      message: "Password reset successfully",
-    });
+  res.status(httpStatus.NO_CONTENT).json({
+    status: httpStatus.NOT_FOUND,
+    message: "Password reset successfully",
+  });
 });
 
 const sendEmailOTP = catchAsync(async (req, res) => {
-  console.log("sendEmailOTP");
   let result = await authService.sendOTP(req.body.email);
   res.status(httpStatus.OK).json(result);
 });
