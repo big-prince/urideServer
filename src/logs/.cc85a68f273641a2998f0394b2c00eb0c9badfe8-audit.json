@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 2
+    },
+    "auditLog": "C:\\Users\\micha\\OneDrive\\Documents\\Code\\URide\\Backend\\src\\logs\\.cc85a68f273641a2998f0394b2c00eb0c9badfe8-audit.json",
+    "files": [
+        {
+            "date": 1741814613293,
+            "name": "C:\\Users\\micha\\OneDrive\\Documents\\Code\\URide\\Backend\\src\\logs\\2025-03-12.log",
+            "hash": "109a30b38f7d3873038a4e43458891eadabaa90154586980ed6d0170349919ce"
+        }
+    ],
+    "hashType": "sha256"
+}

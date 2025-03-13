@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Mongoose from "mongoose";
 import Validator from "validator";
 import Bcrypt from "bcryptjs";
@@ -130,7 +131,21 @@ userSchema.pre("save", async function (next) {
 });
 
 /**
- * @typedef User
+ * @typedef {Object} User
+ * @property {string} firstName
+ * @property {string} lastName
+ * @property {string} email
+ * @property {string} password
+ * @property {string} role
+ * @property {Array<ObjectId>} rides
+ * @property {Array<ObjectId>} ridesCreated
+ * @property {string} carName
+ * @property {string} carColor
+ * @property {string} carNumber
+ * @property {string} luggageType
+ * @property {number} backRowSeatNumber
+ * @property {boolean} isEmailVerified
+ * @property {boolean} isPhoneVeirified
  */
 const User = Mongoose.model("User", userSchema);
 

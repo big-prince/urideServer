@@ -5,6 +5,8 @@ import { sendWelcomeEmail } from "../com/emails/email.service.js";
 import logger from "../../config/logger.js";
 import Wallet from "../wallet/wallet.model.js";
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 /**
  * Create a user
  * @param {Object} userBody
@@ -32,6 +34,47 @@ const createUser = async (userBody) => {
     // }
   }
   // return user;
+};
+
+/**
+ * Handle Google Sign-In
+ * @param {string} idToken - Google ID Token from frontend
+ * @returns {Promise<{user: object, token: string}>}
+ */
+const googleSignIn = async (idToken) => {
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid Google token");
+
+    const { email, given_name, family_name, sub } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        firstName: given_name,
+        lastName: family_name,
+        email,
+        password: sub, // Use Google ID as a placeholder password
+        isEmailVerified: true, // Since Google verifies email
+      });
+
+      await Wallet.create({ userId: user._id, balance: 0.0 });
+    }
+
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    return { user, token };
+  } catch (error) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Google authentication failed");
+  }
 };
 
 /**
@@ -107,6 +150,7 @@ const updateToDriverProfile = async (userId, driverDetails) => {
 
 export default {
   createUser,
+  googleSignIn,
   queryUsers,
   getUserById,
   getUserByEmail,
