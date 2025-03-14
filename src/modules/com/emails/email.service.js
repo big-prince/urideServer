@@ -9,17 +9,37 @@ import ApiError from "../../../utils/ApiError.js";
 
 let config = {
   host: "smtp.gmail.com",
-  port: 587, // TLS port
-  secure: false,
+  port: 587,
+  secure: false, // TLS
   auth: {
     user: process.env.SMTP_USERNAME,
     pass: process.env.SMTP_PASSWORD,
   },
-  connectionTimeout: 10000, // 10 seconds
+  connectionTimeout: 10000,
   greetingTimeout: 10000,
   socketTimeout: 10000,
+  logger: true, // Enable debug logs
+  debug: true, // Show SMTP traffic
 };
 let transporter = nodemailer.createTransport(config);
+
+async function fireEmail(message) {
+  console.log("Starting fireEmail with message:", message);
+  console.log("Transporter config:", {
+    host: "smtp.gmail.com",
+    port: 587,
+    auth: { user: process.env.SMTP_USERNAME, pass: "[REDACTED]" },
+  });
+  try {
+    console.log("Attempting to send email...");
+    const info = await transporter.sendMail(message);
+    console.log("Email sent successfully:", info);
+    return info;
+  } catch (error) {
+    console.error("Failed to send email:", error);
+    throw error;
+  }
+}
 
 //send welcome email
 export const sendWelcomeEmail = async (receiverEmail, receiverName) => {
@@ -134,15 +154,3 @@ export const sendSecurityCodeEmail = async (
     throw new Error(err);
   }
 };
-
-async function fireEmail(message) {
-  console.log("Attempting to send email with nodemailer...");
-  try {
-    const info = await transporter.sendMail(message);
-    console.log("Email sent successfully:", info);
-    return info;
-  } catch (error) {
-    console.error("Error sending email:", error);
-    throw new Error(error);
-  }
-}
