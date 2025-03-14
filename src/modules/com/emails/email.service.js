@@ -9,8 +9,8 @@ import ApiError from "../../../utils/ApiError.js";
 
 let config = {
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // TLS
+  port: 465,
+  secure: true, // TLS
   auth: {
     user: process.env.SMTP_USERNAME,
     pass: process.env.SMTP_PASSWORD,
