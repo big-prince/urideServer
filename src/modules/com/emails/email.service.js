@@ -132,8 +132,10 @@ export const sendSecurityCodeEmail = async (
 };
 
 async function fireEmail(message) {
+  console.log("Attempting to send email with nodemailer...");
   try {
     const info = await transporter.sendMail(message);
+    console.log("Email sent successfully:", info);
     return info;
   } catch (error) {
     console.error("Error sending email:", error);
