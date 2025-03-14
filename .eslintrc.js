@@ -22,6 +22,8 @@ module.exports = {
     ecmaVersion: 'latest'
   },
   rules: {
+    "no-undef": "error",
+    "no-unused-vars": "warn",
     "no-restricted-imports": ["error", "underscore"],
     "no-restricted-modules": ["error", "underscore"],
     "promise/catch-or-return": "error",

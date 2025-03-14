@@ -4,6 +4,7 @@ import ApiError from "../../utils/ApiError.js";
 import { sendWelcomeEmail } from "../com/emails/email.service.js";
 import logger from "../../config/logger.js";
 import Wallet from "../wallet/wallet.model.js";
+import { OAuth2Client } from "google-auth-library";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
