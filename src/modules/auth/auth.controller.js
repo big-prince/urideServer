@@ -11,6 +11,16 @@ const register = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send({ user, tokens });
 });
 
+const googleSignIn = catchAsync(async (req, res) => {
+  const { idToken } = req.body;
+  if (!idToken) {
+    return res.status(400).json({ message: "Google ID Token is required" });
+  }
+  const { user } = await userService.googleSignIn(idToken);
+  const tokens = await tokenService.generateAuthTokens(user);
+  res.status(httpStatus.CREATED).send({ user, tokens });
+});
+
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await authService.loginUserWithEmailAndPassword(email, password);
@@ -62,6 +72,7 @@ export default {
   register,
   login,
   logout,
+  googleSignIn,
   refreshTokens,
   forgotPassword,
   resetPassword,
