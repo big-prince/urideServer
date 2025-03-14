@@ -108,21 +108,25 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
  * @returns {Promise<Object>} - Object with success status and message
  */
 const sendOTP = async (email) => {
-  console.log(email);
+  console.log(`Starting sendOTP with email: ${email}`);
+
   if (!email || typeof email !== "string") {
+    console.log("Invalid email provided");
     throw new ApiError(httpStatus.BAD_REQUEST, "Valid email is required");
   }
 
-  // Check if user exists with the provided email
+  console.log("Checking user by email...");
   const user = await userService.getUserByEmail(email);
   if (!user) {
+    console.log("User not found");
     throw new ApiError(
       httpStatus.NOT_FOUND,
       "User not registered with this email"
     );
   }
+  console.log("User found:", user._id);
 
-  // Generate a unique 6-digit OTP
+  console.log("Generating OTP...");
   let otp = "";
   let isUnique = false;
   const maxAttempts = 5;
@@ -133,37 +137,43 @@ const sendOTP = async (email) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
-
-    // Check if OTP already exists
+    console.log(`Generated OTP: ${otp}, checking uniqueness...`);
     const existingOTP = await OTP.findOne({ otp });
     if (!existingOTP) {
+      console.log("OTP is unique");
       isUnique = true;
+    } else {
+      console.log("OTP already exists, retrying...");
     }
   }
 
   if (!isUnique) {
+    console.log("Failed to generate unique OTP after max attempts");
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
       "Failed to generate unique OTP"
     );
   }
 
-  // Delete any existing OTPs for this email
-  await OTP.deleteMany({ email });
+  console.log("Deleting existing OTPs for email...");
+  await OTP.deleteMany({ email }).then((result) =>
+    console.log("Deleted OTPs:", result.deletedCount)
+  );
 
-  // Create OTP with expiration (15 minutes)
+  console.log("Creating new OTP...");
   const otpPayload = {
     email,
     otp,
     expiresAt: new Date(Date.now() + 15 * 60 * 1000),
   };
-
   await OTP.create(otpPayload);
+  console.log("OTP created successfully");
 
-  // Send OTP to user email
+  console.log("Sending OTP email...");
   await sendOTPEmail(email, otp);
+  console.log("OTP email sent successfully");
 
-  console.log(otp, otpPayload, "OTP sent successfully");
+  console.log(otp, otpPayload, "OTP process completed");
 
   return {
     success: true,
