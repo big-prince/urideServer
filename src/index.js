@@ -7,6 +7,7 @@ import Logger from "./config/logger.js";
 
 let server;
 Mongoose.connect(Config.mongoose.url, Config.mongoose.options).then(() => {
+  console.log(Config.mongoose.url);
   Logger.info("Connected to MongoDB");
   server = app.listen(Config.port, () => {
     Logger.info(`uRide Server running on port: ${Config.port}
