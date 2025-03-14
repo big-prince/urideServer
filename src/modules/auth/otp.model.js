@@ -17,16 +17,6 @@ const OTPSchema = new Mongoose.Schema({
   },
 });
 
-OTPSchema.pre("save", async function (next) {
-  console.log("New OTP saved to database");
-
-  // Only send an email when a new document is created
-  if (this.isNew) {
-    await sendOTPEmail(this.email, this.otp);
-  }
-  next();
-});
-
 /**
  * @typedef Token
  */

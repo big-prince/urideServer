@@ -1,0 +1,7 @@
+[
+  {
+    "id": "redeploy",
+    "execute-command": "redeploy.sh",
+    "command-working-directory": "/home/princedeploy/_uRide_Backend"
+  }
+]

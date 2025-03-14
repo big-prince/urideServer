@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 2
+    },
+    "auditLog": "/home/princedeploy/_uRide_Backend/src/logs/.3cd012f105e56e748dd7898af69ca23ed1a8e1db-audit.json",
+    "files": [
+        {
+            "date": 1741854334951,
+            "name": "/home/princedeploy/_uRide_Backend/src/logs/2025-03-13.log",
+            "hash": "603ebb703649a990ca3e5ebf7c41561ddfe50e3cde45a8876e0616451ec205c9"
+        }
+    ],
+    "hashType": "sha256"
+}

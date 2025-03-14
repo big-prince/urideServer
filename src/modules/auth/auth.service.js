@@ -6,8 +6,8 @@ import ApiError from "../../utils/ApiError.js";
 import tokenTypes from "../../config/tokens.js";
 import User from "../users/user.model.js";
 import otpGenerator from "otp-generator";
-import res from "passport/lib/errors/authenticationerror.js";
 import OTP from "./otp.model.js";
+import { sendOTPEmail } from "../com/emails/email.service.js";
 
 /**
  * Login with username and password
@@ -20,7 +20,6 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   if (!user || !(await user.isPasswordMatch(password))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect email or password");
   }
-  console.log(user);
   return user;
 };
 
@@ -35,9 +34,11 @@ const logout = async (refreshToken) => {
     type: tokenTypes.REFRESH,
     blacklisted: false,
   });
+
   if (!refreshTokenDoc) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Not found");
+    throw new ApiError(httpStatus.NOT_FOUND, "Refresh token not found");
   }
+
   await refreshTokenDoc.remove();
 };
 
@@ -52,14 +53,19 @@ const refreshAuth = async (refreshToken) => {
       refreshToken,
       tokenTypes.REFRESH
     );
+
     const user = await userService.getUserById(refreshTokenDoc.user);
     if (!user) {
-      throw new Error();
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
+
     await refreshTokenDoc.remove();
     return Tokenizer.generateAuthTokens(user);
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Please authenticate");
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      error instanceof ApiError ? error.message : "Please authenticate"
+    );
   }
 };
 
@@ -75,93 +81,140 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
       resetPasswordToken,
       tokenTypes.RESET_PASSWORD
     );
+
     const user = await userService.getUserById(resetPasswordTokenDoc.user);
     if (!user) {
-      throw new Error();
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found");
     }
-    await userService.deleteMany({
+
+    await tokenModel.deleteMany({
       user: user.id,
       type: tokenTypes.RESET_PASSWORD,
     });
+
     await userService.updateUserById(user.id, { password: newPassword });
+    return { success: true, message: "Password reset successfully" };
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "Password reset failed");
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      error instanceof ApiError ? error.message : "Password reset failed"
+    );
   }
 };
 
+/**
+ * Generate and send OTP to user email
+ * @param {string} email - User's email address
+ * @returns {Promise<Object>} - Object with success status and message
+ */
 const sendOTP = async (email) => {
-  // Send OTP For Email Verification
-  // exports.sendotp = async (req, res) => {
-  try {
-    // // Check if user is already present
-    // // Find user with provided email
-    // const checkUserPresent = await User.findOne({ email });
-    // // to be used in case of signup
-    //
-    // // If user found with provided email
-    // if (!checkUserPresent) {
-    //   // Return 401 Unauthorized status code with error message
-    //   return res.status(401).json({
-    //     success: false,
-    //     message: `User is not Registered`,
-    //   });
-    // }
-    //
-    // if (checkUserPresent.isEmailVerified) {
-    //
-    // }
-    ////
-    let otp = otpGenerator.generate(6, {
+  console.log(email);
+  if (!email || typeof email !== "string") {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Valid email is required");
+  }
+
+  // Check if user exists with the provided email
+  const user = await userService.getUserByEmail(email);
+  if (!user) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "User not registered with this email"
+    );
+  }
+
+  // Generate a unique 6-digit OTP
+  let otp = "";
+  let isUnique = false;
+  const maxAttempts = 5;
+
+  for (let attempts = 0; attempts < maxAttempts && !isUnique; attempts++) {
+    otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
     });
 
-    let result = await OTP.findOne({ otp: otp });
-    console.log("Result is Generate OTP Func");
-    console.log("OTP", otp);
-    console.log("Result", result);
-    while (result) {
-      otp = otpGenerator.generate(6, {
-        upperCaseAlphabets: false,
-      });
+    // Check if OTP already exists
+    const existingOTP = await OTP.findOne({ otp });
+    if (!existingOTP) {
+      isUnique = true;
     }
-    const otpPayload = { email, otp };
-    const otpBody = await OTP.create(otpPayload);
-    console.log("OTP Body", otpBody);
-    return {
-      success: true,
-      message: `OTP Sent Successfully`,
-    };
-  } catch (error) {
-    console.log(error.message);
-    return res
-      .status(httpStatus.EXPECTATION_FAILED)
-      .send({ success: false, error: error.message });
   }
-};
 
-const verifyOTP = async (otp) => {
-  let result = await OTP.findOne({ otp: otp });
-  if (!result) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid Code");
+  if (!isUnique) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Failed to generate unique OTP"
+    );
   }
-  //find user details using the email from otp done
-  const userEmail = result.email;
-  const user = await User.findOne({ email: userEmail });
-  const userToken = await tokenModel.findOne({ user: user._id });
-  const sendData = {
-    email: userEmail,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    id: user._id,
-    role: user.role,
-    Bearer_token: userToken.token,
-    token_type: userToken.type,
-    emailVerified: true,
+
+  // Delete any existing OTPs for this email
+  await OTP.deleteMany({ email });
+
+  // Create OTP with expiration (15 minutes)
+  const otpPayload = {
+    email,
+    otp,
+    expiresAt: new Date(Date.now() + 15 * 60 * 1000),
   };
 
-  return { result, sendData };
+  await OTP.create(otpPayload);
+
+  // Send OTP to user email
+  await sendOTPEmail(email, otp);
+
+  console.log(otp, otpPayload, "OTP sent successfully");
+
+  return {
+    success: true,
+    message: "OTP sent successfully",
+  };
+};
+
+/**
+ * Verify OTP and return user data
+ * @param {string} otp - OTP code to verify
+ * @returns {Promise<Object>} - User data with auth token
+ */
+const verifyOTP = async (otp) => {
+  const result = await OTP.findOne({
+    otp,
+    expiresAt: { $gt: new Date() },
+  });
+
+  if (!result) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid or expired code");
+  }
+
+  const userEmail = result.email;
+  const user = await User.findOne({ email: userEmail });
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  const userToken = await tokenModel.findOne({ user: user._id });
+
+  if (!userToken) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User token not found");
+  }
+
+  // Clean up the OTP after successful verification
+  await OTP.deleteOne({ _id: result._id });
+
+  return {
+    result,
+    sendData: {
+      email: userEmail,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      id: user._id,
+      role: user.role,
+      Bearer_token: userToken.token,
+      token_type: userToken.type,
+      emailVerified: true,
+    },
+  };
 };
 
 export default {
