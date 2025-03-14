@@ -8,13 +8,17 @@ import httpStatus from "http-status";
 import ApiError from "../../../utils/ApiError.js";
 
 let config = {
-  service: "gmail", // your email domain
+  host: "smtp.gmail.com",
+  port: 587, // TLS port
+  secure: false,
   auth: {
-    user: process.env.SMTP_USERNAME, // your email address
-    pass: process.env.SMTP_PASSWORD, // your password
+    user: process.env.SMTP_USERNAME,
+    pass: process.env.SMTP_PASSWORD,
   },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 };
-
 let transporter = nodemailer.createTransport(config);
 
 //send welcome email
