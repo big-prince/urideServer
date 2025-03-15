@@ -189,8 +189,8 @@ const sendOTP = async (email) => {
 const verifyOTP = async (otp) => {
   const result = await OTP.findOne({
     otp,
-    expiresAt: { $gt: new Date() },
   });
+  console.log(result);
 
   if (!result) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Invalid or expired code");

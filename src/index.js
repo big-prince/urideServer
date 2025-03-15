@@ -6,7 +6,13 @@ import Config from "./config/config.js";
 import Logger from "./config/logger.js";
 
 let server;
-Mongoose.connect(Config.mongoose.url, Config.mongoose.options).then(() => {
+let mongoURL;
+if (process.env.NODE_ENV === "development") {
+  mongoURL = process.env.DEV_DATABASE_URL;
+} else {
+  mongoURL = Config.mongoose.url;
+}
+Mongoose.connect(mongoURL, Config.mongoose.options).then(() => {
   console.log(Config.mongoose.url);
   Logger.info("Connected to MongoDB");
   server = app.listen(Config.port, () => {
