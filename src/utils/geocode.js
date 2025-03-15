@@ -20,7 +20,11 @@ const getCordinates = async (location) => {
         console.error("Error in Geocode API:", error);
       });
     const coordinates = response.data.features[0].geometry.coordinates;
-    return coordinates;
+    console.log("Coordinates:", coordinates);
+    return {
+      lat: coordinates[1],
+      lng: coordinates[0],
+    };
   } catch (error) {
     console.error("Error in Geocode API:", error);
   }
