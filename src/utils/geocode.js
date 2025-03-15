@@ -5,20 +5,24 @@ const mapboxToken =
 
 const getCordinates = async (location) => {
   try {
-    const response = await axios.get(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-        location
-      )}.json`,
-      {
-        params: {
-          access_token: mapboxToken,
-        },
-      }
-    );
+    const response = await axios
+      .get(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          location
+        )}.json`,
+        {
+          params: {
+            access_token: mapboxToken,
+          },
+        }
+      )
+      .catch((error) => {
+        console.error("Error in Geocode API:", error);
+      });
     const coordinates = response.data.features[0].geometry.coordinates;
     return coordinates;
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error in Geocode API:", error);
   }
 };
 

@@ -12,8 +12,8 @@ import Reviews from "../reviews/review.model.js";
 import codeGenerator from "../../utils/codeGenerator.js";
 import clearIndex from "../../utils/clearIndex.js";
 import Logger from "../../config/logger.js";
-// import getCordinates from "../../utils/geocode.js";
-import getCordinates from "../../utils/geocode.google.js";
+import getCordinates from "../../utils/geocode.js";
+// import getCordinates from "../../utils/geocode.google.js";
 import geoDistance from "../../utils/geoDistance.js";
 import sendCode from "../../utils/sendcode.js";
 import deleteAllDocuments from "../../middlewares/deleteCollection.js";
@@ -257,7 +257,6 @@ const addRide = async function (rideDetails, callback) {
     });
   }
   Logger.info(creatorRole);
-  console.log("Got to this point");
 
   //get cordinates
   const originCordinates = await getCordinates(origin);

@@ -26,7 +26,7 @@ const getCoordinates = async (location) => {
       return null;
     }
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error :", error);
     return null;
   }
 };
