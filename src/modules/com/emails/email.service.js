@@ -15,8 +15,12 @@ async function fireEmail(message) {
     console.log("Attempting to send email with Resend...");
     const { data, error } = await resend.emails.send(message);
     if (error) {
-      console.error("Resend API error:", error);
-      throw new Error(error.message);
+      console.error("Failed to send email with Resend:", error);
+      return {
+        messageId: null,
+        status: "failed",
+        message: "Failed to send email with Resend",
+      };
     }
     console.log("Email sent successfully:", data);
     return {
@@ -25,7 +29,11 @@ async function fireEmail(message) {
     };
   } catch (error) {
     console.error("Failed to send email with Resend:", error);
-    throw error;
+    return {
+      messageId: null,
+      status: "failed",
+      message: "Failed to send email with Resend",
+    };
   }
 }
 
