@@ -59,6 +59,7 @@
 		"passport-jwt": "^4.0.0",
 		"pm2": "^4.1.2",
 		"request": "^2.88.2",
+		"resend": "^4.1.2",
 		"socket.io": "^4.7.5",
 		"validator": "^13.0.0",
 		"winston": "^3.2.1",
