@@ -13,4 +13,10 @@ router.use("/rides", rideRoutes);
 router.use("/wallet", walletRoutes);
 router.use("/chat", chatRoutes);
 
-export default router;
+export default (app) => {
+  app.use("/api/v1/auth", authRoute);
+  app.use("/api/v1/users", userRoutes);
+  app.use("/api/v1/rides", rideRoutes);
+  app.use("/api/v1/wallet", walletRoutes);
+  app.use("/api/v1/chat", chatRoutes);
+};

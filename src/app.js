@@ -105,7 +105,7 @@ app.get("/", function (req, res) {
 });
 
 // v1 API routes with global prefix
-app.use(`/${API_PREFIX}`, routes);
+// app.use(`/${API_PREFIX}`, routes); //changed due to inefficiency
 
 // POST route to handle phone number submission
 app.post("/submitPhoneNumber", (req, res) => {
@@ -130,7 +130,7 @@ app.use((err, req, res, next) => {
 });
 
 // v1 api routes
-// routes(app);
+routes(app);
 
 //swagger config
 expressJSDocSwagger(app)(swaggerConfigOptions);
