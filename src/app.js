@@ -24,14 +24,14 @@ import logger from "./config/logger.js";
 import * as RideCleaner from "./middlewares/rideCleaner.js";
 import fs from "fs";
 
-dotenv.config(); // Load environment variables
+dotenv.config();
 
 const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const API_PREFIX = process.env.API_PREFIX;
+const API_PREFIX = process.env.API_PREFIX || "/api/v1";
 
 // if (env !== "test") {
 app.use(Morgan.successHandler);
