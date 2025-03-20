@@ -1,35 +1,39 @@
 import Mongoose from "mongoose";
 import app from "./app.js";
 import { Server } from "socket.io";
-import setupWebSocket from "./modules/websocket/socket.js";
+import { createServer } from "node:http";
 import Config from "./config/config.js";
 import Logger from "./config/logger.js";
+import setupWebSocket from "./modules/websocket/chat.socket.js";
 
-let server;
-let mongoURL;
-if (process.env.NODE_ENV === "development") {
-  mongoURL = process.env.DEV_DATABASE_URL;
-} else {
-  mongoURL = Config.mongoose.url;
-}
-Mongoose.connect(mongoURL, Config.mongoose.options).then(() => {
-  console.log(Config.mongoose.url);
-  Logger.info("Connected to MongoDB");
-  server = app.listen(Config.port, () => {
-    Logger.info(`uRide Server running on port: ${Config.port}
-      -----------------------------------------
-      Running on uRide Server
-      -----------------------------------------
-    `);
-    Logger.info(`SMPT PORT ${Config.email.smtp.host}`);
-  });
-  const io = new Server(server, {
-    cors: {
-      origin: "*",
-    },
-  });
-  setupWebSocket(io);
+const server = createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
 });
+
+Mongoose.connect(Config.mongoose.url, Config.mongoose.options)
+  .then(() => {
+    Logger.info("Connected to MongoDB");
+
+    server.listen(Config.port, () => {
+      Logger.info(`
+      -----------------------------------------
+      uRide Server running on port: ${Config.port}
+      -----------------------------------------
+      `);
+      Logger.info(`SMTP PORT: ${Config.email.smtp.host}`);
+    });
+
+    setupWebSocket(io);
+  })
+  .catch((err) => {
+    Logger.error("MongoDB connection failed:", err);
+    process.exit(1);
+  });
 
 const exitHandler = () => {
   if (server) {
@@ -56,3 +60,5 @@ process.on("SIGTERM", () => {
     server.close();
   }
 });
+
+export { app, server };

@@ -19,18 +19,19 @@ import routes from "./modules/index.js";
 import Errors from "./middlewares/error.js";
 import ApiError from "./utils/ApiError.js";
 import { swaggerConfigOptions } from "./config/swagger.js";
-import cron from "node-cron";
-
-// import authenticateApiKey from "./config/logger.auth.js";
+import dotenv from "dotenv";
 import logger from "./config/logger.js";
-//import rideCleaner
 import * as RideCleaner from "./middlewares/rideCleaner.js";
 import fs from "fs";
+
+dotenv.config();
 
 const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const API_PREFIX = process.env.API_PREFIX || "/api/v1";
 
 // if (env !== "test") {
 app.use(Morgan.successHandler);
@@ -71,11 +72,27 @@ app.use(Passport.initialize());
 Passport.use("jwt", jwtStrategy);
 
 // limit repeated failed requests to auth endpoints
+// if (env === "production") {
+//   app.use("/v1/auth", authLimiter);
+// }
 if (env === "production") {
-  app.use("/v1/auth", authLimiter);
+  app.use(`/${API_PREFIX}/auth`, authLimiter);
 }
 
-app.get("/ping", (req, res) => {
+app.get(`/${API_PREFIX}/healthcheck`, (req, res) => {
+  try {
+    res.send({
+      uptime: Math.round(process.uptime()),
+      message: "OK",
+      timestamp: Date.now(),
+    });
+  } catch (e) {
+    res.status(503).end();
+  }
+});
+
+// Ping endpoint
+app.get(`/${API_PREFIX}/ping`, (req, res) => {
   res.end("uRide Server is Up n Running");
 });
 
@@ -86,6 +103,9 @@ LogRocket.init("qmttgo/uride");
 app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "../public/index.html"));
 });
+
+// v1 API routes with global prefix
+app.use(`/${API_PREFIX}`, routes);
 
 // POST route to handle phone number submission
 app.post("/submitPhoneNumber", (req, res) => {
@@ -100,33 +120,6 @@ app.get("/logme", (req, res) => {
   res.send("Hello, world!");
 });
 
-// Secure endpoint to download log files
-// app.get("/logs", authenticateApiKey, (req, res) => {
-//   const { date } = req.query; // Expected date format: YYYY-MM-DD
-
-//   if (!date) {
-//     return res
-//       .status(400)
-//       .json({ message: "Date query parameter is required" });
-//   }
-
-//   const logDirectory = path.join(__dirname, "..", "src/logs");
-//   // const logFilePath = path.join(logDirectory, date.replace(/-/g, '/')) + '.log';
-//   const logFilePath = path.join(logDirectory, date) + ".log";
-
-//   if (!fs.existsSync(logFilePath)) {
-//     return res.status(404).json({ message: "Log file not found" });
-//   }
-
-//   res.download(logFilePath, `${date}.log`, (err) => {
-//     if (err) {
-//       logger.error(`Error downloading log file: ${err.message}`);
-//       res.status(500).json({ message: "Internal server error" });
-//     }
-//   });
-// });
-
-// Error handling middleware
 app.use((err, req, res, next) => {
   logger.error(
     `${err.status || 500} - ${err.message} - ${req.originalUrl} - ${
@@ -137,7 +130,7 @@ app.use((err, req, res, next) => {
 });
 
 // v1 api routes
-routes(app);
+// routes(app);
 
 //swagger config
 expressJSDocSwagger(app)(swaggerConfigOptions);
