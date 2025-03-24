@@ -15,7 +15,14 @@ const io = new Server(server, {
   },
 });
 
-Mongoose.connect(Config.mongoose.url, Config.mongoose.options)
+let configUrl;
+if (process.env.NODE_ENV === "production") {
+  configUrl = process.env.MONGODB_URI;
+} else {
+  configUrl = process.env.DEV_DATABASE_URL;
+}
+
+Mongoose.connect(configUrl, Config.mongoose.options)
   .then(() => {
     Logger.info("Connected to MongoDB");
 

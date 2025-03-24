@@ -23,7 +23,7 @@ const transactionSchema = new mongoose.Schema(
     },
     transactionType: {
       type: String,
-      enum: ["top-up", "payment"],
+      enum: ["top-up", "payment", "package"],
       default: "top-up",
     },
   },
