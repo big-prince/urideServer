@@ -4,8 +4,8 @@ import rideService from "../modules/rides/ride.service.js";
 import User from "../modules/users/user.model.js";
 import Logger from "../config/logger.js";
 
-// Schedule a task to run every minute
-cron.schedule("* * * * *", async () => {
+// Schedule a task to run every midnight to delete expired rides
+cron.schedule("0 22 * * *", async () => {
   try {
     const now = new Date();
     // Find expired rides (rides with past departure time)

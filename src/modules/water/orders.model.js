@@ -76,7 +76,7 @@ const orderSchema = mongoose.Schema(
     couponCode: {
       type: String,
       default: null,
-      required: () => this.coupon,
+      unique: true,
     },
     //delivery time in days
     estimatedDeliveryDays: {
