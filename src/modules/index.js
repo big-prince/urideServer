@@ -5,6 +5,7 @@ import rideRoutes from "./rides/ride.routes.js";
 import walletRoutes from "./wallet/wallet.route.js";
 import chatRoutes from "./chat/chat.route.js";
 import waterRoutes from "./water/water.route.js";
+import airRouter from "./Flight/index.js";
 
 const router = Router();
 
@@ -17,5 +18,5 @@ export default (app) => {
   app.use(`${routePrefix}/wallet`, walletRoutes);
   app.use(`${routePrefix}/chat`, chatRoutes);
   app.use(`${routePrefix}/water`, waterRoutes);
-  app.use(`${routePrefix}/air`, waterRoutes);
+  app.use(`${routePrefix}/air`, airRouter);
 };
