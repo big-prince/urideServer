@@ -11,7 +11,7 @@ const router = Router();
 const routePrefix = "/api/v1";
 
 export default (app) => {
-  app.use(`${routePrefix}/auth`, authRoute);
+  app.use(`${routePrefix}/auth`, authLandRoute);
   app.use(`${routePrefix}/users`, userRoutes);
   app.use(`${routePrefix}/rides`, rideRoutes);
   app.use(`${routePrefix}/wallet`, walletRoutes);
