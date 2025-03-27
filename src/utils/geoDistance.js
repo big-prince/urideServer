@@ -1,56 +1,51 @@
 import axios from "axios";
-import Logger from "../config/logger.js";
 
-// Replace with your actual Google Maps API key
-const googleMapsApiKey = "AIzaSyB9XjWemCW4CDheEaMYdH7nqbTVkja3MMg";
+// Replace with your actual ORS API key
+const orsApiKey = "5b3ce3597851110001cf6248f739fa40679247eda22d0b4fd3a247ba";
 
-// Function to get the distance between two places
+// Function to calculate distance between two coordinates
 const getDistance = async (origin, destination) => {
   try {
-    const response = await axios.get(
-      "https://maps.googleapis.com/maps/api/distancematrix/json",
+    // ORS expects coordinates in [longitude, latitude] format
+    const locations = [
+      [origin.lng, origin.lat],
+      [destination.lng, destination.lat],
+    ];
+
+    const response = await axios.post(
+      "https://api.openrouteservice.org/v2/matrix/driving-car",
       {
-        params: {
-          origins: origin, // Start location (can be an address or coordinates)
-          destinations: destination, // End location (can be an address or coordinates)
-          key: googleMapsApiKey, // Your API key
+        locations: locations,
+        metrics: ["distance", "duration"],
+      },
+      {
+        headers: {
+          Authorization: orsApiKey,
+          "Content-Type": "application/json",
         },
       }
     );
 
-    // Check if the API response is OK
-    if (response.data.status === "OK") {
-      Logger.info(
-        "🚀 ~ getDistance ~ response.data.status:",
-        response.data.status
-      );
-      Logger.info("API response is OK");
-      const element = response.data.rows[0].elements[0];
-
-      if (element.status === "OK") {
-        Logger.info("🚀 ~ getDistance ~ element.status:", element.status);
-
-        // Distance in meters and human-readable distance
-        const distance = element.distance.value; // Distance in meters
-        const distanceText = element.distance.text; // Human-readable text (e.g., "13 km")
-
-        Logger.info(`Distance: ${distanceText} (${distance} meters)`);
-        return {
-          distance: distance, // distance in meters
-          distanceText: distanceText, // readable distance
-        };
-      } else {
-        console.error("Error:", element.status);
-        return null;
-      }
+    if (response.status === 200 && response.data) {
+      const distance = response.data.distances[0][1]; // Distance in meters
+      const distanceText = `${Math.round(distance / 1000)} km`; // Convert to kilometers
+      console.log(`Distance: ${distanceText} (${distance} meters)`);
+      return { distance, distanceText };
     } else {
-      console.error("Error:", response.data.status);
+      console.error("ORS API error:", response.status);
       return null;
     }
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error:", error.message);
     return null;
   }
 };
 
 export default getDistance;
+
+// Example usage with coordinates for Lagos and Ibadan
+// const origin = { lat: 6.5244, lng: 3.3792 }; // Lagos, Nigeria
+// const destination = { lat: 7.3775, lng: 3.947 }; // Ibadan, Nigeria
+// getDistance(origin, destination).then((result) =>
+//   console.log("Result:", result)
+// );

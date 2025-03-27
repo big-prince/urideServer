@@ -15,6 +15,12 @@ const transactionHistorySchema = new mongoose.Schema(
       currency: { type: String, required: true },
       transactionDate: { type: Date, required: true },
       gatewayResponse: { type: String, required: true },
+      type: {
+        type: String,
+        required: true,
+        enum: ["top-up", "payment", "order"],
+      },
+      orderId: { type: String, ref: "Order", default: null },
     },
     transactionType: {
       type: String,

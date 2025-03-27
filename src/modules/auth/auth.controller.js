@@ -59,6 +59,7 @@ const resetPassword = catchAsync(async (req, res) => {
 });
 
 const sendEmailOTP = catchAsync(async (req, res) => {
+  console.log("Email OTP");
   let result = await authService.sendOTP(req.body.email);
   res.status(httpStatus.OK).json(result);
 });

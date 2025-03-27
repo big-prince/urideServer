@@ -20,4 +20,10 @@ router.get("/wallet_details", walletController.getWallet);
 //send THistory
 router.get("/transaction_history", walletController.getTransactionHistory);
 
+//intialize order payment
+router.post(
+  "/initialize_order_payment",
+  walletController.initializeOrderPayment
+);
+
 export default router;

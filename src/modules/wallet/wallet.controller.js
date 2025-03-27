@@ -85,10 +85,39 @@ export const getTransactionHistory = catchAsync(async (req, res) => {
   return Response.sendSuccessResponse(res, httpStatus.OK, history);
 });
 
+//inititlaize payment for order
+export const initializeOrderPayment = catchAsync(async (req, res) => {
+  try {
+    // Await the initialization result from the service
+    const result = await walletService.initializeOrderPayment(req.body);
+
+    // Check for successful initialization
+    if (!result) {
+      return Response.sendErrResponse(
+        res,
+        httpStatus.BAD_REQUEST,
+        "Invalid request"
+      );
+    }
+
+    // Send success response with the authorization URL (assuming it's in result)
+    return Response.sendSuccessResponse(res, httpStatus.OK, result);
+  } catch (e) {
+    console.log(e);
+    // Handle any errors during initialization
+    return Response.sendErrResponse(
+      res,
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Failed to initialize payment"
+    );
+  }
+});
+
 export default {
   paystackCallback,
   initializePayment,
   paymentVerification,
   getWallet,
   getTransactionHistory,
+  initializeOrderPayment,
 };
