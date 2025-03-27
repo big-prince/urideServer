@@ -22,12 +22,10 @@ const bookJet = async (flightId, scheduleIndex, passengerInfo) => {
     }
 
     if (schedule.jetShare) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "This flight allows Jet Share. Please book a shared seat instead.",
-        });
+      return res.status(400).json({
+        error:
+          "This flight allows Jet Share. Please book a shared seat instead.",
+      });
     }
     if (schedule.availableSeats.length === 0) {
       return res.status(400).json({ error: "Flight is already fully booked" });
@@ -80,7 +78,7 @@ const bookJetShareSeat = async ({
   flightId,
   scheduleIndex,
   passengerDetails,
-  selectedSeat
+  selectedSeat,
 }) => {
   try {
     // Fetch the flight details
@@ -90,7 +88,8 @@ const bookJetShareSeat = async ({
     const schedule = flight.availableSchedules[scheduleIndex];
     if (!schedule) throw new Error("Invalid schedule");
 
-    if (!schedule.jetShare) throw new Error("Jet Share is not enabled for this flight");
+    if (!schedule.jetShare)
+      throw new Error("Jet Share is not enabled for this flight");
 
     // Check if Jet Share is already full
     if (schedule.sharedPassengers >= schedule.maxPassengersPerJetShare) {
@@ -132,7 +131,9 @@ const bookJetShareSeat = async ({
     await newBooking.save();
 
     // Update available seats
-    schedule.availableSeats = schedule.availableSeats.filter(seat => seat !== selectedSeat);
+    schedule.availableSeats = schedule.availableSeats.filter(
+      (seat) => seat !== selectedSeat
+    );
     schedule.sharedPassengers += 1;
 
     // **AUTO-CLOSE JET SHARE** when fully booked
@@ -158,7 +159,7 @@ const bookJetWithJetShare = async ({
   passengerInfo,
   enableJetShare,
   maxJetSharePassengers,
-  jetSharePricePerSeat
+  jetSharePricePerSeat,
 }) => {
   try {
     if (!flightId || scheduleIndex === undefined || !passengerInfo) {
@@ -223,7 +224,9 @@ const bookJetWithJetShare = async ({
     schedule.availableSeats = []; // No seats left
     schedule.sharedPassengers = schedule.totalSeats;
     schedule.jetShare = enableJetShare; // Enable Jet Share if requested
-    schedule.maxPassengersPerJetShare = enableJetShare ? maxJetSharePassengers : 0;
+    schedule.maxPassengersPerJetShare = enableJetShare
+      ? maxJetSharePassengers
+      : 0;
     schedule.jetSharePricePerSeat = enableJetShare ? jetSharePricePerSeat : 0;
 
     if (!enableJetShare) {
@@ -243,7 +246,6 @@ const bookJetWithJetShare = async ({
     throw new Error(error.message);
   }
 };
-
 
 export default {
   bookJet,

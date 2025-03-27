@@ -1,4 +1,3 @@
-
 import airlineService from "./Airline.service.js";
 
 const bulkCreateAirlines = async (req, res) => {
@@ -51,8 +50,8 @@ const deleteAirline = async (req, res) => {
 
 export default {
   bulkCreateAirlines,
-    getAllAirlines,
-    getAirlineById,
-    updateAirline,
-    deleteAirline,
-  };
+  getAllAirlines,
+  getAirlineById,
+  updateAirline,
+  deleteAirline,
+};

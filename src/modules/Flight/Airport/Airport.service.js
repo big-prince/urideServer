@@ -1,19 +1,78 @@
-import httpStatus from "http-status"
-import Airport from "./Airport.model.js"
+import httpStatus from "http-status";
+import Airport from "./Airport.model.js";
 import ApiError from "../../../utils/ApiError.js";
 
-
 const airports = [
-  { name: "Murtala Muhammed International Airport", code: "LOS", city: "Lagos", country: "Nigeria", type: "International" },
-  { name: "Nnamdi Azikiwe International Airport", code: "ABV", city: "Abuja", country: "Nigeria", type: "International" },
-  { name: "Mallam Aminu Kano International Airport", code: "KAN", city: "Kano", country: "Nigeria", type: "International" },
-  { name: "Port Harcourt International Airport", code: "PHC", city: "Port Harcourt", country: "Nigeria", type: "International" },
-  { name: "Akanu Ibiam International Airport", code: "ENU", city: "Enugu", country: "Nigeria", type: "International" },
-  { name: "Kaduna International Airport", code: "KAD", city: "Kaduna", country: "Nigeria", type: "International" },
-  { name: "Sam Mbakwe Airport", code: "QOW", city: "Owerri", country: "Nigeria", type: "Domestic" },
-  { name: "Ibadan Airport", code: "IBA", city: "Ibadan", country: "Nigeria", type: "Domestic" },
-  { name: "Ilorin Airport", code: "ILR", city: "Ilorin", country: "Nigeria", type: "Domestic" },
-  { name: "Yola Airport", code: "YOL", city: "Yola", country: "Nigeria", type: "Domestic" }
+  {
+    name: "Murtala Muhammed International Airport",
+    code: "LOS",
+    city: "Lagos",
+    country: "Nigeria",
+    type: "International",
+  },
+  {
+    name: "Nnamdi Azikiwe International Airport",
+    code: "ABV",
+    city: "Abuja",
+    country: "Nigeria",
+    type: "International",
+  },
+  {
+    name: "Mallam Aminu Kano International Airport",
+    code: "KAN",
+    city: "Kano",
+    country: "Nigeria",
+    type: "International",
+  },
+  {
+    name: "Port Harcourt International Airport",
+    code: "PHC",
+    city: "Port Harcourt",
+    country: "Nigeria",
+    type: "International",
+  },
+  {
+    name: "Akanu Ibiam International Airport",
+    code: "ENU",
+    city: "Enugu",
+    country: "Nigeria",
+    type: "International",
+  },
+  {
+    name: "Kaduna International Airport",
+    code: "KAD",
+    city: "Kaduna",
+    country: "Nigeria",
+    type: "International",
+  },
+  {
+    name: "Sam Mbakwe Airport",
+    code: "QOW",
+    city: "Owerri",
+    country: "Nigeria",
+    type: "Domestic",
+  },
+  {
+    name: "Ibadan Airport",
+    code: "IBA",
+    city: "Ibadan",
+    country: "Nigeria",
+    type: "Domestic",
+  },
+  {
+    name: "Ilorin Airport",
+    code: "ILR",
+    city: "Ilorin",
+    country: "Nigeria",
+    type: "Domestic",
+  },
+  {
+    name: "Yola Airport",
+    code: "YOL",
+    city: "Yola",
+    country: "Nigeria",
+    type: "Domestic",
+  },
 ];
 
 /**

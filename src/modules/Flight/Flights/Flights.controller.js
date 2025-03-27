@@ -1,4 +1,4 @@
-import httpStatus from "http-status"
+import httpStatus from "http-status";
 import flightService from "./Flights.service.js";
 
 /**
@@ -21,7 +21,9 @@ const getAllFlights = async (req, res) => {
     const flights = await flightService.getAllFlights();
     res.status(httpStatus.OK).json(flights);
   } catch (error) {
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message });
   }
 };
 
@@ -47,11 +49,15 @@ const getFlightById = async (req, res) => {
   try {
     const flight = await flightService.getFlightById(req.params.id);
     if (!flight) {
-      return res.status(httpStatus.NOT_FOUND).json({ message: "Flight not found" });
+      return res
+        .status(httpStatus.NOT_FOUND)
+        .json({ message: "Flight not found" });
     }
     res.status(httpStatus.OK).json(flight);
   } catch (error) {
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: error.message });
+    res
+      .status(httpStatus.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message });
   }
 };
 
@@ -60,18 +66,20 @@ const getFlightById = async (req, res) => {
  */
 const getAvailableSeats = async (req, res) => {
   try {
-    const flightId = req.params.flightId
+    const flightId = req.params.flightId;
 
-    const departureTime = req.query.departureTime
+    const departureTime = req.query.departureTime;
 
-    const availableSeats = await flightService.getAvailableSeats(flightId, departureTime);
+    const availableSeats = await flightService.getAvailableSeats(
+      flightId,
+      departureTime
+    );
 
     res.status(httpStatus.OK).json(availableSeats);
   } catch (error) {
     res.status(httpStatus.BAD_REQUEST).json({ message: error.message });
   }
 };
-
 
 export default {
   createFlight,

@@ -2,18 +2,20 @@ import ApiError from "../../../utils/ApiError.js";
 import AirlineModel from "../Airline/Airline.model.js";
 import AirportModel from "../Airport/Airport.model.js";
 import Bookings from "../Bookings/Bookings.model.js";
-import Flight from "./Flights.model.js"
+import Flight from "./Flights.model.js";
 import { v4 as uuidv4 } from "uuid";
 
-
-const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const getRandomNumber = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
 
 const bulkCreateFlights = async () => {
   const airlines = await AirlineModel.find();
   const airports = await AirportModel.find();
 
   if (!airlines.length || airports.length < 2) {
-    throw new Error("Not enough airlines or airports available to create flights");
+    throw new Error(
+      "Not enough airlines or airports available to create flights"
+    );
   }
 
   const flightsData = [];
@@ -27,8 +29,8 @@ const bulkCreateFlights = async () => {
     } while (destination._id.equals(departure._id));
 
     const distanceKm = getRandomNumber(200, 2000);
-    const pricePerKm = getRandomNumber(50, 300); 
-    const basePrice = distanceKm * pricePerKm; 
+    const pricePerKm = getRandomNumber(50, 300);
+    const basePrice = distanceKm * pricePerKm;
 
     flightsData.push({
       airline: airline._id,
@@ -45,38 +47,37 @@ const bulkCreateFlights = async () => {
   return createdFlights;
 };
 
-
 const searchFlights = async (departureCity, destinationCity) => {
-    try {
-      const departureAirport = await Airport.findOne({ city: departureCity });
-      const destinationAirport = await Airport.findOne({ city: destinationCity });
-  
-      if (!departureAirport || !destinationAirport) {
-        throw new Error("Departure or destination city not found");
-      }
-  
-      const departureAirportCode = departureAirport.code;
-  
-      const airlines = await Airline.find({
-        code: new RegExp(`-${departureAirportCode}$`),
-      });
-  
-      const airlineIds = airlines.map((airline) => airline._id);
-  
-      const flights = await Flight.find({
-        airline: { $in: airlineIds },
-        departure: departureAirport._id,
-        destination: destinationAirport._id,
-        status: { $ne: "fully-booked" },
-      }).populate("airline");
-  
-      return flights;
-    } catch (error) {
-      console.error("Error searching flights:", error);
-      throw error;
+  try {
+    const departureAirport = await Airport.findOne({ city: departureCity });
+    const destinationAirport = await Airport.findOne({ city: destinationCity });
+
+    if (!departureAirport || !destinationAirport) {
+      throw new Error("Departure or destination city not found");
     }
-  };
-  
+
+    const departureAirportCode = departureAirport.code;
+
+    const airlines = await Airline.find({
+      code: new RegExp(`-${departureAirportCode}$`),
+    });
+
+    const airlineIds = airlines.map((airline) => airline._id);
+
+    const flights = await Flight.find({
+      airline: { $in: airlineIds },
+      departure: departureAirport._id,
+      destination: destinationAirport._id,
+      status: { $ne: "fully-booked" },
+    }).populate("airline");
+
+    return flights;
+  } catch (error) {
+    console.error("Error searching flights:", error);
+    throw error;
+  }
+};
+
 /**
  * Get all flights
  */
@@ -89,54 +90,51 @@ const getAllFlights = async () => {
  * @param {string} id
  */
 const getFlightById = async (id) => {
-    return await Flight.findById(id)
-      .populate({
-        path: "airline",
-        select: "name reviews", 
+  return await Flight.findById(id)
+    .populate({
+      path: "airline",
+      select: "name reviews",
+      populate: {
+        path: "reviews",
+        select: ["rating", "review", "createdAt"],
         populate: {
-          path: "reviews",
-          select: ["rating", "review", "createdAt"],
-          populate:  {
-            path: "user",
-            select: ["firstName", "lastName"],
-          }
+          path: "user",
+          select: ["firstName", "lastName"],
         },
-      })
-      .populate({
-        path: "departure",
-        select: "city", 
-      })
-      .populate({
-        path: "destination",
-        select: "city", 
-      })
-      .select("flightNumber availableSchedules");
-  };
-  
+      },
+    })
+    .populate({
+      path: "departure",
+      select: "city",
+    })
+    .populate({
+      path: "destination",
+      select: "city",
+    })
+    .select("flightNumber availableSchedules");
+};
 
-  const getAvailableSeats = async (flightId, departureTime) => {
-    // Fetch the flight and filter the schedule based on departureTime
-    const flight = await Flight.findById(flightId);
-    if (!flight) throw new Error("Flight not found");
-  
-    const schedule = flight.availableSchedules.find(
-      (s) => s.departureTime === departureTime
-    );
-    if (!schedule) throw new Error("Schedule not found");
-  
-    // Get the total booked seats for this flight at this schedule
-    const bookedSeats = await Bookings.aggregate([
-      { $match: { flight: flight._id, status: "Confirmed" } },
-      { $group: { _id: null, totalBooked: { $sum: "$seatsBooked" } } },
-    ]);
-  
-    const totalBooked = bookedSeats.length ? bookedSeats[0].totalBooked : 0;
-    const availableSeats = schedule.totalSeats - totalBooked;
-  
-    return availableSeats >= 0 ? availableSeats : 0;
-  };
-  
+const getAvailableSeats = async (flightId, departureTime) => {
+  // Fetch the flight and filter the schedule based on departureTime
+  const flight = await Flight.findById(flightId);
+  if (!flight) throw new Error("Flight not found");
 
+  const schedule = flight.availableSchedules.find(
+    (s) => s.departureTime === departureTime
+  );
+  if (!schedule) throw new Error("Schedule not found");
+
+  // Get the total booked seats for this flight at this schedule
+  const bookedSeats = await Bookings.aggregate([
+    { $match: { flight: flight._id, status: "Confirmed" } },
+    { $group: { _id: null, totalBooked: { $sum: "$seatsBooked" } } },
+  ]);
+
+  const totalBooked = bookedSeats.length ? bookedSeats[0].totalBooked : 0;
+  const availableSeats = schedule.totalSeats - totalBooked;
+
+  return availableSeats >= 0 ? availableSeats : 0;
+};
 
 /**
  * Fetch available schedules for a specific flight.
@@ -179,13 +177,17 @@ const getAvailableSchedules = async (flightId) => {
 
   // Fetch all bookings for this flight
   const bookings = await Booking.find({ flight: flightId })
-    .select("passengerName passengerEmail seatsBooked selectedSeats status isJetShare")
+    .select(
+      "passengerName passengerEmail seatsBooked selectedSeats status isJetShare"
+    )
     .lean();
 
   // Map available schedules and include booking details
   const availableSchedules = flight.availableSchedules
     .map((schedule, index) => {
-      const scheduleBookings = bookings.filter(booking => booking.scheduleIndex === index);
+      const scheduleBookings = bookings.filter(
+        (booking) => booking.scheduleIndex === index
+      );
 
       return {
         scheduleIndex: index,
@@ -199,7 +201,7 @@ const getAvailableSchedules = async (flightId) => {
         bookings: scheduleBookings, // Include related bookings
       };
     })
-    .filter(schedule => schedule.availableSeats > 0);
+    .filter((schedule) => schedule.availableSeats > 0);
 
   return {
     flightId: flight._id,
@@ -211,10 +213,8 @@ const getAvailableSchedules = async (flightId) => {
   };
 };
 
-
-
 export default {
-    bulkCreateFlights,
+  bulkCreateFlights,
   getAllFlights,
   searchFlights,
   getFlightById,
