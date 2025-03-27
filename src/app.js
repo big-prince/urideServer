@@ -31,7 +31,7 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const API_PREFIX = process.env.API_PREFIX || "/api/v1";
+const API_PREFIX = process.env.API_PREFIX || "api/v1";
 
 // if (env !== "test") {
 app.use(Morgan.successHandler);
@@ -76,10 +76,10 @@ Passport.use("jwt", jwtStrategy);
 //   app.use("/v1/auth", authLimiter);
 // }
 if (env === "production") {
-  app.use(`/${API_PREFIX}/auth`, authLimiter);
+  app.use(`${API_PREFIX}/auth`, authLimiter);
 }
 
-app.get(`/${API_PREFIX}/healthcheck`, (req, res) => {
+app.get(`${API_PREFIX}/healthcheck`, (req, res) => {
   try {
     res.send({
       uptime: Math.round(process.uptime()),
@@ -92,7 +92,7 @@ app.get(`/${API_PREFIX}/healthcheck`, (req, res) => {
 });
 
 // Ping endpoint
-app.get(`/${API_PREFIX}/ping`, (req, res) => {
+app.get(`${API_PREFIX}/ping`, (req, res) => {
   res.end("uRide Server is Up n Running");
 });
 
