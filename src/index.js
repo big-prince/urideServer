@@ -17,7 +17,7 @@ const io = new Server(server, {
 
 let configUrl;
 if (process.env.NODE_ENV === "production") {
-  configUrl = process.env.MONGODB_URI;
+  configUrl = Config.mongoose.url;
 } else {
   configUrl = process.env.DEV_DATABASE_URL;
 }
