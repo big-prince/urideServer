@@ -23,8 +23,11 @@ const transactionSchema = new mongoose.Schema(
     },
     transactionType: {
       type: String,
-      enum: ["top-up", "payment", "package"],
-      default: "top-up",
+      enum: ["top-up", "payment", "order"],
+    },
+    orderId: {
+      type: String,
+      ref: "Order",
     },
   },
   { timestamps: true }

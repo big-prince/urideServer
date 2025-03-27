@@ -1,17 +1,25 @@
-const costPerKg = 0.2;
+const costPerKg = 1000; //naira
 
 export function getCost(weight) {
-  return weight * costPerKg;
+  weight = [...weight.toString()];
+  return Number(weight[0]) * costPerKg;
 }
 
 export function getExpressCost(weight) {
-  return weight * costPerKg * 2;
+  weight = [...weight.toString()];
+  return Number(weight[0]) * costPerKg * 2;
 }
 
 export function getCostWithDiscount(weight, discount) {
-  return getCost(weight) - discount;
+  return percentageDiscount(getCost(weight), discount);
 }
 
 export function getExpressCostWithDiscount(weight, discount) {
-  return getExpressCost(weight) - discount;
+  return percentageDiscount(getExpressCost(weight), discount);
+}
+
+export function percentageDiscount(cost, discount) {
+  let discountamount = (discount / 100) * cost;
+  let total = cost - discountamount;
+  return total;
 }

@@ -8,6 +8,7 @@ import Roles from "../../config/roles.js";
 import httpStatus from "http-status";
 import ApiError from "../../utils/ApiError.js";
 import Response from "../../utils/utils.js";
+import Order from "../water/orders.model.js";
 
 let ObjectId = Mongoose.Types.ObjectId;
 
@@ -29,11 +30,6 @@ const userSchema = new Mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      // validate(value) {
-      //     if (!Validator.isEmail(value)) {
-      //         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid email");
-      //     }
-      // },
     },
     password: {
       type: String,
@@ -90,6 +86,20 @@ const userSchema = new Mongoose.Schema(
     },
     isPhoneVeirified: {
       type: Boolean,
+    },
+    water: {
+      ordersTo: [
+        {
+          type: ObjectId,
+          ref: "Order",
+        },
+      ],
+      ordersFrom: [
+        {
+          type: ObjectId,
+          ref: "Order",
+        },
+      ],
     },
   },
   {

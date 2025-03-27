@@ -6,11 +6,12 @@ import { orderCategory } from "../../utils/enums/order.category.js";
 
 const orderSchema = mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     senderInfo: {
-      sender_id: {
-        type: String,
-        required: true,
-      },
       sender_name: {
         type: String,
         required: true,
@@ -24,7 +25,7 @@ const orderSchema = mongoose.Schema(
         required: true,
       },
       pickupTime: {
-        type: String,
+        type: Date,
         required: true,
       },
       description: {
@@ -61,7 +62,7 @@ const orderSchema = mongoose.Schema(
         required: true,
       },
       deliveryTime: {
-        type: String,
+        type: Date,
         required: true,
       },
       deliveryInstruction: {
@@ -77,6 +78,7 @@ const orderSchema = mongoose.Schema(
       type: String,
       default: null,
       unique: true,
+      required: false,
     },
     //delivery time in days
     estimatedDeliveryDays: {
@@ -103,12 +105,49 @@ const orderSchema = mongoose.Schema(
       required: true,
       enum: ["pending", "processing", "delivered"],
     },
-
+    paid: {
+      type: Boolean,
+      default: false,
+    },
     tracking: {
       trackingNumber: {
         type: String,
         required: true,
         unique: true,
+      },
+      distance: {
+        type: Number,
+        required: true,
+      },
+      distanceText: {
+        type: String,
+      },
+      senderCordinates: {
+        type: {
+          lat: {
+            type: Number,
+            required: true,
+          },
+          lng: {
+            type: Number,
+            required: true,
+          },
+        },
+        required: true,
+      },
+
+      receiverCordinates: {
+        type: {
+          lat: {
+            type: Number,
+            required: true,
+          },
+          lng: {
+            type: Number,
+            required: true,
+          },
+        },
+        required: true,
       },
     },
   },
@@ -119,6 +158,13 @@ const orderSchema = mongoose.Schema(
 
 // add plugin that converts mongoose to json
 orderSchema.plugin(toJSON);
+
+//presave
+orderSchema.pre("save", async function (next) {
+  //drop index for coupon code
+  this.constructor.collection.dropIndex("couponCode_1");
+  next();
+});
 
 //model
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);

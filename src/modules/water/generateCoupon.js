@@ -1,21 +1,23 @@
 import { v4 as uuidv4 } from "uuid";
 import Coupon from "./coupons.model.js";
 
+let substring = "pd-";
 //generate 5 random digit coupon
 export function generateCoupon() {
-  return uuidv4().substring(0, 5);
+  let coupon = uuidv4().substring(0, 5);
+  return `${substring}${coupon}`;
 }
 
 export const basicDiscount = {
-  discount: 5,
+  discount: 5, //5%
   days: 3,
 };
 export const expressDiscount = {
-  discount: 10,
+  discount: 10, //10%
   days: 2,
 };
 export const premiumDiscount = {
-  discount: 15,
+  discount: 15, //15%
   days: 2,
 };
 
@@ -28,6 +30,7 @@ export async function generateBasicDiscount(basicDiscount) {
     discount: discount,
     validFrom: new Date(),
     validTo: new Date(new Date().setDate(new Date().getDate() + days)),
+    maxUsage: 20,
   };
   let newCoupon = await Coupon.create(couponData);
   return newCoupon;
@@ -41,6 +44,7 @@ export async function generateExpressDiscount(expressDiscount) {
     discount: discount,
     validFrom: new Date(),
     validTo: new Date(new Date().setDate(new Date().getDate + days)),
+    maxUsage: 15,
   };
   let newCoupon = await Coupon.create(couponData);
   return newCoupon;
@@ -53,7 +57,12 @@ export async function generatePremiumDiscount(premiumDiscount) {
     code: coupon,
     discount: discount,
     validFrom: new Date(),
-    validTo: new Date(new Date().setDate(new Date().getDate + days)),
+    validTo: (() => {
+      const date = new Date();
+      date.setDate(date.getDate() + days);
+      return date;
+    })(),
+    maxUsage: 10,
   };
   let newCoupon = await Coupon.create(couponData);
   return newCoupon;
