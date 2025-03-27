@@ -20,6 +20,74 @@ const airlineNames = [
   "Overland Airways"
 ];
 
+const airlineData = [
+  {
+    name: "Air Peace",
+    code: "AP-NG",
+    country: "Nigeria",
+    fleetSize: 32,
+    logo: "https://upload.wikimedia.org/wikipedia/en/6/68/Air_Peace_logo.png",
+    image: "https://airpeace.com/wp-content/uploads/2022/08/airpeace-flight.jpg",
+  },
+  {
+    name: "Arik Air",
+    code: "AA-NG",
+    country: "Nigeria",
+    fleetSize: 22,
+    logo: "https://upload.wikimedia.org/wikipedia/en/d/df/Arik_Air_logo.svg",
+    image: "https://www.arikair.com/images/arik_aircraft.jpg",
+  },
+  {
+    name: "Dana Air",
+    code: "DA-NG",
+    country: "Nigeria",
+    fleetSize: 10,
+    logo: "https://www.danaair.com/img/logo.png",
+    image: "https://www.danaair.com/img/fleet.png",
+  },
+  {
+    name: "Ibom Air",
+    code: "IA-NG",
+    country: "Nigeria",
+    fleetSize: 7,
+    logo: "https://ibomair.com/wp-content/uploads/2021/05/IbomAir.png",
+    image: "https://ibomair.com/wp-content/uploads/2021/05/aircraft.jpg",
+  },
+  {
+    name: "Green Africa Airways",
+    code: "GAA-NG",
+    country: "Nigeria",
+    fleetSize: 5,
+    logo: "https://greenafrica.com/static/media/logo.23f4858d.svg",
+    image: "https://greenafrica.com/static/media/airplane.8cfa7ffb.jpg",
+  },
+  {
+    name: "United Nigeria Airlines",
+    code: "UNA-NG",
+    country: "Nigeria",
+    fleetSize: 6,
+    logo: "https://flyunitednigeria.com/assets/img/logo.png",
+    image: "https://flyunitednigeria.com/assets/img/plane.jpg",
+  },
+  {
+    name: "Max Air",
+    code: "MA-NG",
+    country: "Nigeria",
+    fleetSize: 9,
+    logo: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Max_Air_logo.png",
+    image: "https://maxair.com.ng/assets/img/aircraft.jpg",
+  },
+  {
+    name: "Overland Airways",
+    code: "OA-NG",
+    country: "Nigeria",
+    fleetSize: 4,
+    logo: "https://upload.wikimedia.org/wikipedia/en/7/7f/Overland_Airways_Logo.png",
+    image: "https://overlandairways.com/wp-content/uploads/2021/04/aircraft.jpg",
+  },
+];
+
+
 const getRandomAirlines = () => {
   const shuffled = airlineNames.sort(() => 0.5 - Math.random()); 
   return shuffled.slice(0, 4); 
@@ -27,39 +95,49 @@ const getRandomAirlines = () => {
 const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 const bulkCreateAirlines = async () => {
-  const airports = await Airport.find();
+  try {
+    const airports = await Airport.find();
+    
+    if (!airports.length) {
+      throw new Error("No airports found");
+    }
 
-  if (!airports.length) {
-    throw new ApiError(httpStatus.NOT_FOUND, "No airports found");
-  }
+    // Clear existing airlines to prevent duplicates
+    await Airline.deleteMany();
 
-  const airlinesData = [];
+    const airlinesData = [];
 
-  airports.forEach((airport) => {
-    const selectedAirlines = getRandomAirlines(); 
+    airports.forEach((airport) => {
+      const selectedAirlines = getRandomAirlines(); // Pick 4 random airlines
 
-    selectedAirlines.forEach((airlineName) => {
-      airlinesData.push({
-        name: airlineName,
-        code: `${airlineName.split(" ")[0].toUpperCase()}-${airport.code}`,
-        country: "Nigeria",
-        airport: airport._id, 
-        fleetSize: getRandomNumber(2, 10), 
+      selectedAirlines.forEach((airline) => {
+        airlinesData.push({
+          ...airline, // Use pre-seeded airline data
+          code: `${airline.code}-${airport.code}`, // Ensure unique per airport
+          airport: airport._id, // Link airline to airport
+          fleetSize: airline.fleetSize || getRandomNumber(2, 10), // Use existing fleetSize or generate
+        });
       });
     });
-  });
 
-  const createdAirlines = await Airline.insertMany(airlinesData);
+    // Insert all airlines into DB
+    const createdAirlines = await Airline.insertMany(airlinesData);
 
-  for (const airline of createdAirlines) {
-    await Airport.findByIdAndUpdate(airline.airport, {
-      $push: { airlines: airline._id },
-    });
+    // Update each airport with its corresponding airlines
+    for (const airline of createdAirlines) {
+      await Airport.findByIdAndUpdate(airline.airport, {
+        $push: { airlines: airline._id },
+      });
+    }
+
+    console.log("✅ Airlines created successfully:", createdAirlines);
+    return createdAirlines;
+  } catch (error) {
+    console.error("❌ Error creating airlines:", error);
+    throw error;
   }
-
-  console.log("Airlines created successfully:", createdAirlines);
-  return createdAirlines;
 };
+
 
 /**
  * Get all airlines

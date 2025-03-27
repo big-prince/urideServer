@@ -1,13 +1,14 @@
-import ApiError from "@/utils/ApiError.js";
+import ApiError from "../../../utils/ApiError.js";
 import AirlineModel from "../Airline/Airline.model.js";
 import AirportModel from "../Airport/Airport.model.js";
+import Bookings from "../Bookings/Bookings.model.js";
 import Flight from "./Flights.model.js"
 import { v4 as uuidv4 } from "uuid";
 
 
 const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-export const bulkCreateFlights = async () => {
+const bulkCreateFlights = async () => {
   const airlines = await AirlineModel.find();
   const airports = await AirportModel.find();
 
@@ -46,20 +47,34 @@ export const bulkCreateFlights = async () => {
 
 
 const searchFlights = async (departureCity, destinationCity) => {
-      const departureAirport = await AirportModel.findOne({ city: departureCity });
-      const destinationAirport = await AirportModel.findOne({ city: destinationCity });
+    try {
+      const departureAirport = await Airport.findOne({ city: departureCity });
+      const destinationAirport = await Airport.findOne({ city: destinationCity });
   
       if (!departureAirport || !destinationAirport) {
-        throw new ApiError("Departure or destination city not found");
+        throw new Error("Departure or destination city not found");
       }
   
+      const departureAirportCode = departureAirport.code;
+  
+      const airlines = await Airline.find({
+        code: new RegExp(`-${departureAirportCode}$`),
+      });
+  
+      const airlineIds = airlines.map((airline) => airline._id);
+  
       const flights = await Flight.find({
+        airline: { $in: airlineIds },
         departure: departureAirport._id,
         destination: destinationAirport._id,
         status: { $ne: "fully-booked" },
       }).populate("airline");
   
       return flights;
+    } catch (error) {
+      console.error("Error searching flights:", error);
+      throw error;
+    }
   };
   
 /**
@@ -74,30 +89,135 @@ const getAllFlights = async () => {
  * @param {string} id
  */
 const getFlightById = async (id) => {
-  return await Flight.findById(id).populate("airline departure destination");
-};
+    return await Flight.findById(id)
+      .populate({
+        path: "airline",
+        select: "name reviews", 
+        populate: {
+          path: "reviews",
+          select: ["rating", "review", "createdAt"],
+          populate:  {
+            path: "user",
+            select: ["firstName", "lastName"],
+          }
+        },
+      })
+      .populate({
+        path: "departure",
+        select: "city", 
+      })
+      .populate({
+        path: "destination",
+        select: "city", 
+      })
+      .select("flightNumber availableSchedules");
+  };
+  
+
+  const getAvailableSeats = async (flightId, departureTime) => {
+    // Fetch the flight and filter the schedule based on departureTime
+    const flight = await Flight.findById(flightId);
+    if (!flight) throw new Error("Flight not found");
+  
+    const schedule = flight.availableSchedules.find(
+      (s) => s.departureTime === departureTime
+    );
+    if (!schedule) throw new Error("Schedule not found");
+  
+    // Get the total booked seats for this flight at this schedule
+    const bookedSeats = await Bookings.aggregate([
+      { $match: { flight: flight._id, status: "Confirmed" } },
+      { $group: { _id: null, totalBooked: { $sum: "$seatsBooked" } } },
+    ]);
+  
+    const totalBooked = bookedSeats.length ? bookedSeats[0].totalBooked : 0;
+    const availableSeats = schedule.totalSeats - totalBooked;
+  
+    return availableSeats >= 0 ? availableSeats : 0;
+  };
+  
+
 
 /**
- * Update a flight by ID
- * @param {string} id
- * @param {Object} updateBody
+ * Fetch available schedules for a specific flight.
+ * @param {string} flightId - The ID of the flight.
+ * @returns {Promise<Object[]>} - Returns an array of available schedules.
  */
-const updateFlight = async (id, updateBody) => {
-  return await Flight.findByIdAndUpdate(id, updateBody, { new: true, runValidators: true });
+
+const getAvailableSchedules = async (flightId) => {
+  if (!flightId) {
+    throw new Error("Flight ID is required");
+  }
+
+  // Fetch flight details with populated fields
+  const flight = await Flight.findById(flightId)
+    .populate({
+      path: "airline",
+      select: "name reviews",
+      populate: {
+        path: "reviews",
+        select: ["rating", "review", "createdAt"],
+        populate: {
+          path: "user",
+          select: ["firstName", "lastName"],
+        },
+      },
+    })
+    .populate({
+      path: "departure",
+      select: "city",
+    })
+    .populate({
+      path: "destination",
+      select: "city",
+    })
+    .select("flightNumber availableSchedules");
+
+  if (!flight) {
+    throw new Error("Flight not found");
+  }
+
+  // Fetch all bookings for this flight
+  const bookings = await Booking.find({ flight: flightId })
+    .select("passengerName passengerEmail seatsBooked selectedSeats status isJetShare")
+    .lean();
+
+  // Map available schedules and include booking details
+  const availableSchedules = flight.availableSchedules
+    .map((schedule, index) => {
+      const scheduleBookings = bookings.filter(booking => booking.scheduleIndex === index);
+
+      return {
+        scheduleIndex: index,
+        departureTime: schedule.departureTime,
+        arrivalTime: schedule.arrivalTime,
+        totalSeats: schedule.totalSeats,
+        availableSeats: schedule.availableSeats.length,
+        jetShare: schedule.jetShare,
+        maxPassengersPerJetShare: schedule.maxPassengersPerJetShare,
+        additionalCharge: schedule.additionalCharge,
+        bookings: scheduleBookings, // Include related bookings
+      };
+    })
+    .filter(schedule => schedule.availableSeats > 0);
+
+  return {
+    flightId: flight._id,
+    flightNumber: flight.flightNumber,
+    airline: flight.airline,
+    departureCity: flight.departure.city,
+    destinationCity: flight.destination.city,
+    availableSchedules,
+  };
 };
 
-/**
- * Delete a flight by ID
- * @param {string} id
- */
-const deleteFlight = async (id) => {
-  return await Flight.findByIdAndDelete(id);
-};
+
 
 export default {
     bulkCreateFlights,
   getAllFlights,
+  searchFlights,
   getFlightById,
-  updateFlight,
-  deleteFlight,
+  getAvailableSeats,
+  getAvailableSchedules,
 };

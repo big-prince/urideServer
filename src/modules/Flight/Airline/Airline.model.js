@@ -5,9 +5,10 @@ const AirlineSchema = new mongoose.Schema({
   code: { type: String, required: true, unique: true },
   country: { type: String, required: true },
   fleetSize: { type: Number, required: true },
-  logo: { type: String },
-  image: { type: String },
+  logo: { type: String }, 
+  image: { type: String }, 
+  pilots: [{ type: mongoose.Schema.Types.ObjectId, ref: "Pilot" }],
+  reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
 });
 
 export default mongoose.model("Airline", AirlineSchema);
-    
