@@ -22,6 +22,13 @@ if (process.env.NODE_ENV === "production") {
   configUrl = process.env.DEV_DATABASE_URL;
 }
 
+if (!configUrl) {
+  Logger.error(
+    "MongoDB URI is not defined. Please set MONGODB_URI or DEV_DATABASE_URL in your environment."
+  );
+  process.exit(1);
+}
+
 Mongoose.connect(configUrl, Config.mongoose.options)
   .then(() => {
     Logger.info("Connected to MongoDB");
