@@ -9,6 +9,7 @@ import {
   deleteUser,
 } from "../../validations/user.validation.js";
 import userController from "./user.controller.js";
+import routeLogger from "../../middlewares/route.js";
 
 const router = Router();
 
@@ -38,7 +39,7 @@ const router = Router();
  * @param {User} request.body.required - user info
  * @return {User} 200 - User response
  */
-router.post("", validate(createUser), userController.createUser);
+router.post("", routeLogger, validate(createUser), userController.createUser);
 
 /**
  * GET /api/v1/users
@@ -47,7 +48,7 @@ router.post("", validate(createUser), userController.createUser);
  * @return {array<User>} 200 - success response - application/json
  * @return {object} 400 - Bad request response
  */
-router.get("", validate(getUsers), userController.getUsers);
+router.get("", routeLogger, validate(getUsers), userController.getUsers);
 
 /**
  * GET /api/v1/users/:userId
@@ -57,7 +58,7 @@ router.get("", validate(getUsers), userController.getUsers);
  * @return {User} 200 - success response - application/json
  * @return {object} 400 - Bad request response
  */
-router.get("/:userId", validate(getUser), userController.getUser);
+router.get("/:userId", routeLogger, validate(getUser), userController.getUser);
 
 /**
  * PATCH /api/v1/users/update-user/:userId
@@ -67,7 +68,12 @@ router.get("/:userId", validate(getUser), userController.getUser);
  * @return {User} 200 - User response
  */
 // router.patch(auth("/:userId"), validate(updateUser), userController.updateUser);
-router.patch("/:userId", validate(updateUser), userController.updateUser);
+router.patch(
+  "/:userId",
+  routeLogger,
+  validate(updateUser),
+  userController.updateUser
+);
 
 /**
  * DELETE /api/v1/users/:userId/delete
@@ -77,7 +83,7 @@ router.patch("/:userId", validate(updateUser), userController.updateUser);
  * @param userId
  * @return {object} 400 - Bad request response
  */
-router.delete("/delete/:email", userController.deleteUser);
+router.delete("/delete/:email", routeLogger, userController.deleteUser);
 
 /**
  * PATCH /api/v1/users//update-driver-profile/:userId
@@ -88,6 +94,7 @@ router.delete("/delete/:email", userController.deleteUser);
  */
 router.patch(
   "/update-driver-profile/:userId",
+  routeLogger,
   validate(updateUser),
   userController.updateToDriverProfile
 );

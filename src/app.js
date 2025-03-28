@@ -132,8 +132,8 @@ app.use((err, req, res, next) => {
 // v1 api routes
 routes(app);
 
-//swagger config
-expressJSDocSwagger(app)(swaggerConfigOptions);
+//swagger config(TO BE SETUP PROPERLYLATER)
+// expressJSDocSwagger(app)(swaggerConfigOptions);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {

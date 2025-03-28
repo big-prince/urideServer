@@ -4,70 +4,60 @@ import rideController from "./ride.controller.js";
 // import validator from "../../validations/rides.validation.js";
 import formatDepartureTime from "../../utils/convert.date.js";
 import Logged from "../../middlewares/logged.js";
+import routeLogger from "../../middlewares/route.js";
 const router = Router();
 
-router.post("/book_ride", rideController.bookRide);
+router.post("/book_ride", routeLogger, rideController.bookRide);
 
 //Post for all rides
-router.post("/allrides", rideController.allRides);
+router.post("/allrides", routeLogger, rideController.allRides);
 
 //return all driver rides for manage ride
-router.post("/driver_rides", rideController.driverRides);
+router.post("/driver_rides", routeLogger, rideController.driverRides);
 
 //delete ride
-router.post("/delete_ride", rideController.deleteRide);
+router.post("/delete_ride", routeLogger, rideController.deleteRide);
 
 //remove rider from ride
-router.post("/remove_rider", rideController.removeRider);
+router.post("/remove_rider", routeLogger, rideController.removeRider);
 
 //add rider to ride
-router.post("/add_rider", rideController.addRider);
+router.post("/add_rider", routeLogger, rideController.addRider);
 
 //request to driver
-router.post("/request_ride", rideController.requestToDriver);
+router.post("/request_ride", routeLogger, rideController.requestToDriver);
 
 //start ride
-router.post("/start_ride", rideController.startRide);
+router.post("/start_ride", routeLogger, rideController.startRide);
 
 //get waiting list
-router.get("/waiting_list", rideController.waitingList);
+router.get("/waiting_list", routeLogger, rideController.waitingList);
 
 //delete user from waiting list
-router.post("/delete_waiting", rideController.deleteWaitingList);
+router.post("/delete_waiting", routeLogger, rideController.deleteWaitingList);
 
 //verify security code
-router.post("/verify_code", rideController.verifySecurityCode);
+router.post("/verify_code", routeLogger, rideController.verifySecurityCode);
 
 //end ride
-router.post("/end_ride", rideController.endRide);
+router.post("/end_ride", routeLogger, rideController.endRide);
 
 //test code
-router.post("/test", rideController.test);
+router.post("/test", routeLogger, rideController.test);
 
 //test distance
-router.post("/test_distance", rideController.testDistance);
+router.post("/test_distance", routeLogger, rideController.testDistance);
 
 //get user ride
-router.get("/user_ride", rideController.getUserRide);
+router.get("/user_ride", routeLogger, rideController.getUserRide);
 
 //ride expire checker
-router.get("/ride_cleaner", rideController.rideCleaner);
+router.get("/ride_cleaner", routeLogger, rideController.rideCleaner);
 
 //clear records
-router.get("/delete_records", rideController.deleteRecords);
+router.get("/delete_records", routeLogger, rideController.deleteRecords);
 
 //get ride status
-router.get("/ride_status", rideController.rideStatus);
-
-router.post("/booking_detail");
-router.post("/ride_request_accept");
-router.post("/ride_request_decline");
-router.post("/driver_cancel_ride");
-router.post("/passenger_cancel_ride");
-router.post("/passenger_cancel_ride_force");
-router.post("/driver_wait_user");
-router.post("/ride_start");
-router.post("/ride_stop");
-router.post("/update_location");
+router.get("/ride_status", routeLogger, rideController.rideStatus);
 
 export default router;

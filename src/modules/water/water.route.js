@@ -75,4 +75,12 @@ router.get(
   waterController.processOrder
 );
 
+//get order by tracking code
+router.get(
+  "/get_order_by_code/:code",
+  routeLogger,
+  extractAccess,
+  waterController.getOrderByTrackingCode
+);
+
 export default router;

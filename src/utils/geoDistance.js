@@ -5,12 +5,15 @@ const orsApiKey = "5b3ce3597851110001cf6248f739fa40679247eda22d0b4fd3a247ba";
 
 // Function to calculate distance between two coordinates
 const getDistance = async (origin, destination) => {
+  console.log("Calculating distance between:", origin, destination);
   try {
     // ORS expects coordinates in [longitude, latitude] format
     const locations = [
       [origin.lng, origin.lat],
       [destination.lng, destination.lat],
     ];
+
+    console.log("Locations:", locations);
 
     const response = await axios.post(
       "https://api.openrouteservice.org/v2/matrix/driving-car",
