@@ -4,6 +4,7 @@ import airlineService from "./Airline.service.js";
 const bulkCreateAirlines = async (req, res) => {
   try {
     const airline = await airlineService.bulkCreateAirlines();
+    const pilot = await airlineService.bulkCreatePilotAndReviews();
     res.status(201).json(airline);
   } catch (error) {
     res.status(500).json({ message: "Error creating airline", error });

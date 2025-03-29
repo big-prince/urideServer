@@ -2,6 +2,9 @@ import httpStatus from "http-status"
 import Airline from "./Airline.model.js"
 import ApiError from "../../../utils/ApiError.js";
 import Airport from "../Airport/Airport.model.js";
+import Pilot from "./Pilot.model.js";
+import Review from "./Reviews.model.js";
+import User from "../../users/user.model.js";
 
 /**
  * Create a new airline
@@ -87,23 +90,42 @@ const airlineData = [
   },
 ];
 
+const pilotNames = [
+  "James Anderson",
+  "Emily Johnson",
+  "Michael Smith",
+  "Sophia Davis",
+  "David Wilson",
+  "Olivia Martinez",
+  "Daniel Brown",
+  "Emma Thomas",
+];
+
+const reviewTexts = [
+  "Fantastic airline, great service!",
+  "Smooth flight and friendly crew.",
+  "Decent experience, but room for improvement.",
+  "Very comfortable seats and professional pilots.",
+  "Flight was delayed, but overall good service.",
+];
 
 const getRandomAirlines = () => {
-  const shuffled = airlineNames.sort(() => 0.5 - Math.random()); 
+  const shuffled = airlineData.sort(() => 0.5 - Math.random()); 
   return shuffled.slice(0, 4); 
 };
 const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
+const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 const bulkCreateAirlines = async () => {
   try {
     const airports = await Airport.find();
-    
+
     if (!airports.length) {
       throw new Error("No airports found");
     }
 
-    // Clear existing airlines to prevent duplicates
-    await Airline.deleteMany();
+    await Airline.deleteMany(); // Clear existing airlines
 
     const airlinesData = [];
 
@@ -111,19 +133,29 @@ const bulkCreateAirlines = async () => {
       const selectedAirlines = getRandomAirlines(); // Pick 4 random airlines
 
       selectedAirlines.forEach((airline) => {
+        if (!airline.name || !airline.country) {
+          console.error("❌ Missing name or country in airline:", airline);
+          return; // Skip invalid airline
+        }
+
         airlinesData.push({
-          ...airline, // Use pre-seeded airline data
-          code: `${airline.code}-${airport.code}`, // Ensure unique per airport
-          airport: airport._id, // Link airline to airport
-          fleetSize: airline.fleetSize || getRandomNumber(2, 10), // Use existing fleetSize or generate
+          name: airline.name, // Explicitly set name
+          code: `${airline.code}-${airport.code}`, // Unique code
+          country: airline.country, // Ensure country exists
+          fleetSize: airline.fleetSize || getRandomNumber(2, 10),
+          logo: airline.logo || "", // Provide default values if needed
+          image: airline.image || "",
+          airport: airport._id, 
         });
       });
     });
 
-    // Insert all airlines into DB
+    if (airlinesData.length === 0) {
+      throw new Error("No valid airlines to insert");
+    }
+
     const createdAirlines = await Airline.insertMany(airlinesData);
 
-    // Update each airport with its corresponding airlines
     for (const airline of createdAirlines) {
       await Airport.findByIdAndUpdate(airline.airport, {
         $push: { airlines: airline._id },
@@ -138,7 +170,62 @@ const bulkCreateAirlines = async () => {
   }
 };
 
+const bulkCreatePilotAndReviews = async () => {
+  try {
+    const airlines = await Airline.find();
+    if (!airlines.length) throw new Error("No airlines found!");
 
+    await Pilot.deleteMany();
+    await Review.deleteMany();
+
+    let pilotsData = [];
+    let reviewsData = [];
+
+    for (const airline of airlines) {
+      // Create random pilots for each airline
+      for (let i = 0; i < getRandomNumber(2, 5); i++) {
+        pilotsData.push({
+          name: getRandomElement(pilotNames),
+          image: `https://randomuser.me/api/portraits/men/${getRandomNumber(1, 99)}.jpg`, // Mock images
+          licenseNumber: `PILOT-${getRandomNumber(1000, 9999)}`,
+          hoursFlown: getRandomNumber(500, 10000),
+          rating: getRandomNumber(3, 5),
+          airline: airline._id,
+        });
+      }
+
+      const users = await User.find(); // Fetch random users to leave reviews
+
+      for (let i = 0; i < getRandomNumber(1, 3); i++) {
+        if (!users.length) break;
+      
+        const user = getRandomElement(users);
+      
+        // Check if a review already exists for this user and airline
+        const existingReview = await Review.findOne({ user: user._id, airline: airline._id });
+        if (existingReview) continue; // Skip if review exists
+      
+        reviewsData.push({
+          user: user._id,
+          airline: airline._id,
+          rating: getRandomNumber(3, 5),
+          review: getRandomElement(reviewTexts),
+        });
+      }
+
+    // Insert pilots and reviews
+    const createdPilots = await Pilot.insertMany(pilotsData);
+    const createdReviews = await Review.insertMany(reviewsData);
+
+    console.log("✅ Pilots and Reviews added successfully!");
+
+    return { createdPilots, createdReviews };
+  }
+  } catch (error) {
+    console.error("❌ Error seeding pilots and reviews:", error);
+    throw error;
+  }
+};
 /**
  * Get all airlines
  * @returns {Promise<Array<Airline>>}
@@ -194,6 +281,7 @@ const deleteAirline = async (airlineId) => {
 export default {
   bulkCreateAirlines,
   getAllAirlines,
+  bulkCreatePilotAndReviews,
   getAirlineById,
   updateAirline,
   deleteAirline,
