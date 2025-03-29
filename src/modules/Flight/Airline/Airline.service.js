@@ -1,5 +1,5 @@
-import httpStatus from "http-status"
-import Airline from "./Airline.model.js"
+import httpStatus from "http-status";
+import Airline from "./Airline.model.js";
 import ApiError from "../../../utils/ApiError.js";
 import Airport from "../Airport/Airport.model.js";
 import Pilot from "./Pilot.model.js";
@@ -20,7 +20,7 @@ const airlineNames = [
   "Green Africa Airways",
   "United Nigeria Airlines",
   "Max Air",
-  "Overland Airways"
+  "Overland Airways",
 ];
 
 const airlineData = [
@@ -30,7 +30,8 @@ const airlineData = [
     country: "Nigeria",
     fleetSize: 32,
     logo: "https://upload.wikimedia.org/wikipedia/en/6/68/Air_Peace_logo.png",
-    image: "https://airpeace.com/wp-content/uploads/2022/08/airpeace-flight.jpg",
+    image:
+      "https://airpeace.com/wp-content/uploads/2022/08/airpeace-flight.jpg",
   },
   {
     name: "Arik Air",
@@ -86,7 +87,8 @@ const airlineData = [
     country: "Nigeria",
     fleetSize: 4,
     logo: "https://upload.wikimedia.org/wikipedia/en/7/7f/Overland_Airways_Logo.png",
-    image: "https://overlandairways.com/wp-content/uploads/2021/04/aircraft.jpg",
+    image:
+      "https://overlandairways.com/wp-content/uploads/2021/04/aircraft.jpg",
   },
 ];
 
@@ -113,7 +115,8 @@ const getRandomAirlines = () => {
   const shuffled = airlineData.sort(() => 0.5 - Math.random()); 
   return shuffled.slice(0, 4); 
 };
-const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const getRandomNumber = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
 
 const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 

@@ -177,6 +177,23 @@ const processOrder = catchAsync(async (req, res, next) => {
   }
 });
 
+//get order by tracking code
+const getOrderByTrackingCode = catchAsync(async (req, res, next) => {
+  try {
+    const order = await waterService.getOrderByTrackingCode(req.params.code);
+    if (!order) {
+      return next(new customError("Order not found", httpStatus.BAD_REQUEST));
+    }
+    Response.sendSuccessResponse(res, 200, order);
+  } catch (e) {
+    console.log(e);
+    if (e instanceof customError) {
+      Response.sendErrResponse(res, e.statusCode, e);
+    }
+    Response.sendErrResponse(res, httpStatus.INTERNAL_SERVER_ERROR, e);
+  }
+});
+
 export default {
   sendOrder,
   sendCoupon,
@@ -188,4 +205,5 @@ export default {
   getWaterRates,
   completeOrder,
   processOrder,
+  getOrderByTrackingCode,
 };

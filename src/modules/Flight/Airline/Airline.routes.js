@@ -1,14 +1,15 @@
 import { Router } from "express";
+import routeLogger from "../../../middlewares/route.js";
 import airlineController from "./Airline.controller.js";
 
 const airlineRoutes = Router();
 
-airlineRoutes.post("/", airlineController.bulkCreateAirlines);
+airlineRoutes.post("/", routeLogger, airlineController.bulkCreateAirlines);
 
-airlineRoutes.get("/", airlineController.getAllAirlines);
+airlineRoutes.get("/", routeLogger, airlineController.getAllAirlines);
 
-airlineRoutes.get("/:id", airlineController.getAirlineById);
+airlineRoutes.get("/:id", routeLogger, airlineController.getAirlineById);
 
-airlineRoutes.put("/:id", airlineController.updateAirline);
+airlineRoutes.put("/:id", routeLogger, airlineController.updateAirline);
 
 export default airlineRoutes;
