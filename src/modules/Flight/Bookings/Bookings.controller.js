@@ -1,26 +1,64 @@
 import httpStatus from "http-status";
-import bookingService from "./Bookings.service";
+import bookingService from "./Bookings.service.js";
 
-const bookJet = async (req, res) => {
+const bookJet = async (req, res, next) => {
   try {
-    
-    const flightId = req.params.flightId
-    const scheduleIndex = req.body.scheduleIndex
-    const passengerInfo = req.body.passengerInfo
+    const { flightId } = req.params;
+    const {
+      scheduleIndex,
+      selectedSeat,
+      passengerInfo,
+      enableJetShare,
+      maxJetSharePassengers,
+      jetSharePricePerSeat,
+    } = req.body;
 
-    const airport = await bookingService.bookJet(flightId, scheduleIndex, passengerInfo);
-    res.status(201).json(airport);
+    let booking;
+
+    if (selectedSeat && enableJetShare) {
+      booking = await bookingService.bookJetWithJetShare({
+        flightId,
+        scheduleIndex,
+        passengerInfo,
+        enableJetShare,
+        maxJetSharePassengers,
+        jetSharePricePerSeat,
+        selectedSeat
+      });
+    } else if (selectedSeat) {
+      booking = await bookingService.bookJetShareSeat({
+        flightId,
+        scheduleIndex,
+        passengerInfo,
+        selectedSeat,
+      });
+    } else {
+      booking = await bookingService.bookJet(
+        flightId,
+        scheduleIndex,
+        passengerInfo
+      );
+    }
+
+    return res.status(201).json({
+      message: "Booking successful, proceed to payment",
+      booking,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error creating airport", error });
+    next(error);
   }
 };
 
-const bookJetShareSeat = async (req, res) => {
+const getBooking = async (req, res, next) => {
   try {
-    const airports = await airportService.getAllAirports();
-    res.json(airports);
+    const { bookingId } = req.params;
+    const booking = await bookingService.getBookingById(bookingId);
+    return res.status(201).json({
+      message: "Booking fetched successfully",
+      booking,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching airports", error });
+    next(error);
   }
 };
 
@@ -36,6 +74,6 @@ const bookJetWithJetShare = async (req, res) => {
 
 export default {
   bookJet,
-  bookJetShareSeat,
+  getBooking,
   bookJetWithJetShare,
 };

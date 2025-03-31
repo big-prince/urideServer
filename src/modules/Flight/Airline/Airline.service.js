@@ -39,7 +39,7 @@ const airlineData = [
     country: "Nigeria",
     fleetSize: 22,
     logo: "https://upload.wikimedia.org/wikipedia/en/d/df/Arik_Air_logo.svg",
-    image: "https://www.arikair.com/images/arik_aircraft.jpg",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQr5sdYkcsxIkMUvIf9_iLwgUNLwIum3T3FeA&s",
   },
   {
     name: "Dana Air",
@@ -47,7 +47,7 @@ const airlineData = [
     country: "Nigeria",
     fleetSize: 10,
     logo: "https://www.danaair.com/img/logo.png",
-    image: "https://www.danaair.com/img/fleet.png",
+    image: "https://dailypost.ng/wp-content/uploads/2012/06/Dana-Air-Suspended-in-Nigeria.jpg",
   },
   {
     name: "Ibom Air",
@@ -55,7 +55,7 @@ const airlineData = [
     country: "Nigeria",
     fleetSize: 7,
     logo: "https://ibomair.com/wp-content/uploads/2021/05/IbomAir.png",
-    image: "https://ibomair.com/wp-content/uploads/2021/05/aircraft.jpg",
+    image: "https://www.ibomair.com/wp-content/uploads/2024/08/A220-300_Ibom-Air-600x315.jpg",
   },
   {
     name: "Green Africa Airways",
@@ -63,7 +63,7 @@ const airlineData = [
     country: "Nigeria",
     fleetSize: 5,
     logo: "https://greenafrica.com/static/media/logo.23f4858d.svg",
-    image: "https://greenafrica.com/static/media/airplane.8cfa7ffb.jpg",
+    image: "https://eturbonews.com/wp-content/uploads/2018/12/GAA.jpeg",
   },
   {
     name: "United Nigeria Airlines",
@@ -71,7 +71,7 @@ const airlineData = [
     country: "Nigeria",
     fleetSize: 6,
     logo: "https://flyunitednigeria.com/assets/img/logo.png",
-    image: "https://flyunitednigeria.com/assets/img/plane.jpg",
+    image: "https://global.ariseplay.com/amg/www.arise.tv/uploads/2023/09/United-Nigeria-Airlines.jpeg",
   },
   {
     name: "Max Air",
@@ -79,7 +79,7 @@ const airlineData = [
     country: "Nigeria",
     fleetSize: 9,
     logo: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Max_Air_logo.png",
-    image: "https://maxair.com.ng/assets/img/aircraft.jpg",
+    image: "https://dailytrust.com/wp-content/uploads/2021/05/Max-Air-3.jpg",
   },
   {
     name: "Overland Airways",
@@ -88,7 +88,7 @@ const airlineData = [
     fleetSize: 4,
     logo: "https://upload.wikimedia.org/wikipedia/en/7/7f/Overland_Airways_Logo.png",
     image:
-      "https://overlandairways.com/wp-content/uploads/2021/04/aircraft.jpg",
+      "https://atqnews.com/wp-content/uploads/2024/08/overland-airways-1170x791.jpg",
   },
 ];
 
