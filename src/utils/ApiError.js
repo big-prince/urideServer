@@ -5,12 +5,12 @@ class ApiError extends Error {
     this.isOperational = isOperational;
     if (stack) {
       this.stack = stack;
+    } else {
+      Error.captureStackTrace(this, this.constructor);
     }
-    // else {
-    //   Error.captureStackTrace(this, this.constructor);
-    // }
   }
 }
+
 export const errorHandler = (err, req, res, next) => {
   let statusCode = err.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
   let message = err.message || "Something went wrong";

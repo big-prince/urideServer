@@ -6,14 +6,14 @@
     "auditLog": "C:\\Users\\micha\\OneDrive\\Documents\\Code\\URide\\new-backend\\src\\logs\\.a434e0e6b9373bba76c7a1c0367fb1536528015b-audit.json",
     "files": [
         {
-            "date": 1743189857752,
-            "name": "C:\\Users\\micha\\OneDrive\\Documents\\Code\\URide\\new-backend\\src\\logs\\2025-03-28.log",
-            "hash": "bc6c83a9bd497710ed4a2d4bf6ac208db3b264e57ab3ee637df8ee5ab4a63130"
-        },
-        {
             "date": 1743268619745,
             "name": "C:\\Users\\micha\\OneDrive\\Documents\\Code\\URide\\new-backend\\src\\logs\\2025-03-29.log",
             "hash": "99cb17883c271ca824e73fda5e950d4ca1346599fefed28ce2e7681b8bd4e633"
+        },
+        {
+            "date": 1743412882827,
+            "name": "C:\\Users\\micha\\OneDrive\\Documents\\Code\\URide\\new-backend\\src\\logs\\2025-03-31.log",
+            "hash": "78f359a3be9e7616cb7c9b7ea9aa4c76f97230b605b9391ac1f2ba53489b1bbb"
         }
     ],
     "hashType": "sha256"

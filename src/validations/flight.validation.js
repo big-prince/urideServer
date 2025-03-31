@@ -7,6 +7,7 @@ export const bookJet = {
   }),
   body: Joi.object().keys({
     scheduleIndex: Joi.number().integer().min(0).required(),
+    selectedSeat: Joi.string().optional(),
     passengerInfo: Joi.object()
       .keys({
         name: Joi.string().required(),
