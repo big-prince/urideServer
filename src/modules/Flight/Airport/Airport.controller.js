@@ -1,3 +1,4 @@
+import httpStatus from "http-status";
 import airportService from "./Airport.service.js";
 
 const bulkCreateAirport = async (req, res) => {
@@ -38,6 +39,19 @@ const updateAirport = async (req, res) => {
   }
 };
 
+const getAllCitiesWithCodes = async (req, res, next) => {
+  try {
+    const cities = await airportService.getCitiesWithCodes();
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: cities,
+    });
+  } catch (error) {
+    next(error); // Pass the error to the global error handler
+  }
+};
+
 const deleteAirport = async (req, res) => {
   try {
     const result = await airportService.deleteAirport(req.params.id);
@@ -50,6 +64,7 @@ const deleteAirport = async (req, res) => {
 
 export default {
   bulkCreateAirport,
+  getAllCitiesWithCodes,
   getAllAirports,
   getAirportById,
   updateAirport,

@@ -96,12 +96,29 @@ export const bulkCreateAirport = async () => {
   }
 };
 
+const getCitiesWithCodes = async () => {
+  try {
+    const cities = await Airport.find().select("city code -_id");
+
+    if (!cities.length) {
+      throw new ApiError(httpStatus.NOT_FOUND, "No airports found");
+    }
+
+    return cities;
+  } catch (error) {
+    console.error("Error fetching cities with codes:", error);
+    throw error;
+  }
+};
+
 /**
  * Get all airports
  * @returns {Promise<Array<Airport>>}
  */
 const getAllAirports = async () => {
-  return await Airport.find().sort({ name: 1 });
+    return await Airport.find()
+      .populate("airlines")  // Populate airlines relationship
+      .sort({ name: 1 });  // Sort alphabetically
 };
 
 /**
@@ -178,4 +195,5 @@ export default {
   getAirportById,
   updateAirport,
   deleteAirport,
+  getCitiesWithCodes,
 };

@@ -27,7 +27,7 @@ const getAllFlights = async (req, res) => {
   }
 };
 
-const findAvailableFlights = async (req, res) => {
+const findAvailableFlights = async (req, res, next) => {
   try {
     const { departureCity, destinationCity } = req.body;
     const flights = await flightService.searchFlights(
@@ -36,9 +36,7 @@ const findAvailableFlights = async (req, res) => {
     );
     res.status(httpStatus.OK).json(flights);
   } catch (error) {
-    res
-      .status(httpStatus.INTERNAL_SERVER_ERROR)
-      .json({ message: error.message });
+    next(error);
   }
 };
 
