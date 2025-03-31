@@ -250,4 +250,5 @@ const bookJetWithJetShare = async ({
 export default {
   bookJet,
   bookJetShareSeat,
+  bookJetWithJetShare
 };

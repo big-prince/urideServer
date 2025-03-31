@@ -16,6 +16,7 @@ const io = new Server(server, {
 });
 
 let configUrl;
+console.log("NODE_ENV =======>>>>>>>>>", process.env.NODE_ENV);
 if (process.env.NODE_ENV === "production") {
   configUrl = Config.mongoose.url;
 } else {

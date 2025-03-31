@@ -11,7 +11,7 @@
 	},
 	"scripts": {
 		"start": "node src/index.js",
-		"dev": "cross-env NODE_ENV=development nodemon src/index.js",
+		"dev": " nodemon src/index.js",
 		"test": "NODE_OPTIONS=--experimental-vm-modules jest -i",
 		"test:watch": "NODE_OPTIONS=--experimental-vm-modules jest -i --watchAll",
 		"coverage": "NODE_OPTIONS=--experimental-vm-modules jest -i --coverage",

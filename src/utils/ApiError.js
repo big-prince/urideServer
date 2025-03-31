@@ -11,5 +11,16 @@ class ApiError extends Error {
     // }
   }
 }
+export const errorHandler = (err, req, res, next) => {
+  let statusCode = err.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
+  let message = err.message || "Something went wrong";
+
+  console.error("Error:", { statusCode, message, stack: err.stack });
+
+  res.status(statusCode).json({
+    success: false,
+    message,
+  });
+};
 
 export default ApiError;

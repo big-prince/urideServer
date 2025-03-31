@@ -17,7 +17,7 @@ import jwtStrategy from "./config/passport.js";
 import authLimiter from "./middlewares/rateLimiter.js";
 import routes from "./modules/index.js";
 import Errors from "./middlewares/error.js";
-import ApiError from "./utils/ApiError.js";
+import ApiError, { errorHandler } from "./utils/ApiError.js";
 import { swaggerConfigOptions } from "./config/swagger.js";
 import dotenv from "dotenv";
 import logger from "./config/logger.js";
@@ -145,5 +145,8 @@ app.use(Errors.errorConverter);
 
 // handle error
 app.use(Errors.errorHandler);
+
+app.use(errorHandler);
+
 
 export default app;

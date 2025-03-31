@@ -8,6 +8,8 @@ airportRoutes.get("/test", (req, res) => {
   res.status(200).json({ message: "Airport route working!" });
 });
 
+airportRoutes.get("/cities", routeLogger, airportController.getAllCitiesWithCodes);
+
 airportRoutes.post("/", routeLogger, airportController.bulkCreateAirport);
 
 airportRoutes.get("/", routeLogger, airportController.getAllAirports);

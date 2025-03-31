@@ -2,6 +2,9 @@ import httpStatus from "http-status";
 import Airline from "./Airline.model.js";
 import ApiError from "../../../utils/ApiError.js";
 import Airport from "../Airport/Airport.model.js";
+import Pilot from "./Pilot.model.js";
+import Review from "./Reviews.model.js";
+import User from "../../users/user.model.js";
 
 /**
  * Create a new airline
@@ -28,7 +31,7 @@ const airlineData = [
     fleetSize: 32,
     logo: "https://upload.wikimedia.org/wikipedia/en/6/68/Air_Peace_logo.png",
     image:
-      "https://airpeace.com/wp-content/uploads/2022/08/airpeace-flight.jpg",
+      "https://radpointer.com/wp-content/uploads/2024/02/Air-Peace.jpeg",
   },
   {
     name: "Arik Air",
@@ -89,12 +92,33 @@ const airlineData = [
   },
 ];
 
+const pilotNames = [
+  "James Anderson",
+  "Emily Johnson",
+  "Michael Smith",
+  "Sophia Davis",
+  "David Wilson",
+  "Olivia Martinez",
+  "Daniel Brown",
+  "Emma Thomas",
+];
+
+const reviewTexts = [
+  "Fantastic airline, great service!",
+  "Smooth flight and friendly crew.",
+  "Decent experience, but room for improvement.",
+  "Very comfortable seats and professional pilots.",
+  "Flight was delayed, but overall good service.",
+];
+
 const getRandomAirlines = () => {
-  const shuffled = airlineNames.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, 4);
+  const shuffled = airlineData.sort(() => 0.5 - Math.random()); 
+  return shuffled.slice(0, 4); 
 };
 const getRandomNumber = (min, max) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
+
+const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const bulkCreateAirlines = async () => {
   try {
@@ -104,8 +128,7 @@ const bulkCreateAirlines = async () => {
       throw new Error("No airports found");
     }
 
-    // Clear existing airlines to prevent duplicates
-    await Airline.deleteMany();
+    await Airline.deleteMany(); // Clear existing airlines
 
     const airlinesData = [];
 
@@ -113,29 +136,137 @@ const bulkCreateAirlines = async () => {
       const selectedAirlines = getRandomAirlines(); // Pick 4 random airlines
 
       selectedAirlines.forEach((airline) => {
+        if (!airline.name || !airline.country) {
+          console.error("❌ Missing name or country in airline:", airline);
+          return; // Skip invalid airline
+        }
+
         airlinesData.push({
-          ...airline, // Use pre-seeded airline data
-          code: `${airline.code}-${airport.code}`, // Ensure unique per airport
-          airport: airport._id, // Link airline to airport
-          fleetSize: airline.fleetSize || getRandomNumber(2, 10), // Use existing fleetSize or generate
+          name: airline.name, // Explicitly set name
+          code: `${airline.code}-${airport.code}`, // Unique code
+          country: airline.country, // Ensure country exists
+          fleetSize: airline.fleetSize || getRandomNumber(2, 10),
+          logo: airline.logo || "", // Provide default values if needed
+          image: airline.image || "",
+          airport: airport._id, 
         });
       });
     });
 
-    // Insert all airlines into DB
+    if (airlinesData.length === 0) {
+      throw new Error("No valid airlines to insert");
+    }
+
     const createdAirlines = await Airline.insertMany(airlinesData);
 
-    // Update each airport with its corresponding airlines
     for (const airline of createdAirlines) {
       await Airport.findByIdAndUpdate(airline.airport, {
         $push: { airlines: airline._id },
       });
     }
 
-    console.log("✅ Airlines created successfully:", createdAirlines);
+    console.log("✅ Airlines created successfully:");
     return createdAirlines;
   } catch (error) {
     console.error("❌ Error creating airlines:", error);
+    throw error;
+  }
+};
+
+const bulkCreatePilotAndReviews = async () => {
+  try {
+    const airlines = await Airline.find();
+    if (!airlines.length) throw new Error("No airlines found!");
+
+    await Pilot.deleteMany(); // Clearing previous pilots
+    await Review.deleteMany(); // Clearing previous reviews
+
+    let pilotsData = [];
+    let reviewsData = [];
+    let pilotsMap = {};
+    let reviewsMap = {};
+
+    const existingPilots = await Pilot.find({}, { licenseNumber: 1, _id: 0 });
+    const usedLicenseNumbers = new Set(existingPilots.map((p) => p.licenseNumber));
+
+    for (const airline of airlines) {
+      pilotsMap[airline._id] = [];
+      reviewsMap[airline._id] = [];
+
+      // Generate pilots
+      for (let i = 0; i < getRandomNumber(2, 5); i++) {
+        let licenseNumber;
+        do {
+          licenseNumber = `PILOT-${getRandomNumber(1000, 9999)}`;
+        } while (usedLicenseNumbers.has(licenseNumber));
+
+        usedLicenseNumbers.add(licenseNumber);
+
+        const pilot = {
+          name: getRandomElement(pilotNames),
+          image: `https://randomuser.me/api/portraits/men/${getRandomNumber(1, 99)}.jpg`,
+          licenseNumber,
+          hoursFlown: getRandomNumber(500, 10000),
+          rating: getRandomNumber(3, 5),
+          airline: airline._id,
+        };
+        pilotsData.push(pilot);
+      }
+
+      // Generate reviews
+      const users = await User.find();
+      const existingReviews = await Review.find({}, { user: 1, airline: 1, _id: 0 });
+      const existingReviewSet = new Set(existingReviews.map(r => `${r.user}_${r.airline}`));
+
+      for (let i = 0; i < getRandomNumber(1, 3); i++) {
+        if (!users.length) break;
+
+        const user = getRandomElement(users);
+        const reviewKey = `${user._id}_${airline._id}`;
+
+        if (existingReviewSet.has(reviewKey)) continue; // Skip duplicate reviews
+
+        existingReviewSet.add(reviewKey);
+
+        const review = {
+          user: user._id,
+          airline: airline._id,
+          rating: getRandomNumber(3, 5),
+          review: getRandomElement(reviewTexts),
+        };
+        reviewsData.push(review);
+      }
+    }
+
+    // Insert pilots in bulk
+    const createdPilots = await Pilot.insertMany(pilotsData);
+    createdPilots.forEach(pilot => pilotsMap[pilot.airline].push(pilot._id));
+
+    // Insert reviews in bulk and handle duplicates
+    try {
+      const createdReviews = await Review.insertMany(reviewsData, { ordered: false });
+      createdReviews.forEach(review => reviewsMap[review.airline].push(review._id));
+    } catch (err) {
+      console.warn("Some reviews were skipped due to duplicate keys.");
+    }
+
+    // Update airlines with pilots and reviews
+    for (const airlineId of Object.keys(pilotsMap)) {
+      await Airline.findByIdAndUpdate(airlineId, {
+        $push: { pilots: { $each: pilotsMap[airlineId] } },
+      });
+    }
+
+    for (const airlineId of Object.keys(reviewsMap)) {
+      await Airline.findByIdAndUpdate(airlineId, {
+        $push: { reviews: { $each: reviewsMap[airlineId] } },
+      });
+    }
+
+    console.log("✅ Pilots and Reviews added successfully!");
+    return { createdPilots, createdReviews };
+  } catch (error) {
+    console.error("❌ Error seeding pilots and reviews:", error);
     throw error;
   }
 };
@@ -145,7 +276,10 @@ const bulkCreateAirlines = async () => {
  * @returns {Promise<Array<Airline>>}
  */
 const getAllAirlines = async () => {
-  return await Airline.find().sort({ name: 1 }); // Sort alphabetically
+  return await Airline.find()
+    .populate("pilots")  // Populate pilots relationship
+    .populate("reviews") // Populate reviews relationship
+    .sort({ name: 1 });  // Sort alphabetically
 };
 
 /**
@@ -195,6 +329,7 @@ const deleteAirline = async (airlineId) => {
 export default {
   bulkCreateAirlines,
   getAllAirlines,
+  bulkCreatePilotAndReviews,
   getAirlineById,
   updateAirline,
   deleteAirline,
