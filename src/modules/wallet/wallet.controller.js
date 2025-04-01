@@ -113,6 +113,27 @@ export const initializeOrderPayment = catchAsync(async (req, res) => {
   }
 });
 
+export const initializeFlightPayment = catchAsync(async (req, res, next) => {
+  try {
+    console.log("Gotten Here: ===========>>>>>>>>> Controler")
+    const user = req.realUser;
+    const { bookingId } = req.params;
+    const result = await walletService.initializeFlightPayment(user, bookingId);
+
+    if (!result) {
+      return Response.sendErrResponse(
+        res,
+        httpStatus.BAD_REQUEST,
+        "Invalid request"
+      );
+    }
+
+    return Response.sendSuccessResponse(res, httpStatus.OK, result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default {
   paystackCallback,
   initializePayment,
@@ -120,4 +141,5 @@ export default {
   getWallet,
   getTransactionHistory,
   initializeOrderPayment,
+  initializeFlightPayment,
 };

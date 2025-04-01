@@ -22,6 +22,11 @@ const BookingsSchema = new mongoose.Schema({
     enum: ["Confirmed", "Pending", "Cancelled"],
     default: "Pending",
   },
+  paymentStatus: {
+    type: String,
+    enum: ["successful", "unsuccessful", "pending"],
+    default: "pending",
+  },
   bookingDate: { type: Date, default: Date.now },
 
   isRoundTrip: { type: Boolean, default: false },

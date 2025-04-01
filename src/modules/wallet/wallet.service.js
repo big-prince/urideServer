@@ -11,6 +11,7 @@ import { type } from "os";
 
 //import logger
 import customError from "../../utils/customError.js";
+import Bookings from "../Flight/Bookings/Bookings.model.js";
 
 //callback for paystack
 const paystackCallback = async function (body) {
@@ -125,6 +126,27 @@ const webhookVerification = async function (details, headers) {
           //change type to debit
           type = "debit";
         }
+        if (transaction.transactionType === "flight") {
+          // Update order status
+          const flight = await Bookings.findById(transaction.flightId);
+          if (!flight) {
+            throw new customError("flight not found", 404).serveError();
+          }
+
+          if (flight.paymentStatus === "successful") {
+            console.log("flight already paid for.");
+            return;
+          }
+
+          flight.paymentStatus = true;
+
+          await flight.save().then(() => {
+            Logger.info("flight updated.");
+          });
+
+          //change type to debit
+          type = "debit";
+        }
 
         async function clearIndexes() {
           try {
@@ -150,6 +172,7 @@ const webhookVerification = async function (details, headers) {
             gatewayResponse: data.gateway_response,
             type: transaction.transactionType,
             orderId: transaction.orderId,
+            flightId: transaction.flightId,
           },
           transactionType: type,
         });
@@ -241,6 +264,67 @@ const initializeOrderPayment = async function (details, callback) {
   }
 };
 
+//initiliaze payment for order
+const initializeFlightPayment = async function (user, bookingId) {
+  console.log("Gotten Here: ===========>>>>>>>>> Service");
+
+  const { _id, email } = user;
+
+  const flight = await Bookings.findById(bookingId);
+
+  if (!flight) {
+    throw new customError("Flight not found", 404).serveError();
+  }
+
+  if (flight.paymentStatus === "successful") {
+    console.log("flight already paid for.");
+    return;
+  }
+
+  const amount = flight.totalPrice;
+
+  const transactionquery = {
+    userId: _id,
+    amount,
+    reference: `ref_${Date.now()}`,
+    transactionType: "flight",
+    bookingId,
+  };
+  const transaction = new Transaction(transactionquery);
+
+  await transaction.save().then(() => {
+    Logger.info("Transaction Saved.");
+  });
+
+  let message;
+  try {
+    console.log("Gotten Here: ===========>>>>>>>>> Making Payment");
+
+    const response = await axios.post(
+      "https://api.paystack.co/transaction/initialize",
+      {
+        email,
+        amount: amount * 100,
+        reference: transaction.reference,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    Logger.info("Transaction initialized.");
+
+    message = response.data.data.authorization_url;
+
+    return message;
+  } catch (error) {
+    Logger.info("Failed to initialize transaction", error);
+  }
+};
+
 export default {
   initializePayment,
   paystackCallback,
@@ -248,4 +332,5 @@ export default {
   sendWalletDetails,
   sendTransactionHistory,
   initializeOrderPayment,
+  initializeFlightPayment,
 };
