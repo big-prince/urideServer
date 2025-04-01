@@ -64,11 +64,11 @@ const getAvailableSeats = async (req, res, next) => {
   try {
     const flightId = req.params.flightId;
 
-    const departureTime = req.query.departureTime;
+    const scheduleIndex = req.query.scheduleIndex;
 
     const availableSeats = await flightService.getAvailableSeats(
       flightId,
-      departureTime
+      scheduleIndex
     );  
 
     return res.status(httpStatus.OK).json(availableSeats);

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import auth from "../../middlewares/auth.js";
+import auth from "../../middlewares/logged.js";
 import validate from "../../middlewares/validate.js";
 import extractAccess from "../../middlewares/extractAccess.js";
 import routeLogger from "../../middlewares/route.js";
@@ -53,6 +53,13 @@ router.post(
   routeLogger,
   extractAccess,
   walletController.initializeOrderPayment
+);
+
+router.get(
+  "/initialize_flight_payment/:bookingId",
+  auth,
+  routeLogger,
+  walletController.initializeFlightPayment
 );
 
 export default router;

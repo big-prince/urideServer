@@ -197,27 +197,67 @@ const getFlightById = async (id) => {
     .select("flightNumber availableSchedules");
 };
 
-const getAvailableSeats = async (flightId, departureTime) => {
-  // Fetch the flight and filter the schedule based on departureTime
+// const getAvailableSeats = async (flightId, departureTime) => {
+//   // Fetch the flight and filter the schedule based on departureTime
+//   const flight = await Flight.findById(flightId);
+//   if (!flight) throw new Error("Flight not found");
+
+//   const schedule = flight.availableSchedules.find(
+//     (s) => s.departureTime === departureTime
+//   );
+//   if (!schedule) throw new Error("Schedule not found");
+
+//   // Get the total booked seats for this flight at this schedule
+//   const bookedSeats = await Bookings.aggregate([
+//     { $match: { flight: flight._id, status: "Confirmed" } },
+//     { $group: { _id: null, totalBooked: { $sum: "$seatsBooked" } } },
+//   ]);
+
+//   const totalBooked = bookedSeats.length ? bookedSeats[0].totalBooked : 0;
+//   const availableSeats = schedule.totalSeats - totalBooked;
+
+//   return availableSeats >= 0 ? availableSeats : 0;
+// };
+
+const getAvailableSeats = async (flightId, scheduleIndex) => {
+  // Fetch the flight
   const flight = await Flight.findById(flightId);
   if (!flight) throw new Error("Flight not found");
 
-  const schedule = flight.availableSchedules.find(
-    (s) => s.departureTime === departureTime
-  );
-  if (!schedule) throw new Error("Schedule not found");
+  // Find the schedule using the provided scheduleIndex
+  const schedule = flight.availableSchedules[scheduleIndex];
+  if (!schedule) throw new Error("Invalid schedule index");
 
-  // Get the total booked seats for this flight at this schedule
+  // Get the total booked seats for this schedule
   const bookedSeats = await Bookings.aggregate([
-    { $match: { flight: flight._id, status: "Confirmed" } },
-    { $group: { _id: null, totalBooked: { $sum: "$seatsBooked" } } },
+    {
+      $match: {
+        flight: flight._id,
+        scheduleIndex: scheduleIndex,
+        status: "Confirmed",
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalBooked: { $sum: "$seatsBooked" },
+      },
+    },
   ]);
 
+  // Calculate available seats
   const totalBooked = bookedSeats.length ? bookedSeats[0].totalBooked : 0;
   const availableSeats = schedule.totalSeats - totalBooked;
 
-  return availableSeats >= 0 ? availableSeats : 0;
+  return {
+    scheduleIndex,
+    departureTime: schedule.departureTime,
+    availableSeats: availableSeats > 0 ? availableSeats : 0,
+    jetShareEnabled: schedule.jetShare,
+    jetSharePricePerSeat: schedule.jetShare ? schedule.jetSharePricePerSeat : null,
+  };
 };
+
 
 /**
  * Fetch available schedules for a specific flight.
