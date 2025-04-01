@@ -34,8 +34,10 @@ const extractAccess = async (req, res, next) => {
 
     req.token = decoded;
     req.id = decoded.sub;
+    console.log("Auth Cleared...");
     next();
   } catch (error) {
+    console.log(error);
     return res.status(401).json({
       status: "error",
       message: "Unauthorized access, invalid token",

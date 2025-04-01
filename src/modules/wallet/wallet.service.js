@@ -19,10 +19,8 @@ const paystackCallback = async function (body) {
 };
 
 //intitialize top-up payment
-const initializePayment = async function (details, callback) {
+const initializePayment = async function (details) {
   const { userId, amount, email } = details;
-  Logger.info(details);
-  // Validate the amount
   if (!amount || amount <= 100) {
     return res.status(400).json({ error: "Invalid amount" });
   }
@@ -189,13 +187,21 @@ const sendTransactionHistory = async function (req) {
 };
 
 //initiliaze payment for order
-const initializeOrderPayment = async function (details, callback) {
-  const { userId, amount, email, orderId } = details;
+const initializeOrderPayment = async function (details) {
+  const { userId, email, orderId } = details;
+
+  const order = await Order.findById(orderId).catch();
+  if (!order) {
+    throw new customError("Order not found").serveError();
+  }
+  if (order.paid) {
+    return {
+      message: "This order has already been paid for.",
+    };
+  }
 
   // Validate the amount
-  if (!amount || amount <= 100) {
-    throw new customError("Invalid amount", 400).serveError();
-  }
+  const amount = order.cost.amount;
 
   // Create a new transaction
   const transactionquery = {

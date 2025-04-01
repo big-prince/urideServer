@@ -75,4 +75,20 @@ router.get(
   waterController.processOrder
 );
 
+//get water rates
+router.get(
+  "/get_rate/:weight",
+  routeLogger,
+  extractAccess,
+  waterController.getWaterRates
+);
+
+//get water rates with coupon
+router.get(
+  "/get_rate_coupon/:weight/:coupon",
+  routeLogger,
+  extractAccess,
+  waterController.getWaterRatesWithCoupons
+);
+
 export default router;

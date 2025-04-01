@@ -87,6 +87,12 @@ const userSchema = new Mongoose.Schema(
     isPhoneVeirified: {
       type: Boolean,
     },
+    coupons: [
+      {
+        type: ObjectId,
+        ref: "Coupon",
+      },
+    ],
     water: {
       ordersTo: [
         {

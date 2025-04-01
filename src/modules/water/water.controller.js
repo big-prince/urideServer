@@ -129,7 +129,7 @@ const getOrderCordinates = catchAsync(async (req, res, next) => {
 //get water rates
 const getWaterRates = catchAsync(async (req, res, next) => {
   try {
-    const rates = await waterService.getRates(req.params.weight);
+    const rates = await waterService.getWaterRates(req.params.weight);
     if (!rates) {
       return next(new customError("Rates not found", httpStatus.BAD_REQUEST));
     }
@@ -177,6 +177,27 @@ const processOrder = catchAsync(async (req, res, next) => {
   }
 });
 
+//get water rates(cost) with coupon
+const getWaterRatesWithCoupons = catchAsync(async (req, res, next) => {
+  try {
+    const rates = await waterService.getWaterRatesWithCoupons(
+      req.params.weight,
+      req.params.coupon,
+      req.id
+    );
+    if (!rates) {
+      return next(new customError("Rates not found", httpStatus.BAD_REQUEST));
+    }
+    Response.sendSuccessResponse(res, 200, rates);
+  } catch (e) {
+    console.log(e);
+    if (e instanceof customError) {
+      Response.sendErrResponse(res, e.statusCode, e);
+    }
+    Response.sendErrResponse(res, httpStatus.INTERNAL_SERVER_ERROR, e);
+  }
+});
+
 export default {
   sendOrder,
   sendCoupon,
@@ -188,4 +209,6 @@ export default {
   getWaterRates,
   completeOrder,
   processOrder,
+  getWaterRates,
+  getWaterRatesWithCoupons,
 };

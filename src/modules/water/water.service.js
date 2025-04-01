@@ -42,12 +42,6 @@ const sendOrder = async (sendInfo, userId) => {
   );
   console.log("🚀 ~ sendOrder ~ estimatedDelivery:", estimatedDelivery);
 
-  //generate Cost
-  const standardCost = getCost(sendInfo.parcelInfo.weight);
-  const expressCost = getExpressCost(sendInfo.parcelInfo.weight);
-  console.log("🚀 ~ sendOrder ~ standardCost:", standardCost);
-  console.log("🚀 ~ sendOrder ~ expressCost:", expressCost);
-
   //generate cordinates
   let senderCordinates = await getCordinates(sendInfo.senderInfo.pickupAddress);
   let receiverCordinates = await getCordinates(
@@ -64,8 +58,8 @@ const sendOrder = async (sendInfo, userId) => {
     estimatedDeliveryDays: estimatedDelivery,
     estimatedDeliveryDate: estimatedDeliveryDate,
     cost: {
-      type: sendInfo.costType,
-      amount: sendInfo.costType === "express" ? expressCost : standardCost,
+      type: sendInfo.cost.type,
+      amount: sendInfo.cost.amount,
     },
     status: "pending",
     tracking: {
@@ -81,58 +75,12 @@ const sendOrder = async (sendInfo, userId) => {
         lng: receiverCordinates.lng,
       },
     },
-    coupon: false,
   };
-  if (sendInfo.coupon === true) {
-    console.log("COUPON SIDE", sendInfo.couponCode, sendInfo.coupon);
-    //verify coupon
-    let coupon = await Coupon.findOne({ code: sendInfo.couponCode }).catch(
-      (e) => {
-        console.log(e);
-        throw new customError("Coupon Search Spoilt", 400).serveError();
-      }
-    );
-    if (!coupon) {
-      throw new customError("Invalid coupon", 400).serveError();
-    }
-    if (coupon.maxUsage === 0) {
-      throw new customError(
-        "Coupon has reached its maximum usage",
-        400
-      ).serveError();
-    }
-    if (coupon === null) {
-      throw new customError("Coupon not found", 400).serveError();
-    }
-    //check if coupon is still valid
-    if (coupon.validTo < new Date()) {
-      throw new customError("Coupon has expired", 400).serveError();
-    }
-    //get discount
-    let discount = coupon.discount;
-    //get cost after discount
-    let costAfterDiscount =
-      sendInfo.costType === "express"
-        ? getExpressCostWithDiscount(sendInfo.parcelInfo.weight, discount)
-        : getCostWithDiscount(sendInfo.parcelInfo.weight, discount);
-
-    //update query
-    query.cost.amount = costAfterDiscount;
-    query.coupon = true;
+  if (sendInfo.coupon) {
+    query.coupon = sendInfo.coupon;
     query.couponCode = sendInfo.couponCode;
-    //update coupon
-    coupon.maxUsage = coupon.maxUsage - 1;
-    coupon.usageCount = coupon.usageCount + 1;
-    await coupon
-      .save()
-      .then(() => {
-        console.log("Coupon updated");
-      })
-      .catch((e) => {
-        console.log(e);
-        throw new customError("Coupon update failed", 400).serveError();
-      });
   }
+  console.log(query);
 
   try {
     let newOrder = await Order.create(query);
@@ -337,6 +285,63 @@ const getWaterRates = async (weight) => {
   }
 };
 
+//get water cost with coupons applied
+const getWaterRatesWithCoupons = async (weight, coupon, userId) => {
+  try {
+    let standardCost = getCost(weight);
+    let expressCost = getExpressCost(weight);
+
+    //auth Coupon
+    let couponDetails = await Coupon.findOne({ code: coupon });
+    let user = await User.findById(userId);
+    if (!couponDetails) {
+      throw new customError("Coupon not found", 400).serveError();
+    }
+    if (couponDetails.validTo < new Date()) {
+      throw new customError("Coupon expired", 400).serveError();
+    }
+    if (couponDetails.maxUsage <= 0) {
+      throw new customError("Coupon completely Used", 400).serveError();
+    }
+    let userCoupon = user.coupons.find((c) => c === couponDetails._id);
+    if (userCoupon) {
+      throw new customError("Coupon already used", 400).serveError();
+    }
+    //apply coupon to cost
+    let standardCostWithCoupon = getCostWithDiscount(
+      weight,
+      couponDetails.discount
+    );
+    let expressCostWithCoupon = getExpressCostWithDiscount(
+      weight,
+      couponDetails.discount
+    );
+
+    //update coupon usage count
+    couponDetails.maxUsage -= 1;
+    await couponDetails.save();
+    //add coupon to user
+    user.coupons.push(couponDetails._id);
+    await user.save();
+
+    return {
+      message: "Costs found",
+      data: {
+        standardCost: standardCost,
+        expressCost: expressCost,
+        standardCostWithCoupon: standardCostWithCoupon,
+        expressCostWithCoupon: expressCostWithCoupon,
+      },
+    };
+  } catch (e) {
+    console.log(e);
+    if (e instanceof customError) {
+      throw new customError(e.message, e.statusCode).serveError();
+    }
+    throw new customError(`${e.error}`, 400).serveError();
+  }
+};
+
 //complete order
 const completeOrder = async (orderId, currentLocationCordinates) => {
   try {
@@ -411,6 +416,7 @@ export default {
   getOrderTo,
   getOrderCordinates,
   getWaterRates,
+  getWaterRatesWithCoupons,
   completeOrder,
   processOrder,
 };

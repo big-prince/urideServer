@@ -73,6 +73,7 @@ const orderSchema = mongoose.Schema(
     coupon: {
       type: Boolean,
       default: false,
+      required: true,
     },
     couponCode: {
       type: String,
@@ -160,11 +161,11 @@ const orderSchema = mongoose.Schema(
 orderSchema.plugin(toJSON);
 
 //presave
-orderSchema.pre("save", async function (next) {
-  //drop index for coupon code
-  this.constructor.collection.dropIndex("couponCode_1");
-  next();
-});
+// orderSchema.pre("save", async function (next) {
+//   //drop index for coupon code
+//   this.constructor.collection.dropIndex("couponCode_1");
+//   next();
+// });
 
 //model
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
