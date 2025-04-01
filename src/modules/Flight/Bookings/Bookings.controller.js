@@ -3,6 +3,8 @@ import bookingService from "./Bookings.service.js";
 
 const bookJet = async (req, res, next) => {
   try {
+  
+    const user = req.realUser
     const { flightId } = req.params;
     const {
       scheduleIndex,
@@ -15,7 +17,7 @@ const bookJet = async (req, res, next) => {
 
     let booking;
 
-    if (selectedSeat && enableJetShare) {
+    if (enableJetShare) {
       booking = await bookingService.bookJetWithJetShare({
         flightId,
         scheduleIndex,
@@ -23,20 +25,31 @@ const bookJet = async (req, res, next) => {
         enableJetShare,
         maxJetSharePassengers,
         jetSharePricePerSeat,
-        selectedSeat
+        selectedSeat,
+        user
       });
-    } else if (selectedSeat) {
+
+    }
+    if (!enableJetShare && selectedSeat) {
       booking = await bookingService.bookJetShareSeat({
         flightId,
         scheduleIndex,
         passengerInfo,
         selectedSeat,
+        user
       });
-    } else {
+    }
+    if (
+      !enableJetShare &&
+      !maxJetSharePassengers &&
+      !jetSharePricePerSeat &&
+      !selectedSeat
+    ) {
       booking = await bookingService.bookJet(
         flightId,
         scheduleIndex,
-        passengerInfo
+        passengerInfo,
+        user
       );
     }
 
