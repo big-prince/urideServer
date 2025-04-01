@@ -17,7 +17,7 @@ import jwtStrategy from "./config/passport.js";
 import authLimiter from "./middlewares/rateLimiter.js";
 import routes from "./modules/index.js";
 import Errors from "./middlewares/error.js";
-import ApiError from "./utils/ApiError.js";
+import ApiError, { errorHandler } from "./utils/ApiError.js";
 import { swaggerConfigOptions } from "./config/swagger.js";
 import dotenv from "dotenv";
 import logger from "./config/logger.js";
@@ -31,7 +31,7 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const API_PREFIX = process.env.API_PREFIX || "/api/v1";
+const API_PREFIX = process.env.API_PREFIX || "api/v1";
 
 // if (env !== "test") {
 app.use(Morgan.successHandler);
@@ -76,10 +76,10 @@ Passport.use("jwt", jwtStrategy);
 //   app.use("/v1/auth", authLimiter);
 // }
 if (env === "production") {
-  app.use(`/${API_PREFIX}/auth`, authLimiter);
+  app.use(`${API_PREFIX}/auth`, authLimiter);
 }
 
-app.get(`/${API_PREFIX}/healthcheck`, (req, res) => {
+app.get(`${API_PREFIX}/healthcheck`, (req, res) => {
   try {
     res.send({
       uptime: Math.round(process.uptime()),
@@ -92,7 +92,7 @@ app.get(`/${API_PREFIX}/healthcheck`, (req, res) => {
 });
 
 // Ping endpoint
-app.get(`/${API_PREFIX}/ping`, (req, res) => {
+app.get(`${API_PREFIX}/ping`, (req, res) => {
   res.end("uRide Server is Up n Running");
 });
 
@@ -132,8 +132,8 @@ app.use((err, req, res, next) => {
 // v1 api routes
 routes(app);
 
-//swagger config
-expressJSDocSwagger(app)(swaggerConfigOptions);
+//swagger config(TO BE SETUP PROPERLYLATER)
+// expressJSDocSwagger(app)(swaggerConfigOptions);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
@@ -145,5 +145,8 @@ app.use(Errors.errorConverter);
 
 // handle error
 app.use(Errors.errorHandler);
+
+app.use(errorHandler);
+
 
 export default app;

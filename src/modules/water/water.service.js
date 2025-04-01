@@ -157,7 +157,7 @@ const sendCoupon = async (type, userId) => {
     if (e instanceof customError) {
       throw customError(e.message, e.statusCode).serveError();
     }
-    throw new customError(`${e.message}`, 500).serveError();
+    throw new customError(`${e.error}`, 500).serveError();
   }
 };
 
@@ -176,7 +176,7 @@ const getOrder = async (orderId) => {
     if (e instanceof customError) {
       throw customError(e.message, e.statusCode).serveError();
     }
-    throw new customError(`${e.message}`, 400).serveError();
+    throw new customError(`${e.error}`, 400).serveError();
   }
 };
 
@@ -194,6 +194,13 @@ const getOrders = async (userId) => {
         { _id: { $in: user.water.ordersTo } },
       ],
     });
+
+    if (!userOrders.length) {
+      return {
+        message: "No orders found",
+        data: userOrders,
+      };
+    }
     return {
       message: "Orders found",
       data: userOrders,
@@ -202,7 +209,7 @@ const getOrders = async (userId) => {
     if (e instanceof customError) {
       throw customError(e.message, e.statusCode).serveError();
     }
-    throw new customError(`${e.message}`, 400).serveError();
+    throw new customError(`${e.error}`, 400).serveError();
   }
 };
 
@@ -214,6 +221,12 @@ const getOrderFrom = async (userId) => {
       throw new customError("User not found", 400).serveError();
     }
     let orders = await Order.find({ _id: { $in: user.water.ordersFrom } });
+    if (!orders.length) {
+      return {
+        message: "No orders found, Place an order...",
+        data: orders,
+      };
+    }
     return {
       message: "Orders found",
       data: orders,
@@ -222,7 +235,7 @@ const getOrderFrom = async (userId) => {
     if (e instanceof customError) {
       throw customError(e.message, e.statusCode).serveError();
     }
-    throw new customError(`${e.message}`, 400).serveError();
+    throw new customError(`${e.error}`, 400).serveError();
   }
 };
 
@@ -234,6 +247,13 @@ const getOrderTo = async (userId) => {
       throw new customError("User not found", 400).serveError();
     }
     let orders = await Order.find({ _id: { $in: user.water.ordersTo } });
+
+    if (!orders.length) {
+      return {
+        message: "No orders found, expect an order...",
+        data: orders,
+      };
+    }
     return {
       message: "Orders found",
       data: orders,
@@ -242,7 +262,7 @@ const getOrderTo = async (userId) => {
     if (e instanceof customError) {
       throw customError(e.message, e.statusCode).serveError();
     }
-    throw new customError(`${e.message}`, 400).serveError();
+    throw new customError(`${e.error}`, 400).serveError();
   }
 };
 
@@ -253,18 +273,30 @@ const getOrderCordinates = async (orderId) => {
     if (!order) {
       throw new customError("Order not found", 400).serveError();
     }
+    const cordinates = {
+      senderCordinates: order.tracking.senderCordinates,
+      receiverCordinates: order.tracking.receiverCordinates,
+    };
+    console.log("🚀 ~ getOrderCordinates ~ cordinates:", cordinates);
+
+    if (
+      cordinates.senderCordinates === undefined &&
+      cordinates.receiverCordinates === undefined
+    ) {
+      return {
+        message: "No cordinates found for this order. Hold lets create it",
+        data: cordinates,
+      };
+    }
     return {
       message: "Order found",
-      data: {
-        senderCordinates: order.tracking.senderCordinates,
-        receiverCordinates: order.tracking.receiverCordinates,
-      },
+      data: cordinates,
     };
   } catch (e) {
     if (e instanceof customError) {
       throw customError(e.message, e.statusCode).serveError();
     }
-    throw new customError(`${e.message}`, 400).serveError();
+    throw new customError(`${e.error}`, 400).serveError();
   }
 };
 
@@ -344,39 +376,53 @@ const getWaterRatesWithCoupons = async (weight, coupon, userId) => {
 
 //complete order
 const completeOrder = async (orderId, currentLocationCordinates) => {
+  const orderID = orderId.orderID;
+  const location = orderId.currentLocation;
+  if (!orderID || !location) {
+    throw new customError("Invalid data", 400).serveError();
+  }
   try {
-    let order = await Order.findById(orderId);
+    let order = await Order.findById(orderID);
     if (!order) {
       throw new customError("Order not found", 400).serveError();
     }
     if (order.status === "delivered") {
-      throw new customError("Order already delivered", 400).serveError();
+      throw new customError("Order already Completed", 400).serveError();
     }
 
     //check if sender address equals current location or close by 20metres
-    let senderCordinates = order.tracking.senderCordinates;
-    let distance = await getDistance(
-      senderCordinates,
-      currentLocationCordinates
-    );
+    let senderCordinates = {
+      lat: order.tracking.senderCordinates.lat,
+      lng: order.tracking.senderCordinates.lng,
+    };
+    let currentCordinates = await getCordinates(location);
+    console.log("🚀 ~ completeOrder ~ currentCordinates:", currentCordinates);
+
+    let distance = await getDistance(senderCordinates, currentCordinates);
+
     if (distance.distance > 20) {
       throw new customError(
         "You are not at the sender's location",
         400
       ).serveError();
     }
+
+    if (distance.distance === null) {
+      throw new customError("Invalid location", 400).serveError();
+    }
     //update order
     order.status = "delivered";
     await order.save();
     return {
-      message: "Order delivered successfully",
-      data: order,
+      message: "Order delivered successfully, marked as completed",
     };
   } catch (e) {
     if (e instanceof customError) {
+      console.log(e, "ERROR DE CUSTOME");
       throw customError(e.message, e.statusCode).serveError();
     }
-    throw new customError(`${e.message}`, 400).serveError();
+    console.log(e, "ERROR DE NORMAL");
+    throw new customError(`${e.error}`, 400).serveError();
   }
 };
 
@@ -407,6 +453,27 @@ const processOrder = async (orderId) => {
   }
 };
 
+//get order by tracking code
+const getOrderByTrackingCode = async (trackingCode) => {
+  try {
+    let order = await Order.findOne({
+      "tracking.trackingNumber": trackingCode,
+    });
+    if (!order) {
+      throw new customError("Order not found", 400).serveError();
+    }
+    return {
+      message: "Order found",
+      data: order,
+    };
+  } catch (e) {
+    if (e instanceof customError) {
+      throw customError(e.message, e.statusCode).serveError();
+    }
+    throw new customError(`${e.error}`, 400).serveError();
+  }
+};
+
 export default {
   sendOrder,
   sendCoupon,
@@ -419,4 +486,5 @@ export default {
   getWaterRatesWithCoupons,
   completeOrder,
   processOrder,
+  getOrderByTrackingCode,
 };

@@ -4,6 +4,7 @@ import httpStatus from "http-status"; // HTTP status codes
 import ApiError from "../utils/ApiError.js"; // Custom error handler
 import Token from "../modules/auth/token.model.js";
 import verifyToken from "../modules/auth/token.service.js"; // Import the token verification service
+import userService from "../modules/users/user.service.js";
 
 // Secret for JWT (in a real application, store this in an environment variable)
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
@@ -28,7 +29,8 @@ const auth = async (req, res, next) => {
 
     // Attach the decoded user data to the request object (you can use req.user in the next middlewares/controllers)
     req.user = decoded;
-    console.log("decoded", decoded);
+    const userId = decoded.sub;
+    req.realUser = await userService.getUserById(userId);
     // Proceed to the next middleware or controller
     next();
   } catch (err) {
