@@ -43,7 +43,7 @@ const findAvailableFlights = async (req, res, next) => {
 /**
  * Get a single flight by ID
  */
-const getFlightById = async (req, res) => {
+const getFlightById = async (req, res, next) => {
   try {
     const flight = await flightService.getFlightById(req.params.id);
     if (!flight) {
@@ -51,18 +51,16 @@ const getFlightById = async (req, res) => {
         .status(httpStatus.NOT_FOUND)
         .json({ message: "Flight not found" });
     }
-    res.status(httpStatus.OK).json(flight);
+    return res.status(httpStatus.OK).json(flight);
   } catch (error) {
-    res
-      .status(httpStatus.INTERNAL_SERVER_ERROR)
-      .json({ message: error.message });
+    next(error);
   }
 };
 
 /**
  * Get Available Seats
  */
-const getAvailableSeats = async (req, res) => {
+const getAvailableSeats = async (req, res, next) => {
   try {
     const flightId = req.params.flightId;
 
@@ -71,11 +69,11 @@ const getAvailableSeats = async (req, res) => {
     const availableSeats = await flightService.getAvailableSeats(
       flightId,
       departureTime
-    );
+    );  
 
-    res.status(httpStatus.OK).json(availableSeats);
+    return res.status(httpStatus.OK).json(availableSeats);
   } catch (error) {
-    res.status(httpStatus.BAD_REQUEST).json({ message: error.message });
+    next(error);
   }
 };
 

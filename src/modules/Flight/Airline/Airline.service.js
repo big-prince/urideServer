@@ -243,8 +243,9 @@ const bulkCreatePilotAndReviews = async () => {
     createdPilots.forEach(pilot => pilotsMap[pilot.airline].push(pilot._id));
 
     // Insert reviews in bulk and handle duplicates
+    let createdReviews
     try {
-      const createdReviews = await Review.insertMany(reviewsData, { ordered: false });
+      createdReviews = await Review.insertMany(reviewsData, { ordered: false });
       createdReviews.forEach(review => reviewsMap[review.airline].push(review._id));
     } catch (err) {
       console.warn("Some reviews were skipped due to duplicate keys.");

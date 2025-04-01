@@ -6,7 +6,7 @@ const BookingsSchema = new mongoose.Schema({
     ref: "Flight",
     required: true,
   },
-  scheduleIndex: { type: Number, required: true }, // Tracks which flight schedule is booked
+  scheduleIndex: { type: Number, required: true }, 
   passengerName: { type: String, required: true },
   passengerEmail: { type: String, required: true },
   passportNumber: { type: String, required: true },
@@ -14,9 +14,9 @@ const BookingsSchema = new mongoose.Schema({
   address: { type: String, required: true },
   country: { type: String },
 
-  seatsBooked: { type: Number, required: true }, // Number of seats booked
-  selectedSeats: [{ type: String }], // Specific seats chosen
-  totalPrice: { type: Number, required: true }, // Price paid by the passenger
+  seatsBooked: { type: Number, required: true }, 
+  selectedSeats: [{ type: String }], 
+  totalPrice: { type: Number, required: true }, 
   status: {
     type: String,
     enum: ["Confirmed", "Pending", "Cancelled"],
@@ -28,9 +28,9 @@ const BookingsSchema = new mongoose.Schema({
   returnFlight: { type: mongoose.Schema.Types.ObjectId, ref: "Flight" },
   returnDate: { type: Date },
 
-  isJetShare: { type: Boolean, default: false }, // Determines if it's a Jet Share booking
-  jetShareGroup: { type: mongoose.Schema.Types.ObjectId, ref: "Bookings" }, // Links Jet Share passengers
-  flightOwner: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // The person who booked the full flight and enabled Jet Share
+  isJetShare: { type: Boolean, default: false }, 
+  jetShareGroup: { type: mongoose.Schema.Types.ObjectId, ref: "Bookings" },
+  flightOwner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
 export default mongoose.model("Bookings", BookingsSchema);

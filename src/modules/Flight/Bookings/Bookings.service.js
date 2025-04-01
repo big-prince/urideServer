@@ -3,7 +3,7 @@ import Flight from "../Flights/Flights.model.js";
 import ApiError from "../../../utils/ApiError.js";
 import Bookings from "./Bookings.model.js";
 
-const bookJet = async (flightId, scheduleIndex, passengerInfo) => {
+const bookJet = async (flightId, scheduleIndex, passengerInfo, user) => {
   if (!flightId || scheduleIndex === undefined || !passengerInfo) {
     throw new ApiError(400, "Missing required booking details");
   }
@@ -40,13 +40,14 @@ const bookJet = async (flightId, scheduleIndex, passengerInfo) => {
     dateOfBirth: passengerInfo.dateOfBirth,
     address: passengerInfo.address,
     country: passengerInfo.country,
-    seatsBooked: schedule.totalSeats, // Full flight booking = all seats booked
-    selectedSeats: schedule.availableSeats, // Booking all available seats
+    seatsBooked: schedule.totalSeats, 
+    selectedSeats: schedule.availableSeats, 
     totalPrice,
     status: "Pending",
     bookingDate: new Date(),
     isRoundTrip: false,
     isJetShare: false,
+    flightOwner: user
   });
 
   await booking.save();
@@ -70,7 +71,8 @@ const bookJetShareSeat = async (
   flightId,
   scheduleIndex,
   passengerInfo,
-  selectedSeat
+  selectedSeat,
+  user
 ) => {
   const flight = await Flight.findById(flightId);
   if (!flight) throw new ApiError(404, "Flight not found");
@@ -116,7 +118,7 @@ const bookJetShareSeat = async (
     status: "Pending",
     isJetShare: true,
     jetShareGroup: ownerBooking._id,
-    flightOwner: ownerBooking.passengerEmail,
+    flightOwner: ownerBooking.flightOwner,
   });
 
   await newBooking.save();
@@ -152,93 +154,6 @@ const getBookingById = async (bookingId) => {
   return booking;
 };
 
-// const bookJetWithJetShare = async ({
-//   flightId,
-//   scheduleIndex,
-//   passengerInfo,
-//   enableJetShare,
-//   maxJetSharePassengers,
-//   jetSharePricePerSeat,
-// }) => {
-//   if (!flightId || scheduleIndex === undefined || !passengerInfo) {
-//     throw new ApiError(400, "Missing required booking details");
-//   }
-
-//   const flight = await Flight.findById(flightId);
-//   if (!flight) throw new ApiError(404, "Flight not found");
-
-//   const schedule = flight.availableSchedules[scheduleIndex];
-//   if (!schedule) throw new ApiError(400, "Invalid schedule selected");
-
-//   if (schedule.jetShare) {
-//     throw new ApiError(400, "This flight already has an active Jet Share");
-//   }
-
-//   if (schedule.availableSeats.length === 0) {
-//     throw new ApiError(400, "Flight is already fully booked");
-//   }
-
-//   if (enableJetShare) {
-//     if (!maxJetSharePassengers || maxJetSharePassengers < 1) {
-//       throw new ApiError(400, "Invalid Jet Share passenger count");
-//     }
-
-//     if (maxJetSharePassengers >= schedule.totalSeats) {
-//       throw new ApiError(400, "Jet Share passengers cannot exceed the total seats");
-//     }
-
-//     if (!jetSharePricePerSeat || jetSharePricePerSeat <= 0) {
-//       throw new ApiError(400, "Jet Share price per seat must be a positive number");
-//     }
-//   }
-
-//   // Calculate total price (full flight price)
-//   const totalPrice = flight.fixedPrice;
-
-//   // Create the booking for the main passenger
-//   const booking = new Bookings({
-//     flight: flightId,
-//     scheduleIndex,
-//     passengerName: passengerInfo.name,
-//     passengerEmail: passengerInfo.email,
-//     passportNumber: passengerInfo.passportNumber,
-//     dateOfBirth: passengerInfo.dateOfBirth,
-//     address: passengerInfo.address,
-//     country: passengerInfo.country,
-//     seatsBooked: schedule.totalSeats, 
-//     selectedSeats: schedule.availableSeats, 
-//     totalPrice,
-//     status: "Pending",
-//     bookingDate: new Date(),
-//     isRoundTrip: false,
-//     isJetShare: false, // This is the main booking, not Jet Share
-//     flightOwner: passengerInfo.email, // The owner of the Jet Share flight
-//   });
-
-//   await booking.save();
-
-//   // Update Flight Schedule to reflect booking
-//   schedule.availableSeats = []; // No seats left
-//   schedule.sharedPassengers = schedule.totalSeats;
-//   schedule.jetShare = enableJetShare; // Enable Jet Share if requested
-//   schedule.maxPassengersPerJetShare = enableJetShare ? maxJetSharePassengers : 0;
-//   schedule.jetSharePricePerSeat = enableJetShare ? jetSharePricePerSeat : 0;
-
-//   if (!enableJetShare) {
-//     flight.status = "fully-booked";
-//   }
-
-//   await flight.save();
-
-//   return {
-//     message: "Flight booked successfully",
-//     bookingId: booking._id,
-//     jetShareEnabled: enableJetShare,
-//     maxJetSharePassengers,
-//     jetSharePricePerSeat,
-//   };
-// };
-
 const bookJetWithJetShare = async ({
   flightId,
   scheduleIndex,
@@ -247,6 +162,7 @@ const bookJetWithJetShare = async ({
   maxJetSharePassengers,
   jetSharePricePerSeat,
   selectedSeat,
+  user
 }) => {
   if (!flightId || scheduleIndex === undefined || !passengerInfo || !selectedSeat) {
     throw new ApiError(400, "Missing required booking details, including selected seat");
@@ -263,10 +179,9 @@ const bookJetWithJetShare = async ({
   }
 
   if (schedule.availableSeats.length === 0) {
-    throw new ApiError(400, "Flight is already fully booked");
+    throw new ApiError(400, "Flight is already fully booked >>>>");
   }
 
-  // ✅ Check if selected seat is available
   if (!schedule.availableSeats.includes(selectedSeat)) {
     throw new ApiError(400, "Selected seat is no longer available");
   }
@@ -307,7 +222,7 @@ const bookJetWithJetShare = async ({
     bookingDate: new Date(),
     isRoundTrip: false,
     isJetShare: false, // This is the main booking, not Jet Share
-    flightOwner: passengerInfo.email, // The owner of the Jet Share flight
+    flightOwner: user
   });
 
   await booking.save();
