@@ -15,6 +15,7 @@ import {
 import {
   estimatedDeliveryDays,
   getEstimatedDelivery,
+  getEstimatedDeliveryStandard,
 } from "../../utils/estimatedDeliveryTime.js";
 import { generateTrackingCode } from "../../utils/trackingCode.js";
 import customError from "../../utils/customError.js";
@@ -476,7 +477,10 @@ const getEstimatedDeliveryDate = async (sendDate, costType) => {
       sendDate = sendDate.replace(/\//g, "-");
     }
 
-    return getEstimatedDelivery(sendDate, costType);
+    return {
+      express: getEstimatedDelivery(sendDate, "express"),
+      standard: getEstimatedDeliveryStandard(sendDate, "standard"),
+    };
   } catch (e) {
     if (e instanceof customError) {
       throw customError(e.message, e.statusCode).serveError();
