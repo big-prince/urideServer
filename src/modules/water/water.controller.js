@@ -198,6 +198,28 @@ const getWaterRatesWithCoupons = catchAsync(async (req, res, next) => {
   }
 });
 
+//get delivery dates
+const getDeliveryDate = catchAsync(async (req, res, next) => {
+  try {
+    const deliveryDates = await waterService.getEstimatedDeliveryDate(
+      req.params.sendDate,
+      req.params.costType
+    );
+    if (!deliveryDates) {
+      return next(
+        new customError("Delivery dates not found", httpStatus.BAD_REQUEST)
+      );
+    }
+    Response.sendSuccessResponse(res, 200, deliveryDates);
+  } catch (e) {
+    console.log(e);
+    if (e instanceof customError) {
+      Response.sendErrResponse(res, e.statusCode, e);
+    }
+    Response.sendErrResponse(res, httpStatus.INTERNAL_SERVER_ERROR, e);
+  }
+});
+
 export default {
   sendOrder,
   sendCoupon,
@@ -211,4 +233,5 @@ export default {
   processOrder,
   getWaterRates,
   getWaterRatesWithCoupons,
+  getDeliveryDate,
 };

@@ -12,7 +12,10 @@ import {
   getExpressCostWithDiscount,
   percentageDiscount,
 } from "../../utils/costCalculator.js";
-import { estimatedDeliveryDays } from "../../utils/estimatedDeliveryTime.js";
+import {
+  estimatedDeliveryDays,
+  getEstimatedDelivery,
+} from "../../utils/estimatedDeliveryTime.js";
 import { generateTrackingCode } from "../../utils/trackingCode.js";
 import customError from "../../utils/customError.js";
 //services
@@ -33,15 +36,6 @@ const sendOrder = async (sendInfo, userId) => {
   const trackingCode = generateTrackingCode();
   console.log("🚀 ~ sendOrder ~ trackingCode:", trackingCode);
 
-  //generate estimated delivery days
-  const estimatedDelivery = estimatedDeliveryDays(
-    sendInfo.receiversInfo.deliveryTime
-  );
-  const estimatedDeliveryDate = new Date(
-    new Date().setDate(new Date().getDate() + estimatedDelivery)
-  );
-  console.log("🚀 ~ sendOrder ~ estimatedDelivery:", estimatedDelivery);
-
   //generate cordinates
   let senderCordinates = await getCordinates(sendInfo.senderInfo.pickupAddress);
   let receiverCordinates = await getCordinates(
@@ -55,8 +49,8 @@ const sendOrder = async (sendInfo, userId) => {
     senderInfo: sendInfo.senderInfo,
     parcelInfo: sendInfo.parcelInfo,
     receiversInfo: sendInfo.receiversInfo,
-    estimatedDeliveryDays: estimatedDelivery,
-    estimatedDeliveryDate: estimatedDeliveryDate,
+    estimatedDeliveryDays: sendInfo.estimatedDelivery,
+    estimatedDeliveryDate: sendInfo.estimatedDeliveryDate,
     cost: {
       type: sendInfo.cost.type,
       amount: sendInfo.cost.amount,
@@ -474,6 +468,18 @@ const getOrderByTrackingCode = async (trackingCode) => {
   }
 };
 
+//get estimated delivery details by cost
+const getEstimatedDeliveryDate = async (sendDate, costType) => {
+  try {
+    getEstimatedDelivery(sendDate, costType);
+  } catch (e) {
+    if (e instanceof customError) {
+      throw customError(e.message, e.statusCode).serveError();
+    }
+    throw new customError(`${e.error}`, 400).serveError();
+  }
+};
+
 export default {
   sendOrder,
   sendCoupon,
@@ -487,4 +493,5 @@ export default {
   completeOrder,
   processOrder,
   getOrderByTrackingCode,
+  getEstimatedDeliveryDate,
 };

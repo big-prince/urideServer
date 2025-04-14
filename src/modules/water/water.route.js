@@ -91,4 +91,12 @@ router.get(
   waterController.getWaterRatesWithCoupons
 );
 
+//get delivery date
+router.get(
+  "/get_delivery_date/:sendDate/:costType",
+  routeLogger,
+  extractAccess,
+  waterController.getDeliveryDate
+);
+
 export default router;
