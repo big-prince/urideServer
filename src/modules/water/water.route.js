@@ -92,8 +92,8 @@ router.get(
 );
 
 //get delivery date
-router.get(
-  "/get_delivery_date/:sendDate/:costType",
+router.post(
+  "/get_delivery_date",
   routeLogger,
   extractAccess,
   waterController.getDeliveryDate

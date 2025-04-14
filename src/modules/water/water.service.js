@@ -471,7 +471,12 @@ const getOrderByTrackingCode = async (trackingCode) => {
 //get estimated delivery details by cost
 const getEstimatedDeliveryDate = async (sendDate, costType) => {
   try {
-    getEstimatedDelivery(sendDate, costType);
+    // Check if sendDate is in format YYYY/MM/DD
+    if (sendDate && typeof sendDate === "string" && sendDate.includes("/")) {
+      sendDate = sendDate.replace(/\//g, "-");
+    }
+
+    return getEstimatedDelivery(sendDate, costType);
   } catch (e) {
     if (e instanceof customError) {
       throw customError(e.message, e.statusCode).serveError();

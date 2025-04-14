@@ -202,8 +202,8 @@ const getWaterRatesWithCoupons = catchAsync(async (req, res, next) => {
 const getDeliveryDate = catchAsync(async (req, res, next) => {
   try {
     const deliveryDates = await waterService.getEstimatedDeliveryDate(
-      req.params.sendDate,
-      req.params.costType
+      req.body.date,
+      req.body.type
     );
     if (!deliveryDates) {
       return next(
