@@ -157,13 +157,13 @@ const orderSchema = mongoose.Schema(
 orderSchema.plugin(toJSON);
 
 //presave
-orderSchema.pre("save", async function (next) {
-  //drop index for coupon code
-  if (this.model("Order").collection.index("couponCode_1")) {
-    await this.model("Order").collection.dropIndex("couponCode_1");
-  }
-  next();
-});
+// orderSchema.pre("save", async function (next) {
+//   //drop index for coupon code
+//   if (this.model("Order").collection.index("couponCode_1")) {
+//     await this.model("Order").collection.dropIndex("couponCode_1");
+//   }
+//   next();
+// });
 
 //model
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
