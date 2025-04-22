@@ -3,7 +3,7 @@ import authLandRoute from "./auth/auth.route.js";
 import userRoutes from "./users/user.route.js";
 import rideRoutes from "./rides/ride.routes.js";
 import walletRoutes from "./wallet/wallet.route.js";
-import chatRoutes from "./chat/chat.route.js";
+import chatRoutes from "./chat/chat.routes.js";
 import waterRoutes from "./water/water.route.js";
 import airRouter from "./Flight/index.js";
 

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhatsApp-Style Chat Tester</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      .container {
+        display: flex;
+        height: 100vh;
+      }
+      .sidebar {
+        width: 300px;
+        background: #111b21;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar-header {
+        padding: 1rem;
+        background: #202c33;
+      }
+      .sidebar-header input,
+      .sidebar-header button {
+        width: 100%;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 4px;
+      }
+      .sidebar-header input {
+        background: #2a3942;
+        color: #fff;
+      }
+      .sidebar-header input::placeholder {
+        color: #bbb;
+      }
+      .sidebar-header button {
+        background: #25d366;
+        color: #fff;
+        cursor: pointer;
+      }
+      .sidebar-header button:hover {
+        background: #1ebd58;
+      }
+      .new-chat {
+        padding: 1rem;
+        border-bottom: 1px solid #2a3942;
+        display: none;
+      }
+      .new-chat input,
+      .new-chat button {
+        width: 100%;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 4px;
+      }
+      .new-chat input {
+        background: #2a3942;
+        color: #fff;
+      }
+      .new-chat input::placeholder {
+        color: #bbb;
+      }
+      .new-chat button {
+        background: #128c7e;
+        color: #fff;
+        cursor: pointer;
+      }
+      .new-chat button:hover {
+        background: #0f7a6b;
+      }
+      .chat-list {
+        flex: 1;
+        overflow-y: auto;
+        background: #111b21;
+      }
+      .chat-item {
+        padding: 0.8rem;
+        border-bottom: 1px solid #2a3942;
+        cursor: pointer;
+        color: #fff;
+      }
+      .chat-item:hover {
+        background: #2a3942;
+      }
+      .chat-item.active {
+        background: #202c33;
+      }
+      .chat-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .chat-header {
+        background: #00a884;
+        color: #fff;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .chat-header .name {
+        font-weight: bold;
+      }
+      .chat-header .typing {
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+      .messages {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+        background: #e5ddd5;
+        display: flex;
+        flex-direction: column;
+      }
+      .message {
+        max-width: 70%;
+        margin: 0.3rem 0;
+        padding: 0.6rem;
+        border-radius: 8px;
+        position: relative;
+      }
+      .sent {
+        background: #dcf8c6;
+        align-self: flex-end;
+      }
+      .received {
+        background: #fff;
+        align-self: flex-start;
+      }
+      .timestamp {
+        font-size: 0.7rem;
+        color: #999;
+        text-align: right;
+        margin-top: 0.3rem;
+      }
+      .delete-btn {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: transparent;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      .input-area {
+        display: flex;
+        padding: 0.5rem;
+        background: #f0f0f0;
+      }
+      .input-area input {
+        flex: 1;
+        padding: 0.6rem;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        margin-right: 0.5rem;
+      }
+      .input-area button {
+        padding: 0 1rem;
+        border: none;
+        background: #00a884;
+        color: #fff;
+        border-radius: 20px;
+        cursor: pointer;
+      }
+      @media (max-width: 600px) {
+        .sidebar {
+          width: 100%;
+          height: 50vh;
+        }
+        .chat-area {
+          height: 50vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>Register ID</h2>
+          <input id="registerId" placeholder="Your Register ID" />
+          <button id="registerBtn">Register</button>
+        </div>
+        <div class="new-chat" id="newChatSection">
+          <h3>New Chat</h3>
+          <input id="newChatUser" placeholder="Friend's Register ID" />
+          <input id="newChatMessage" placeholder="Initial message" />
+          <button id="newChatBtn">Start Chat</button>
+        </div>
+        <div class="chat-list" id="chatList"></div>
+      </aside>
+      <section class="chat-area">
+        <div class="chat-header">
+          <span class="name" id="chatWith">Select a chat</span>
+          <span class="typing" id="typingIndicator"></span>
+        </div>
+        <div class="messages" id="chatMessages"></div>
+        <div class="input-area">
+          <input
+            id="messageInput"
+            placeholder="Type a message..."
+            disabled
+            autocomplete="off"
+          />
+          <button id="sendBtn" disabled>Send</button>
+        </div>
+      </section>
+    </div>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script>
+      const socket = io("http://localhost:3033");
+      const regInput = document.getElementById("registerId");
+      const regBtn = document.getElementById("registerBtn");
+      const newChatSec = document.getElementById("newChatSection");
+      const newUserInput = document.getElementById("newChatUser");
+      const newMsgInput = document.getElementById("newChatMessage");
+      const newChatBtn = document.getElementById("newChatBtn");
+      const listEl = document.getElementById("chatList");
+      const chatWithEl = document.getElementById("chatWith");
+      const typingEl = document.getElementById("typingIndicator");
+      const msgsEl = document.getElementById("chatMessages");
+      const inputEl = document.getElementById("messageInput");
+      const sendBtn = document.getElementById("sendBtn");
+
+      let currentUser = null;
+      let activeChat = null;
+      let typingTimeout;
+
+      // Register user
+      regBtn.onclick = () => {
+        const id = regInput.value.trim();
+        if (!id) return alert("Enter your ID");
+        currentUser = id;
+        socket.emit("join", { userId: currentUser });
+        regInput.disabled = regBtn.disabled = true;
+        newChatSec.style.display = "block";
+        inputEl.disabled = sendBtn.disabled = false;
+      };
+
+      // New chat + initial message
+      newChatBtn.onclick = () => {
+        const friend = newUserInput.value.trim();
+        const text = newMsgInput.value.trim();
+        if (!friend || !text) return alert("Friend ID and message");
+        socket.emit("chat:create", {
+          participants: [currentUser, friend],
+          initialMessage: { from: currentUser, message: text },
+        });
+        newUserInput.value = "";
+        newMsgInput.value = "";
+      };
+
+      // Handle creation or incoming chat
+      function onNewChat(chat, my) {
+        if (!chat.participants.includes(currentUser)) return;
+        const other = chat.participants.find((u) => u !== currentUser);
+        const cid = chat.participants.sort().join("_");
+        if (!document.querySelector(`[data-chat='${cid}']`)) {
+          const d = document.createElement("div");
+          d.className = "chat-item";
+          d.dataset.chat = cid;
+          d.dataset.other = other;
+          d.textContent = other;
+          d.onclick = () => loadChat(d);
+          listEl.prepend(d);
+        }
+        if (my) {
+          const el = document.querySelector(`[data-chat='${cid}']`);
+          loadChat(el);
+          append(chat.lastMessage);
+        }
+      }
+      socket.on("chat:create:success", (c) => onNewChat(c, true));
+      socket.on("chat:new", (c) => onNewChat(c, false));
+
+      // Load history
+      function loadChat(el) {
+        document
+          .querySelectorAll(".chat-item")
+          .forEach((x) => x.classList.remove("active"));
+        el.classList.add("active");
+        activeChat = { id: el.dataset.chat, other: el.dataset.other };
+        chatWithEl.textContent = activeChat.other;
+        typingEl.textContent = "";
+        msgsEl.innerHTML = "";
+        socket.emit("chat:history", {
+          userId1: currentUser,
+          userId2: activeChat.other,
+        });
+      }
+      socket.on("chat:history", (hist) => {
+        msgsEl.innerHTML = "";
+        hist.forEach(append);
+      });
+
+      // Send
+      function doSend() {
+        const t = inputEl.value.trim();
+        if (!t || !activeChat) return;
+        socket.emit("chat:message", {
+          from: currentUser,
+          to: activeChat.other,
+          message: t,
+          chatId: activeChat.id,
+        });
+        inputEl.value = "";
+      }
+      sendBtn.onclick = doSend;
+      inputEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") doSend();
+      });
+
+      // Incoming
+      socket.on("chat:message", (m) => {
+        onNewChat({ participants: [m.from, m.to], lastMessage: m }, false);
+        if (activeChat && m.from === activeChat.other) append(m);
+      });
+      socket.on("chat:message:sent", append);
+
+      // Typing
+      inputEl.addEventListener("input", () => {
+        if (!activeChat) return;
+        socket.emit("chat:typing", {
+          from: currentUser,
+          to: activeChat.other,
+          chatId: activeChat.id,
+          isTyping: true,
+        });
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(
+          () =>
+            socket.emit("chat:typing", {
+              from: currentUser,
+              to: activeChat.other,
+              chatId: activeChat.id,
+              isTyping: false,
+            }),
+          800
+        );
+      });
+      socket.on("chat:typing", (d) => {
+        if (activeChat && d.chatId === activeChat.id)
+          typingEl.textContent = d.isTyping ? "Typing..." : " ";
+      });
+
+      // Delete
+      socket.on("chat:delete", (d) => {
+        if (activeChat && d.chatId === activeChat.id) {
+          const e = document.querySelector(`[data-id='${d.messageId}']`);
+          if (e) e.remove();
+        }
+      });
+
+      // Append
+      function append(m) {
+        const d = document.createElement("div");
+        d.className =
+          "message " + (m.from === currentUser ? "sent" : "received");
+        d.dataset.id = m._id;
+        const c = document.createElement("div");
+        c.textContent = m.message;
+        const ts = document.createElement("div");
+        ts.className = "timestamp";
+        ts.textContent = new Date(m.createdAt).toLocaleTimeString();
+        d.append(c, ts);
+        if (m.from === currentUser) {
+          const b = document.createElement("button");
+          b.className = "delete-btn";
+          b.textContent = "×";
+          b.onclick = () =>
+            socket.emit("chat:delete", {
+              messageId: m._id,
+              chatId: activeChat.id,
+            });
+          d.append(b);
+        }
+        msgsEl.append(d);
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+
+      socket.on("chat:error", (e) => console.error("Error:", e));
+    </script>
+  </body>
+</html>

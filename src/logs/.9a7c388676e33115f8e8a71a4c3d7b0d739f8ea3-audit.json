@@ -1,0 +1,20 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 2
+    },
+    "auditLog": "C:\\Users\\user\\documents\\uride\\_uride_Backend\\src\\logs\\.9a7c388676e33115f8e8a71a4c3d7b0d739f8ea3-audit.json",
+    "files": [
+        {
+            "date": 1745223096242,
+            "name": "C:\\Users\\user\\documents\\uride\\_uride_Backend\\src\\logs\\2025-04-21.log",
+            "hash": "68ab29d9b2126c3245b68ce67aae58b67ca870fe3a32bf414ed84612f3601e0e"
+        },
+        {
+            "date": 1745329432030,
+            "name": "C:\\Users\\user\\documents\\uride\\_uride_Backend\\src\\logs\\2025-04-22.log",
+            "hash": "07a603a5fee1e9175dd57c35249156de6909e2ba790e9ea21daa7c128fb1472e"
+        }
+    ],
+    "hashType": "sha256"
+}

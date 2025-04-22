@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import { createServer } from "node:http";
 import Config from "./config/config.js";
 import Logger from "./config/logger.js";
-import setupWebSocket from "./modules/websocket/chat.socket.js";
+import { setupSocket } from "./modules/chat/socket/socket.base.js";
 
 const server = createServer(app);
 
@@ -43,7 +43,7 @@ Mongoose.connect(configUrl, Config.mongoose.options)
       Logger.info(`SMTP PORT: ${Config.email.smtp.host}`);
     });
 
-    setupWebSocket(io);
+    setupSocket(io); // Setup socket.io after server starts
   })
   .catch((err) => {
     Logger.error("MongoDB connection failed:", err);
@@ -76,4 +76,4 @@ process.on("SIGTERM", () => {
   }
 });
 
-export { app, server };
+export { app, server, io };
