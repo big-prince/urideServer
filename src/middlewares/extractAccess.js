@@ -37,11 +37,29 @@ const extractAccess = async (req, res, next) => {
     console.log("Auth Cleared...");
     next();
   } catch (error) {
-    console.log(error);
-    return res.status(401).json({
-      status: "error",
-      message: "Unauthorized access, invalid token",
-    });
+    console.log('JWT Error:', error.name, error.message);
+
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Authentication expired, please login again'
+      });
+    } else if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Invalid token format'
+      });
+    } else if (error.name === 'NotBeforeError') {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Token not yet active'
+      });
+    } else {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Unauthorized access, token verification failed'
+      });
+    }
   }
 };
 

@@ -203,7 +203,9 @@ const verifyOTP = async (otp) => {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
 
-  const userToken = await tokenModel.findOne({ user: user._id });
+  // Generate authentication tokens for the user
+  const tokens = await Tokenizer.generateAuthTokens(user);
+  const userToken = tokens.access;
 
   if (!userToken) {
     throw new ApiError(httpStatus.NOT_FOUND, "User token not found");
