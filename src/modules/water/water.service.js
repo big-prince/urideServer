@@ -477,6 +477,9 @@ const getEstimatedDeliveryDate = async (sendDate, costType) => {
       sendDate = sendDate.replace(/\//g, "-");
     }
 
+    const express = getEstimatedDelivery(sendDate, "express");
+    const standard = getEstimatedDeliveryStandard(sendDate, "standard"),
+
     return {
       express: getEstimatedDelivery(sendDate, "express"),
       standard: getEstimatedDeliveryStandard(sendDate, "standard"),

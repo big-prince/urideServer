@@ -1,7 +1,3 @@
-// const catchAsync = (fn) => (req, res, next) => {
-//   Promise.resolve(fn(req, res, next)).catch((err) => next(err));
-// };
-
 //Better function handling sync and async scenarios gracefully
 const catchAsync = (asyncFunction) => (req, res, next) => {
   try {
