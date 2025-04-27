@@ -189,6 +189,9 @@ orderSchema.plugin(toJSON);
 const dropAllIndexes = async () => {
   try {
     if (mongoose.connection.collections.orders) {
+      console.log('Current indexes for Order collection:');
+      const indexes = await mongoose.connection.collections.orders.listIndexes().toArray();
+      console.log(indexes);
       await mongoose.connection.collections.orders.dropIndexes();
       console.log('All indexes for Order collection have been dropped');
     } else {
@@ -199,6 +202,15 @@ const dropAllIndexes = async () => {
   }
 }
 mongoose.connection.once('open', dropAllIndexes);
+
+// Pre-save middleware to handle couponCode uniqueness issue
+orderSchema.pre('save', function (next) {
+
+  if (!this.coupon || this.couponCode === null) {
+    this.couponCode = undefined;
+  }
+  next();
+});
 
 //model
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
