@@ -156,14 +156,20 @@ const orderSchema = mongoose.Schema(
 // add plugin that converts mongoose to json
 orderSchema.plugin(toJSON);
 
-//presave
-orderSchema.pre("save", async function (next) {
-  //drop index for coupon code
-  if (this.model("Order").collection.index("couponCode_1")) {
-    await this.model("Order").collection.dropIndex("couponCode_1");
+// Function to drop all indexes for Order
+const dropAllIndexes = async () => {
+  try {
+    if (mongoose.connection.collections.orders) {
+      await mongoose.connection.collections.orders.dropIndexes();
+      console.log('All indexes for Order collection have been dropped');
+    } else {
+      console.log('Order collection does not exist yet');
+    }
+  } catch (error) {
+    console.error('Error dropping indexes:', error);
   }
-  next();
-});
+}
+mongoose.connection.once('open', dropAllIndexes);
 
 //model
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
