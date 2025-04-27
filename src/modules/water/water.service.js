@@ -50,7 +50,7 @@ const sendOrder = async (sendInfo, userId) => {
     senderInfo: sendInfo.senderInfo,
     parcelInfo: sendInfo.parcelInfo,
     receiversInfo: sendInfo.receiversInfo,
-    estimatedDeliveryDays: sendInfo.estimatedDelivery,
+    estimatedDeliveryDays: sendInfo.estimatedDeliveryDays,
     estimatedDeliveryDate: sendInfo.estimatedDeliveryDate,
     cost: {
       type: sendInfo.cost.type,
