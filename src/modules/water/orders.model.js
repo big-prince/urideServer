@@ -63,7 +63,7 @@ const orderSchema = mongoose.Schema(
       },
       deliveryInstruction: {
         type: String,
-        required: true,
+        required: false,
       },
     },
     coupon: {
