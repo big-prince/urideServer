@@ -49,7 +49,10 @@ const paymentVerification = catchAsync(async (req, res) => {
     const headers = req.headers;
 
     // Call the service function to handle the webhook
-    await walletService.webhookVerification(details, headers);
+    await walletService.webhookVerification(details, headers).catch((error) => {
+      console.error("Error in webhook verification:", error);
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Webhook verification failed");
+    });
 
     // Respond to Paystack to acknowledge receipt of the event
     res.sendStatus(200);

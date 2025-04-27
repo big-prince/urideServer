@@ -79,6 +79,7 @@ const webhookVerification = async function (details, headers) {
     .update(JSON.stringify(details))
     .digest("hex");
 
+  console.log(details, headers, hash, headers["x-paystack-signature"]);
   // Verify the Paystack signature
   if (hash === headers["x-paystack-signature"]) {
     const event = details;
