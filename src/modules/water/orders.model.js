@@ -15,55 +15,67 @@ const orderSchema = mongoose.Schema(
       sender_name: {
         type: String,
         required: true,
+        default: "Unknown Sender",
       },
       sender_phone: {
         type: String,
         required: true,
+        default: "0000000000",
       },
       pickupAddress: {
         type: String,
         required: true,
+        default: "No address provided",
       },
       pickupTime: {
         type: Date,
         required: true,
+        default: Date.now,
       },
       description: {
         type: String,
         required: true,
+        default: "No description provided",
       },
     },
     parcelInfo: {
       weight: {
         type: String,
         required: true,
+        default: "0 kg",
       },
       dimensions: {
         type: String,
         required: true,
+        default: "0x0x0",
       },
       category: {
         type: String,
         required: true,
         enum: orderCategory,
+        default: orderCategory[0], // Default to first category in the enum
       },
     },
     receiversInfo: {
       receiversName: {
         type: String,
         required: true,
+        default: "Unknown Receiver",
       },
       receiversPhone: {
         type: String,
         required: true,
+        default: "0000000000",
       },
       receiversAddress: {
         type: String,
         required: true,
+        default: "No address provided",
       },
       deliveryInstruction: {
         type: String,
         required: false,
+        default: "No specific instructions",
       },
     },
     coupon: {
@@ -81,26 +93,35 @@ const orderSchema = mongoose.Schema(
     estimatedDeliveryDays: {
       type: Number,
       required: true,
+      default: 3,
     },
     estimatedDeliveryDate: {
       type: Date,
       required: true,
+      default: () => {
+        const date = new Date();
+        date.setDate(date.getDate() + 3);
+        return date;
+      },
     },
     cost: {
       type: {
         type: String,
         required: true,
         enum: ["express", "standard"],
+        default: "standard",
       },
       amount: {
         type: Number,
         required: true,
+        default: 0,
       },
     },
     status: {
       type: String,
       required: true,
       enum: ["pending", "processing", "delivered"],
+      default: "pending",
     },
     paid: {
       type: Boolean,
@@ -111,40 +132,48 @@ const orderSchema = mongoose.Schema(
         type: String,
         required: true,
         unique: true,
+        default: () => Math.random().toString(36).substring(2, 10).toUpperCase(),
       },
       distance: {
         type: Number,
         required: true,
+        default: 0,
       },
       distanceText: {
         type: String,
+        default: "0 km",
       },
       senderCordinates: {
         type: {
           lat: {
             type: Number,
             required: true,
+            default: 0,
           },
           lng: {
             type: Number,
             required: true,
+            default: 0,
           },
         },
         required: true,
+        default: { lat: 0, lng: 0 },
       },
-
       receiverCordinates: {
         type: {
           lat: {
             type: Number,
             required: true,
+            default: 0,
           },
           lng: {
             type: Number,
             required: true,
+            default: 0,
           },
         },
         required: true,
+        default: { lat: 0, lng: 0 },
       },
     },
   },
