@@ -38,6 +38,7 @@ const initializePayment = async function (details) {
   });
 
   let message;
+  console.log("🚀 ~ initializePayment ~ transaction:", transaction, amount);
   // Start transaction
   try {
     // Initialize transaction with Paystack
