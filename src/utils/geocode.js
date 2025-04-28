@@ -35,10 +35,11 @@ const getCordinates = async (location) => {
     const coordinates = response.data.features[0].geometry.coordinates;
     Logger.info(`Geocoded "${location}" to: [${coordinates[1]}, ${coordinates[0]}]`);
 
+    // Return the exact location name provided by the frontend instead of Mapbox's place_name
     return {
       lat: coordinates[1],
       lng: coordinates[0],
-      placeName: response.data.features[0].place_name
+      placeName: location // Use the original location string instead of response.data.features[0].place_name
     };
   } catch (error) {
     Logger.error(`Error in Geocode API for location "${location}": ${error.message}`);
