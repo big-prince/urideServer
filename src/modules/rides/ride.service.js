@@ -161,53 +161,71 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
             ride.destination.location.coordinates[1]
           ).toFixed(1);
 
-          // Return a well-structured ride object with all relevant details
+          // Return complete ride data with all fields
           return {
-            rideId: ride._id,
+            id: ride._id,
             origin: {
               name: ride.origin.name,
-              coordinates: ride.origin.location.coordinates,
-              distance: ride.originDistance.toFixed(1) // Distance from user's requested origin
+              location: ride.origin.location,
+              distance: ride.originDistance ? ride.originDistance.toFixed(1) : null
             },
             destination: {
               name: ride.destination.name,
-              coordinates: ride.destination.location.coordinates,
-              distance: ride.destDistance.toFixed(1) // Distance from user's requested destination
+              location: ride.destination.location,
+              distance: ride.destDistance ? ride.destDistance.toFixed(1) : null
             },
+            departure_time: ride.departure_time,
+            formattedDepartureTime: formattedDepartureTime,
+            total_capacity: ride.total_capacity,
+            remaining_capacity: ride.remaining_capacity,
+            brs: ride.brs,
             stops: ride.stops,
-            departure: {
-              time: formattedDepartureTime,
-              timestamp: ride.departure_time
-            },
-            rideDetails: {
-              price: ride.price,
-              type: ride.type,
-              luggageType: ride.luggage_type,
-              totalDistance: `${rideDistance} km`,
-              capacity: {
-                total: ride.total_capacity,
-                remaining: ride.remaining_capacity
-              },
-              status: ride.ride_status
-            },
             creator: creator ? {
+              email: creator.email,
+              name: {
+                firstName: creator.firstName,
+                lastName: creator.lastName
+              },
               id: creator._id,
-              name: `${creator.firstName} ${creator.lastName}`,
               vehicle: {
                 name: creator.carName || ride.carName,
                 color: creator.carColor || ride.carColor,
                 number: creator.carNumber || ride.carNumber
               }
-            } : { name: "Unknown Driver" }
+            } : { name: "Unknown Driver" },
+            price: ride.price,
+            riders: ride.riders,
+            riderStatus: ride.riderStatus,
+            luggage_type: ride.luggage_type,
+            carName: ride.carName,
+            carColor: ride.carColor,
+            carNumber: ride.carNumber,
+            type: ride.type,
+            other: ride.other,
+            ride_status: ride.ride_status,
+            totalDistance: `${rideDistance} km`
           };
         } catch (error) {
           Logger.error(`Error populating creator details for ride ${ride._id}: ${error.message}`);
-          // Return ride without creator details if there was an error
+          // Return basic ride details without creator info on error
           return {
-            rideId: ride._id,
+            id: ride._id,
             origin: ride.origin,
             destination: ride.destination,
-            // Basic ride details without creator info
+            departure_time: ride.departure_time,
+            total_capacity: ride.total_capacity,
+            remaining_capacity: ride.remaining_capacity,
+            brs: ride.brs,
+            stops: ride.stops,
+            price: ride.price,
+            riders: ride.riders,
+            luggage_type: ride.luggage_type,
+            carName: ride.carName,
+            carColor: ride.carColor,
+            carNumber: ride.carNumber,
+            type: ride.type,
+            other: ride.other,
+            ride_status: ride.ride_status,
             error: "Could not load driver details"
           };
         }
