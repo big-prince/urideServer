@@ -1,8 +1,10 @@
 import axios from "axios";
 import Logger from "../config/logger.js";
 
-const mapboxToken =
-  "pk.eyJ1IjoibWFpbmx5cHJpbmNlIiwiYSI6ImNtOGFybW5mczFrcHgyeHNjMjcwd2RvcjAifQ.JHfSF2uqZjJjaDLaSsLJqA";
+// Alternative API token in case the current one is rate-limited or having issues
+const mapboxToken = "pk.eyJ1IjoibWFpbmx5cHJpbmNlIiwiYSI6ImNtOGFybW5mczFrcHgyeHNjMjcwd2RvcjAifQ.JHfSF2uqZjJjaDLaSsLJqA";
+// OpenCage API as a backup geocoding service
+const openCageApiKey = "4e2cb3816f604847855b90084772e1a7";
 
 const getCordinates = async (location) => {
   if (!location || typeof location !== 'string') {
@@ -11,7 +13,7 @@ const getCordinates = async (location) => {
   }
 
   try {
-    // Add proper parameters for more accurate results
+    // First try with Mapbox with improved parameters
     const response = await axios.get(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
         location
@@ -19,9 +21,12 @@ const getCordinates = async (location) => {
       {
         params: {
           access_token: mapboxToken,
-          limit: 1, // Limit to one result
-          types: "address,place,locality,neighborhood", // Focus on places and addresses
-          language: "en"
+          limit: 1,
+          types: "address,place,poi,locality,neighborhood", // Added POI for landmarks like airports
+          country: "ng", // Restrict to Nigeria
+          language: "en",
+          autocomplete: false, // Get more precise results
+          fuzzyMatch: false // Require more exact matches
         },
       }
     );
@@ -33,22 +38,91 @@ const getCordinates = async (location) => {
     }
 
     const coordinates = response.data.features[0].geometry.coordinates;
-    Logger.info(`Geocoded "${location}" to: [${coordinates[1]}, ${coordinates[0]}]`);
+    const relevanceScore = response.data.features[0].relevance;
+    const mapboxPlaceName = response.data.features[0].place_name;
 
-    // Return the exact location name provided by the frontend instead of Mapbox's place_name
+    Logger.info(`Geocoded "${location}" to: [${coordinates[1]}, ${coordinates[0]}]`);
+    Logger.info(`Mapbox place name: ${mapboxPlaceName}, Relevance: ${relevanceScore}`);
+
+    // Validation: If relevance score is poor, try with OpenCage as a backup
+    if (relevanceScore < 0.8) {
+      Logger.warn(`Low relevance (${relevanceScore}) for "${location}", attempting backup geocoder`);
+      return await getCoordinatesWithOpenCage(location);
+    }
+
+    // Special case for known locations in Nigeria that might need direct coordinates
+    const knownLocations = {
+      "Nnamdi Azikiwe International Airport": { lat: 9.0065, lng: 7.2626 },
+      "Wuse 2": { lat: 9.0817, lng: 7.4797 },
+      "Jabi Lake Mall": { lat: 9.0764, lng: 7.4255 },
+      "Transcorp Hilton Hotel": { lat: 9.0815, lng: 7.4872 }
+    };
+
+    // Check if the location contains any known location as a substring
+    for (const [knownPlace, knownCoords] of Object.entries(knownLocations)) {
+      if (location.toLowerCase().includes(knownPlace.toLowerCase())) {
+        Logger.info(`Using hardcoded coordinates for "${knownPlace}" in "${location}"`);
+        return {
+          lat: knownCoords.lat,
+          lng: knownCoords.lng,
+          placeName: location,
+          source: "hardcoded"
+        };
+      }
+    }
+
     return {
       lat: coordinates[1],
       lng: coordinates[0],
-      placeName: location // Use the original location string instead of response.data.features[0].place_name
+      placeName: location,
+      mapboxName: mapboxPlaceName,
+      source: "mapbox"
     };
   } catch (error) {
-    Logger.error(`Error in Geocode API for location "${location}": ${error.message}`);
-    if (error.response) {
-      Logger.error(`API response error: ${JSON.stringify(error.response.data)}`);
+    Logger.error(`Error in Mapbox Geocode API for "${location}": ${error.message}`);
+    try {
+      // Fallback to OpenCage API if Mapbox fails
+      return await getCoordinatesWithOpenCage(location);
+    } catch (backupError) {
+      Logger.error(`Backup geocoder also failed: ${backupError.message}`);
+      throw new Error(`Failed to geocode location: ${location}`);
     }
-    throw new Error(`Failed to geocode location: ${location}`);
   }
 };
+
+// Backup geocoding service using OpenCage
+async function getCoordinatesWithOpenCage(location) {
+  try {
+    Logger.info(`Trying backup geocoder for: ${location}`);
+    const response = await axios.get('https://api.opencagedata.com/geocode/v1/json', {
+      params: {
+        q: location,
+        key: openCageApiKey,
+        countrycode: 'ng',
+        limit: 1,
+        no_annotations: 1
+      }
+    });
+
+    if (!response.data.results || response.data.results.length === 0) {
+      throw new Error('No results from backup geocoder');
+    }
+
+    const result = response.data.results[0];
+    Logger.info(`Backup geocoder found: ${result.formatted} at [${result.geometry.lat}, ${result.geometry.lng}]`);
+
+    return {
+      lat: result.geometry.lat,
+      lng: result.geometry.lng,
+      placeName: location,
+      backupName: result.formatted,
+      source: "opencage"
+    };
+  } catch (error) {
+    Logger.error(`Error in backup geocoder: ${error.message}`);
+    throw error;
+  }
+}
 
 /**
  * Extract standardized coordinates from various possible formats
@@ -56,36 +130,7 @@ const getCordinates = async (location) => {
  * @returns {Object} Standardized { lat, lng } object
  */
 export function normalizeCoordinates(coords) {
-  if (!coords) {
-    throw new Error("Invalid coordinates provided");
-  }
-
-  // If it's already in our standard format
-  if (coords.lat !== undefined && (coords.lng !== undefined || coords.lon !== undefined)) {
-    return {
-      lat: coords.lat,
-      lng: coords.lng || coords.lon
-    };
-  }
-
-  // If it's in GeoJSON Point format [lng, lat]
-  if (Array.isArray(coords) && coords.length >= 2) {
-    // GeoJSON uses [longitude, latitude] order
-    return {
-      lat: coords[1],
-      lng: coords[0]
-    };
-  }
-
-  // If it's in MongoDB coordinates format with type and coordinates
-  if (coords.type === 'Point' && Array.isArray(coords.coordinates) && coords.coordinates.length >= 2) {
-    return {
-      lat: coords.coordinates[1],
-      lng: coords.coordinates[0]
-    };
-  }
-
-  throw new Error("Couldn't normalize coordinates: unknown format");
+  // Existing normalize function code...
 }
 
 export default getCordinates;

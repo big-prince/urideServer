@@ -201,7 +201,7 @@ const addRide = async function (rideDetails, callback) {
   Logger.info(creatorRole);
 
   try {
-    console.log(origin, destination, "Origin and Destination")
+    cconsole.log(origin, destination, "Origin and Destination");
     //get cordinates
     const originCordinates = await getCordinates(origin);
     console.log("🚀 ~ addRide ~ originCordinates:", originCordinates);
@@ -209,15 +209,41 @@ const addRide = async function (rideDetails, callback) {
     const destinationCordinates = await getCordinates(destination);
     console.log("🚀 ~ addRide ~ destinationCordinates:", destinationCordinates);
 
-    // Check if origin and destination coordinates are the same
+    // More thorough coordinate comparison
     const isSameLocation =
-      Math.abs(originCordinates.lat - destinationCordinates.lat) < 0.001 &&
-      Math.abs(originCordinates.lng - destinationCordinates.lng) < 0.001;
+      Math.abs(originCordinates.lat - destinationCordinates.lat) < 0.0005 &&
+      Math.abs(originCordinates.lng - destinationCordinates.lng) < 0.0005;
+
+    // Log the actual coordinates and source for debugging
+    console.log("Origin coordinates:", originCordinates.lat, originCordinates.lng, "Source:", originCordinates.source || "unknown");
+    console.log("Destination coordinates:", destinationCordinates.lat, destinationCordinates.lng, "Source:", destinationCordinates.source || "unknown");
+    console.log("Distance between points (degrees):",
+      Math.abs(originCordinates.lat - destinationCordinates.lat),
+      Math.abs(originCordinates.lng - destinationCordinates.lng)
+    );
 
     if (isSameLocation) {
-      Logger.error("Origin and destination appear to be the same location");
+      Logger.error("Origin and destination have identical or nearly identical coordinates");
+      Logger.error(`Origin: ${origin} (${originCordinates.lat},${originCordinates.lng})`);
+      Logger.error(`Destination: ${destination} (${destinationCordinates.lat},${destinationCordinates.lng})`);
       return callback({
-        message: "Origin and destination cannot be the same or too close to each other"
+        message: "Origin and destination appear to be the same location. Please check your addresses and try again."
+      });
+    }
+
+    // Calculate actual distance in kilometers for better validation
+    const distanceKm = calculateDistance(
+      originCordinates.lat, originCordinates.lng,
+      destinationCordinates.lat, destinationCordinates.lng
+    );
+
+    console.log("Distance between points (km):", distanceKm);
+
+    // If distance is suspiciously small, reject the ride
+    if (distanceKm < 0.5) { // Less than 500 meters
+      Logger.error(`Origin and destination are only ${distanceKm.toFixed(2)}km apart`);
+      return callback({
+        message: "Origin and destination are too close. Please select locations that are further apart."
       });
     }
 
