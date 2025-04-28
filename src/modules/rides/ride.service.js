@@ -201,7 +201,7 @@ const addRide = async function (rideDetails, callback) {
   Logger.info(creatorRole);
 
   try {
-    cconsole.log(origin, destination, "Origin and Destination");
+    console.log(origin, destination, "Origin and Destination");
     //get cordinates
     const originCordinates = await getCordinates(origin);
     console.log("🚀 ~ addRide ~ originCordinates:", originCordinates);
