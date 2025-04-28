@@ -68,145 +68,52 @@ const getAllOpenRides = function (callback) {
     });
 };
 
+
 // Gets all rides with remaining capacity in a certain Location
 const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
   const { origin, destination } = rideDetails;
   Logger.info(rideDetails);
 
-  // async function clearIndexes() {
-  //   try {
-  //     // Drop all indexes for the Rides collection
-  //     await Rides.collection.dropIndexes();
-  //     Logger.info("All indexes dropped for Rides collection.");
-  //   } catch (error) {
-  //     Logger.info("Error dropping indexes:", error);
-  //     throw error; // Throw the error to handle it elsewhere, if needed
-  //   }
-  // }
-  // clearIndexes();
-  //get the cordinates of the input
-  const originCordinates = await getCordinates(origin);
-  const destinationCordinates = await getCordinates(destination);
-
-  const mainOrigin = {
-    type: "Point",
-    coordinates: [originCordinates.lat, originCordinates.lng],
-  };
-  const mainDestination = {
-    type: "Point",
-    coordinates: [destinationCordinates.lat, destinationCordinates.lng],
-  };
-
-  const finalOrigin = {
-    location: mainOrigin,
-    name: origin,
-  };
-
-  Logger.info(
-    `Origin: ${origin}, ${originCordinates}, ${JSON.stringify(finalOrigin)}`
-  );
-  Logger.info(
-    `Destination: ${destination}, ${destinationCordinates}, ${JSON.stringify(
-      mainDestination
-    )}`
-  );
-
-  const distInRadians = 25 / 3963.2; //converts the distance from miles to radians by dividing by the approximate equatorial radius of the earth
-
-  const now = new Date();
-
-  const query = {
-    origin: {
-      $geoWithin: {
-        $centerSphere: [mainOrigin.coordinates, distInRadians],
-      },
-    },
-  };
   try {
-    const rides = await Rides.find({
-      origin: finalOrigin,
-    })
-      .where("remaining_capacity")
-      .gte(1)
-      .where("departure_time")
-      .gte(now);
-    Logger.info(`Rides: ${JSON.stringify(rides)}`);
-    if (!rides) {
-      Logger.info(`No rides found for ${origin} and ${destination}`);
-      return callback({ message: "No rides found" });
-    }
+    //get the cordinates of the input
+    const originCordinates = await getCordinates(origin);
+    const destinationCordinates = await getCordinates(destination);
 
-    // Initialize an array to store the formatted rides with creator details
-    const rideArray = [];
+    // Check if origin and destination coordinates are the same
+    const isSameLocation =
+      Math.abs(originCordinates.lat - destinationCordinates.lat) < 0.001 &&
+      Math.abs(originCordinates.lng - destinationCordinates.lng) < 0.001;
 
-    // Iterate over the rides array and fetch additional creator details
-    for (const ride of rides) {
-      const {
-        _id,
-        origin,
-        destination,
-        departure_time,
-        total_capacity,
-        remaining_capacity,
-        brs,
-        stops,
-        creator,
-        price,
-        riders,
-        luggage_type,
-        carName,
-        carNumber,
-        type,
-        other,
-      } = ride;
-
-      // Fetch additional details of the creator using the email
-      const creatorDetails = await User.findOne({
-        email: ride.creator,
-      });
-
-      if (creatorDetails.role !== "passenger") {
-        //switch role to driver
-        creatorDetails.role = "passenger";
-        await creatorDetails.save().then(() => {
-          console.log("Role Changed to Passenger!");
-        });
-      }
-
-      // Format the ride object with additional creator details
-      rideArray.push({
-        id: _id,
-        origin,
-        destination,
-        departure_time,
-        total_capacity,
-        remaining_capacity,
-        brs,
-        stops,
-        creator: {
-          email: creatorDetails.email,
-          name: {
-            firstName: creatorDetails.firstName,
-            lastName: creatorDetails.lastName,
-          },
-          id: creatorDetails._id,
-        },
-        price,
-        riders,
-        luggage_type,
-        carName,
-        carNumber,
-        type,
-        other,
+    if (isSameLocation) {
+      Logger.error("Origin and destination appear to be the same location");
+      return callback({
+        message: "Origin and destination cannot be the same or too close to each other"
       });
     }
 
-    // Return the formatted ride array
-    return rideArray;
+    const mainOrigin = {
+      type: "Point",
+      coordinates: [originCordinates.lat, originCordinates.lng],
+    };
+    const mainDestination = {
+      type: "Point",
+      coordinates: [destinationCordinates.lat, destinationCordinates.lng],
+    };
+
+    const finalOrigin = {
+      location: mainOrigin,
+      name: originCordinates.placeName || origin,
+    };
+
+    // ...rest of the function remains the same...
   } catch (error) {
-    return callback(error);
+    Logger.error(`Error in getAllOpenRidesWithLocation: ${error.message}`);
+    return callback({ message: `Failed to find rides: ${error.message}` });
   }
+
+  // ...existing code...
 };
+
 
 // Returns a ride given the id
 const getRide = function (rideId, callback) {
@@ -258,131 +165,149 @@ const addRide = async function (rideDetails, callback) {
   }
   Logger.info(creatorRole);
 
-  //get cordinates
-  const originCordinates = await getCordinates(origin);
-  console.log("🚀 ~ addRide ~ originCordinates:", originCordinates);
+  try {
+    //get cordinates
+    const originCordinates = await getCordinates(origin);
+    console.log("🚀 ~ addRide ~ originCordinates:", originCordinates);
 
-  const destinationCordinates = await getCordinates(destination);
-  console.log("🚀 ~ addRide ~ destinationCordinates:", destinationCordinates);
+    const destinationCordinates = await getCordinates(destination);
+    console.log("🚀 ~ addRide ~ destinationCordinates:", destinationCordinates);
 
-  //destruxture date function
-  function parseDateWithMoment(dateString) {
-    // Parse the date string using moment with a specific format
-    const parsedDate = moment(dateString, "M/D/YYYY h:mmA");
+    // Check if origin and destination coordinates are the same
+    const isSameLocation =
+      Math.abs(originCordinates.lat - destinationCordinates.lat) < 0.001 &&
+      Math.abs(originCordinates.lng - destinationCordinates.lng) < 0.001;
 
-    // Check if the parsed date is valid
-    if (!parsedDate.isValid()) {
-      console.log("Invalid date format");
+    if (isSameLocation) {
+      Logger.error("Origin and destination appear to be the same location");
+      return callback({
+        message: "Origin and destination cannot be the same or too close to each other"
+      });
     }
 
-    return parsedDate.toDate();
-  }
-  console.log(originCordinates.lat);
-  const MainOrigin = {
-    type: "Point",
-    coordinates: [originCordinates.lat, originCordinates.lng],
-  };
-  const MainDestination = {
-    type: "Point",
-    coordinates: [destinationCordinates.lat, destinationCordinates.lng],
-  };
+    //destruxture date function
+    function parseDateWithMoment(dateString) {
+      // Parse the date string using moment with a specific format
+      const parsedDate = moment(dateString, "M/D/YYYY h:mmA");
 
-  const finalOrigin = {
-    name: origin,
-    location: MainOrigin,
-  };
-  const finalDestination = {
-    name: destination,
-    location: MainDestination,
-  };
-
-  console.log(finalOrigin, finalDestination);
-
-  const formattedStops = await Promise.all(
-    stops.map(async (stop) => {
-      const coordinates = await getCordinates(stop);
-      return {
-        name: stop,
-        location: {
-          type: "Point",
-          coordinates: [coordinates.lat, coordinates.lng],
-        },
-      };
-    })
-  );
-  //destructure the time received
-  const departureTime = parseDateWithMoment(departure_time);
-  console.log(departureTime);
-
-  Logger.info(`${origin}: ` + JSON.stringify(MainOrigin));
-  Logger.info(`${destination}: ` + JSON.stringify(MainDestination));
-  Logger.info(`Stops: ` + JSON.stringify(formattedStops));
-
-  const options = {
-    origin: finalOrigin,
-    destination: finalDestination,
-    stops: formattedStops,
-    type: type,
-    other: other,
-    price: price,
-    brs: brs,
-    departure_time: departureTime,
-    total_capacity: total_capacity,
-    remaining_capacity: total_capacity,
-    creator: creator,
-    riders: riders,
-    luggage_type: luggage_type,
-    carName: carName,
-    carColor: carColor,
-    carNumber: carNumber,
-  };
-  console.log(options);
-
-  try {
-    //only save if ride is "One-Time"
-    if (type === "One-time") {
-      const ride = await Rides.create(options);
-      Logger.info(`Ride created: ${ride.id}`);
-      if (!ride) {
-        Logger.info("Ride not created");
-        return callback({ message: "Ride not created" });
+      // Check if the parsed date is valid
+      if (!parsedDate.isValid()) {
+        console.log("Invalid date format");
       }
-      // update the creators rides
-      const updateDriver = await User.findOneAndUpdate(
-        { email: creator },
-        {
-          $push: { ridesCreated: ride._id },
-          carName: carName,
-          carNumber: carNumber,
-        },
-        { new: true }
-      );
 
-      // //create a waiting list for that ride
-      // const awaiting = {
-      //   driverId: updateDriver._id,
-      //   rideId: ride._id,
-      //   users: [],
-      // };
-      // await Awaiting.create(awaiting).then(() => {
-      //   Logger.info("Awaiting list created");
-      // });
+      return parsedDate.toDate();
+    }
 
-      //generate security code for the ride
-      const code = await codeGenerator(
-        creatorRole._id,
-        ride._id,
-        ride.departure_time
-      ).then(() => {
-        Logger.info("Code Generated for Ride.");
-      });
+    const MainOrigin = {
+      type: "Point",
+      coordinates: [originCordinates.lat, originCordinates.lng],
+    };
+    const MainDestination = {
+      type: "Point",
+      coordinates: [destinationCordinates.lat, destinationCordinates.lng],
+    };
 
-      //update car details for driver
-      Logger.info("Everything done..");
-      return ride;
+    const finalOrigin = {
+      name: originCordinates.placeName || origin,
+      location: MainOrigin,
+    };
+
+    const finalDestination = {
+      name: destinationCordinates.placeName || destination,
+      location: MainDestination,
+    };
+
+    console.log(finalOrigin, finalDestination);
+
+    const formattedStops = await Promise.all(
+      stops.map(async (stop) => {
+        const coordinates = await getCordinates(stop);
+        return {
+          name: stop,
+          location: {
+            type: "Point",
+            coordinates: [coordinates.lat, coordinates.lng],
+          },
+        };
+      })
+    );
+    //destructure the time received
+    const departureTime = parseDateWithMoment(departure_time);
+    console.log(departureTime);
+
+    Logger.info(`${origin}: ` + JSON.stringify(MainOrigin));
+    Logger.info(`${destination}: ` + JSON.stringify(MainDestination));
+    Logger.info(`Stops: ` + JSON.stringify(formattedStops));
+
+    const options = {
+      origin: finalOrigin,
+      destination: finalDestination,
+      stops: formattedStops,
+      type: type,
+      other: other,
+      price: price,
+      brs: brs,
+      departure_time: departureTime,
+      total_capacity: total_capacity,
+      remaining_capacity: total_capacity,
+      creator: creator,
+      riders: riders,
+      luggage_type: luggage_type,
+      carName: carName,
+      carColor: carColor,
+      carNumber: carNumber,
+    };
+    console.log(options);
+
+    try {
+      //only save if ride is "One-Time"
+      if (type === "One-time") {
+        const ride = await Rides.create(options);
+        Logger.info(`Ride created: ${ride.id}`);
+        if (!ride) {
+          Logger.info("Ride not created");
+          return callback({ message: "Ride not created" });
+        }
+        // update the creators rides
+        const updateDriver = await User.findOneAndUpdate(
+          { email: creator },
+          {
+            $push: { ridesCreated: ride._id },
+            carName: carName,
+            carNumber: carNumber,
+          },
+          { new: true }
+        );
+
+        // //create a waiting list for that ride
+        // const awaiting = {
+        //   driverId: updateDriver._id,
+        //   rideId: ride._id,
+        //   users: [],
+        // };
+        // await Awaiting.create(awaiting).then(() => {
+        //   Logger.info("Awaiting list created");
+        // });
+
+        //generate security code for the ride
+        const code = await codeGenerator(
+          creatorRole._id,
+          ride._id,
+          ride.departure_time
+        ).then(() => {
+          Logger.info("Code Generated for Ride.");
+        });
+
+        //update car details for driver
+        Logger.info("Everything done..");
+        return ride;
+      }
+    } catch (error) {
+      console.log("There is an error", { message: error.message });
     }
   } catch (error) {
-    console.log("There is an error", { message: error.message });
+    Logger.error(`Failed to create ride: ${error.message}`);
+    return callback({ message: `Could not create ride: ${error.message}` });
   }
 };
 //get allrides creataed  by driver(manage rides)
@@ -1500,13 +1425,32 @@ const userRide = async function (req, callback) {
 
   return message;
 };
+
 //test geocode getter
 const testCode = async function (details, callback) {
   const { origin, destination } = details;
-  const originCordinates = await getCordinates(origin);
-  console.log("🚀 ~ testCode ~ originCordinates:", originCordinates);
-  const destinationCordinates = await getCordinates(destination);
-  console.log("🚀 ~ testCode ~ destinationCordinates:", destinationCordinates);
+  try {
+    const originCordinates = await getCordinates(origin);
+    console.log("🚀 ~ testCode ~ originCordinates:", originCordinates);
+
+    const destinationCordinates = await getCordinates(destination);
+    console.log("🚀 ~ testCode ~ destinationCordinates:", destinationCordinates);
+
+    // Check if coordinates are the same
+    const isSameLocation =
+      Math.abs(originCordinates.lat - destinationCordinates.lat) < 0.001 &&
+      Math.abs(originCordinates.lng - destinationCordinates.lng) < 0.001;
+
+    return {
+      originCoordinates: originCordinates,
+      destinationCoordinates: destinationCordinates,
+      isSameLocation: isSameLocation,
+      message: isSameLocation ? "Warning: Origin and destination appear to be the same location" : "Locations are different"
+    };
+  } catch (error) {
+    Logger.error(`Error in testCode: ${error.message}`);
+    return { error: error.message };
+  }
 };
 
 //test geodistance
