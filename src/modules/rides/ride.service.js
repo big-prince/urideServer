@@ -213,10 +213,9 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
         }
       })
     );
+    console.log(populatedRides, "POLLLLL")
 
-    return populatedRides.length > 0
-      ? populatedRides
-      : { message: "No rides found in the proximity of your locations" };
+    return populatedRides
 
   } catch (error) {
     Logger.error(`Error in getAllOpenRidesWithLocation: ${error.message}`);
