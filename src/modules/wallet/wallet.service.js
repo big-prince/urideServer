@@ -128,7 +128,7 @@ const webhookVerification = async function (details, headers) {
         }
         if (transaction.transactionType === "flight") {
           // Update order status
-          const flight = await Bookings.findById(transaction.flightId);
+          const flight = await Bookings.findById(transaction.bookingId);
           if (!flight) {
             throw new customError("flight not found", 404).serveError();
           }
@@ -138,7 +138,7 @@ const webhookVerification = async function (details, headers) {
             return;
           }
 
-          flight.paymentStatus = true;
+          flight.paymentStatus = "successful";
 
           await flight.save().then(() => {
             Logger.info("flight updated.");
@@ -172,7 +172,7 @@ const webhookVerification = async function (details, headers) {
             gatewayResponse: data.gateway_response,
             type: transaction.transactionType,
             orderId: transaction.orderId,
-            flightId: transaction.flightId,
+            flightId: transaction.bookingId,
           },
           transactionType: type,
         });

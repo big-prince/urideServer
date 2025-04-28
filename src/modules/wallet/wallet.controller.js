@@ -45,20 +45,21 @@ export const initializePayment = catchAsync(async (req, res) => {
 //payment verification
 const paymentVerification = catchAsync(async (req, res) => {
   try {
+    console.log("GOT TO THE ROUTE")
     const details = req.body;
     const headers = req.headers;
 
-    // Call the service function to handle the webhook
+    console.log("Details: ", details);
     await walletService.webhookVerification(details, headers).catch((error) => {
       console.error("Error in webhook verification:", error);
       throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Webhook verification failed");
     });
 
-    // Respond to Paystack to acknowledge receipt of the event
+
     res.sendStatus(200);
   } catch (error) {
     console.error("Error processing Paystack webhook:", error);
-    res.sendStatus(500); // Internal server error
+    res.sendStatus(500);
   }
 });
 
