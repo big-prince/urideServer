@@ -140,8 +140,82 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
 
     Logger.info(`Found ${filteredRides.length} rides near ${origin} going to ${destination}`);
 
-    return filteredRides.length > 0
-      ? filteredRides
+    // Populate creator details for each ride
+    const populatedRides = await Promise.all(
+      filteredRides.map(async (ride) => {
+        try {
+          // Get creator details from User collection using creator email
+          const creator = await User.findOne({ email: ride.creator });
+
+          // Format departure time
+          const formattedDepartureTime = format(
+            ride.departure_time,
+            "EEEE, MMMM do, yyyy 'at' h:mm a"
+          );
+
+          // Calculate estimated distance for the ride
+          const rideDistance = calculateDistance(
+            ride.origin.location.coordinates[0],
+            ride.origin.location.coordinates[1],
+            ride.destination.location.coordinates[0],
+            ride.destination.location.coordinates[1]
+          ).toFixed(1);
+
+          // Return a well-structured ride object with all relevant details
+          return {
+            rideId: ride._id,
+            origin: {
+              name: ride.origin.name,
+              coordinates: ride.origin.location.coordinates,
+              distance: ride.originDistance.toFixed(1) // Distance from user's requested origin
+            },
+            destination: {
+              name: ride.destination.name,
+              coordinates: ride.destination.location.coordinates,
+              distance: ride.destDistance.toFixed(1) // Distance from user's requested destination
+            },
+            stops: ride.stops,
+            departure: {
+              time: formattedDepartureTime,
+              timestamp: ride.departure_time
+            },
+            rideDetails: {
+              price: ride.price,
+              type: ride.type,
+              luggageType: ride.luggage_type,
+              totalDistance: `${rideDistance} km`,
+              capacity: {
+                total: ride.total_capacity,
+                remaining: ride.remaining_capacity
+              },
+              status: ride.ride_status
+            },
+            creator: creator ? {
+              id: creator._id,
+              name: `${creator.firstName} ${creator.lastName}`,
+              vehicle: {
+                name: creator.carName || ride.carName,
+                color: creator.carColor || ride.carColor,
+                number: creator.carNumber || ride.carNumber
+              }
+            } : { name: "Unknown Driver" }
+          };
+        } catch (error) {
+          Logger.error(`Error populating creator details for ride ${ride._id}: ${error.message}`);
+          // Return ride without creator details if there was an error
+          return {
+            rideId: ride._id,
+            origin: ride.origin,
+            destination: ride.destination,
+            // Basic ride details without creator info
+            error: "Could not load driver details"
+          };
+        }
+      })
+    );
+
+    return populatedRides.length > 0
+      ? populatedRides
       : { message: "No rides found in the proximity of your locations" };
 
   } catch (error) {
@@ -149,6 +223,7 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
     return callback({ message: `Failed to find rides: ${error.message}` });
   }
 };
+
 
 // Returns a ride given the id
 const getRide = function (rideId, callback) {
