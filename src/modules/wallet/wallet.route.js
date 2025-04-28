@@ -27,7 +27,6 @@ router.post(
 router.post(
   "/verify_payment",
   routeLogger,
-  extractAccess,
   walletController.paymentVerification
 );
 
