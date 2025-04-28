@@ -49,4 +49,42 @@ const getCordinates = async (location) => {
   }
 };
 
+/**
+ * Extract standardized coordinates from various possible formats
+ * @param {Object|Array} coords - Coordinates in various possible formats
+ * @returns {Object} Standardized { lat, lng } object
+ */
+export function normalizeCoordinates(coords) {
+  if (!coords) {
+    throw new Error("Invalid coordinates provided");
+  }
+
+  // If it's already in our standard format
+  if (coords.lat !== undefined && (coords.lng !== undefined || coords.lon !== undefined)) {
+    return {
+      lat: coords.lat,
+      lng: coords.lng || coords.lon
+    };
+  }
+
+  // If it's in GeoJSON Point format [lng, lat]
+  if (Array.isArray(coords) && coords.length >= 2) {
+    // GeoJSON uses [longitude, latitude] order
+    return {
+      lat: coords[1],
+      lng: coords[0]
+    };
+  }
+
+  // If it's in MongoDB coordinates format with type and coordinates
+  if (coords.type === 'Point' && Array.isArray(coords.coordinates) && coords.coordinates.length >= 2) {
+    return {
+      lat: coords.coordinates[1],
+      lng: coords.coordinates[0]
+    };
+  }
+
+  throw new Error("Couldn't normalize coordinates: unknown format");
+}
+
 export default getCordinates;

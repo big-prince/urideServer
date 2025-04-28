@@ -13,6 +13,7 @@ import codeGenerator from "../../utils/codeGenerator.js";
 import clearIndex from "../../utils/clearIndex.js";
 import Logger from "../../config/logger.js";
 import getCordinates from "../../utils/geocode.js";
+import { calculateDistance, toRadians } from "../../utils/distance.js";
 // import getCordinates from "../../utils/geocode.google.js";
 import geoDistance from "../../utils/geoDistance.js";
 import sendCode from "../../utils/sendcode.js";
@@ -72,17 +73,17 @@ const getAllOpenRides = function (callback) {
 // Gets all rides with remaining capacity in a certain Location
 const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
   const { origin, destination } = rideDetails;
-  Logger.info(rideDetails);
+  Logger.info(`Searching rides near origin: ${origin} and destination: ${destination}`);
 
   try {
-    //get the cordinates of the input
-    const originCordinates = await getCordinates(origin);
-    const destinationCordinates = await getCordinates(destination);
+    // Get coordinates for origin and destination from the user input
+    const originCoordinates = await getCordinates(origin);
+    const destinationCoordinates = await getCordinates(destination);
 
-    // Check if origin and destination coordinates are the same
+    // Check if origin and destination coordinates are too close
     const isSameLocation =
-      Math.abs(originCordinates.lat - destinationCordinates.lat) < 0.001 &&
-      Math.abs(originCordinates.lng - destinationCordinates.lng) < 0.001;
+      Math.abs(originCoordinates.lat - destinationCoordinates.lat) < 0.001 &&
+      Math.abs(originCoordinates.lng - destinationCoordinates.lng) < 0.001;
 
     if (isSameLocation) {
       Logger.error("Origin and destination appear to be the same location");
@@ -91,29 +92,83 @@ const getAllOpenRidesWithLocation = async function (rideDetails, callback) {
       });
     }
 
-    const mainOrigin = {
-      type: "Point",
-      coordinates: [originCordinates.lat, originCordinates.lng],
-    };
-    const mainDestination = {
-      type: "Point",
-      coordinates: [destinationCordinates.lat, destinationCordinates.lng],
-    };
+    // Define search radius (in kilometers)
+    const proximityRadius = 5; // 5km radius for both origin and destination
 
-    const finalOrigin = {
-      location: mainOrigin,
-      name: originCordinates.placeName || origin,
-    };
+    // Current time for filtering expired rides
+    const now = new Date();
 
-    // ...rest of the function remains the same...
+    // Find rides with capacity, not expired, and within proximity radius
+    const nearbyRides = await Rides.find({
+      remaining_capacity: { $gte: 1 },
+      departure_time: { $gte: now }
+    }).exec();
+
+    // Filter rides by proximity
+    const filteredRides = nearbyRides.filter(ride => {
+      try {
+        // Get origin coordinates from the ride
+        const rideOriginCoords = ride.origin.location.coordinates;
+        const rideDestCoords = ride.destination.location.coordinates;
+
+        // Calculate distances
+        const originDistance = calculateDistance(
+          originCoordinates.lat, originCoordinates.lng,
+          rideOriginCoords[0], rideOriginCoords[1]
+        );
+
+        const destDistance = calculateDistance(
+          destinationCoordinates.lat, destinationCoordinates.lng,
+          rideDestCoords[0], rideDestCoords[1]
+        );
+
+        // Add distance information to the ride object for sorting later
+        ride.originDistance = originDistance;
+        ride.destDistance = destDistance;
+
+        // Return true if both origin and destination are within proximity radius
+        return originDistance <= proximityRadius && destDistance <= proximityRadius;
+      } catch (error) {
+        Logger.error(`Error calculating distance for ride ${ride._id}: ${error.message}`);
+        return false;
+      }
+    });
+
+    // Sort by proximity (closest origin first)
+    filteredRides.sort((a, b) => a.originDistance - b.originDistance);
+
+    Logger.info(`Found ${filteredRides.length} rides near ${origin} going to ${destination}`);
+
+    return filteredRides.length > 0
+      ? filteredRides
+      : { message: "No rides found in the proximity of your locations" };
+
   } catch (error) {
     Logger.error(`Error in getAllOpenRidesWithLocation: ${error.message}`);
     return callback({ message: `Failed to find rides: ${error.message}` });
   }
-
-  // ...existing code...
 };
 
+// Helper function to calculate distance between two points using Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+
+  return distance; // Returns distance in kilometers
+}
+
+function toRadians(degrees) {
+  return degrees * Math.PI / 180;
+}
 
 // Returns a ride given the id
 const getRide = function (rideId, callback) {
@@ -1430,22 +1485,31 @@ const userRide = async function (req, callback) {
 const testCode = async function (details, callback) {
   const { origin, destination } = details;
   try {
-    const originCordinates = await getCordinates(origin);
-    console.log("🚀 ~ testCode ~ originCordinates:", originCordinates);
+    const originCoordinates = await getCordinates(origin);
+    console.log("🚀 ~ testCode ~ originCoordinates:", originCoordinates);
 
-    const destinationCordinates = await getCordinates(destination);
-    console.log("🚀 ~ testCode ~ destinationCordinates:", destinationCordinates);
+    const destinationCoordinates = await getCordinates(destination);
+    console.log("🚀 ~ testCode ~ destinationCoordinates:", destinationCoordinates);
 
     // Check if coordinates are the same
     const isSameLocation =
-      Math.abs(originCordinates.lat - destinationCordinates.lat) < 0.001 &&
-      Math.abs(originCordinates.lng - destinationCordinates.lng) < 0.001;
+      Math.abs(originCoordinates.lat - destinationCoordinates.lat) < 0.001 &&
+      Math.abs(originCoordinates.lng - destinationCoordinates.lng) < 0.001;
+
+    // Calculate distance between points
+    const distance = calculateDistance(
+      originCoordinates.lat, originCoordinates.lng,
+      destinationCoordinates.lat, destinationCoordinates.lng
+    );
 
     return {
-      originCoordinates: originCordinates,
-      destinationCoordinates: destinationCordinates,
+      originCoordinates: originCoordinates,
+      destinationCoordinates: destinationCoordinates,
       isSameLocation: isSameLocation,
-      message: isSameLocation ? "Warning: Origin and destination appear to be the same location" : "Locations are different"
+      distanceKm: distance,
+      message: isSameLocation
+        ? "Warning: Origin and destination appear to be the same location"
+        : `Locations are ${distance.toFixed(2)}km apart`
     };
   } catch (error) {
     Logger.error(`Error in testCode: ${error.message}`);
