@@ -1,6 +1,3 @@
-import mongoose from "mongoose";
-import tType from "../../config/transaction.type.js";
-
 const transactionHistorySchema = new mongoose.Schema(
   {
     userId: {
@@ -10,15 +7,16 @@ const transactionHistorySchema = new mongoose.Schema(
     },
     data: {
       reference: { type: String, required: true },
-      amount: { type: Number, required: true },
-      status: { type: String, required: true },
-      currency: { type: String, required: true },
-      transactionDate: { type: Date, required: true },
-      gatewayResponse: { type: String, required: true },
+      amount: { type: Number, required: true, default: 0 },
+      status: { type: String, required: true, default: "pending" },
+      currency: { type: String, required: true, default: "NGN" },
+      transactionDate: { type: Date, required: true, default: Date.now },
+      gatewayResponse: { type: String, required: true, default: "Initialized" },
       type: {
         type: String,
         required: true,
         enum: ["top-up", "payment", "order"],
+        default: "top-up"
       },
       orderId: { type: String, ref: "Order", default: null },
     },
@@ -26,15 +24,8 @@ const transactionHistorySchema = new mongoose.Schema(
       type: String,
       enum: tType,
       required: true,
+      default: "credit"
     },
   },
   { timestamps: true }
 );
-transactionHistorySchema.index({ "data.reference": 1 }, { unique: true });
-
-const TransactionHistory = mongoose.model(
-  "TransactionHistory",
-  transactionHistorySchema
-);
-
-export default TransactionHistory;
