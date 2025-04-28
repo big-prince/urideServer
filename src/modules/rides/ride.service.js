@@ -639,6 +639,7 @@ const addRider = async function (details, callback) {
       currency: "NGN",
       transactionDate: new Date(),
       gatewayResponse: "Successful Local Transaction",
+      type: "top-up"
     },
     transactionType: "debit",
   };
