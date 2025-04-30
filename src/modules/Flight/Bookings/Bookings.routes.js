@@ -5,10 +5,11 @@ import routeLogger from "../../../middlewares/route.js";
 import { bookJet } from "../../../validations/flight.validation.js";
 import validate from "../../../middlewares/validate.js";
 import auth from "../../../middlewares/logged.js";
+import extractAccess from "../../../middlewares/extractAccess.js";
 
 const bookingsRoutes = Router();
 
-bookingsRoutes.post("/:flightId/book-jet", auth, routeLogger, validate(bookJet), bookingsController.bookJet);
+bookingsRoutes.post("/:flightId/book-jet", routeLogger, extractAccess, validate(bookJet), bookingsController.bookJet);
 
 // bookingsRoutes.post("/book-jet-share", routeLogger, bookingsController.bookJetShareSeat);
 
