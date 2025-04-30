@@ -3,9 +3,10 @@ import bookingService from "./Bookings.service.js";
 
 const bookJet = async (req, res, next) => {
   try {
-  
+
     const user = req.realUser
     const { flightId } = req.params;
+    console.log("flightId", flightId);
     const {
       scheduleIndex,
       selectedSeat,
