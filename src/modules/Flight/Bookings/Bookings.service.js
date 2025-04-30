@@ -40,8 +40,8 @@ const bookJet = async (flightId, scheduleIndex, passengerInfo, user) => {
     dateOfBirth: passengerInfo.dateOfBirth,
     address: passengerInfo.address,
     country: passengerInfo.country,
-    seatsBooked: schedule.totalSeats, 
-    selectedSeats: schedule.availableSeats, 
+    seatsBooked: schedule.totalSeats,
+    selectedSeats: schedule.availableSeats,
     totalPrice,
     status: "Pending",
     bookingDate: new Date(),
@@ -67,6 +67,7 @@ const bookJet = async (flightId, scheduleIndex, passengerInfo, user) => {
   };
 };
 
+// Update the bookJetShareSeat function to use individual parameters
 const bookJetShareSeat = async (
   flightId,
   scheduleIndex,
@@ -97,7 +98,7 @@ const bookJetShareSeat = async (
   const ownerBooking = await Bookings.findOne({
     flight: flightId,
     scheduleIndex,
-    isJetShare: false, 
+    isJetShare: false,
   });
 
   if (!ownerBooking)
@@ -215,8 +216,8 @@ const bookJetWithJetShare = async ({
     dateOfBirth: passengerInfo.dateOfBirth,
     address: passengerInfo.address,
     country: passengerInfo.country,
-    seatsBooked: 1, 
-    selectedSeats: [selectedSeat], 
+    seatsBooked: 1,
+    selectedSeats: [selectedSeat],
     totalPrice,
     status: "Pending",
     bookingDate: new Date(),
@@ -227,8 +228,8 @@ const bookJetWithJetShare = async ({
 
   await booking.save();
 
-  schedule.sharedPassengers = 1; 
-  schedule.jetShare = enableJetShare; 
+  schedule.sharedPassengers = 1;
+  schedule.jetShare = enableJetShare;
   schedule.maxPassengersPerJetShare = enableJetShare ? maxJetSharePassengers : 0;
   schedule.jetSharePricePerSeat = enableJetShare ? jetSharePricePerSeat : 0;
 
@@ -244,11 +245,9 @@ const bookJetWithJetShare = async ({
     jetShareEnabled: enableJetShare,
     maxJetSharePassengers,
     jetSharePricePerSeat,
-    bookedSeat: selectedSeat, 
+    bookedSeat: selectedSeat,
   };
 };
-
-
 
 export default {
   bookJet,

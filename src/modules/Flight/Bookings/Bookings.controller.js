@@ -3,7 +3,6 @@ import bookingService from "./Bookings.service.js";
 
 const bookJet = async (req, res, next) => {
   try {
-
     const user = req.realUser
     const { flightId } = req.params;
     console.log("flightId", flightId);
@@ -29,18 +28,18 @@ const bookJet = async (req, res, next) => {
         selectedSeat,
         user
       });
-
     }
-    if (!enableJetShare && selectedSeat) {
-      booking = await bookingService.bookJetShareSeat({
+    // Fix here - don't pass an object, use individual parameters
+    else if (!enableJetShare && selectedSeat) {
+      booking = await bookingService.bookJetShareSeat(
         flightId,
         scheduleIndex,
         passengerInfo,
         selectedSeat,
         user
-      });
+      );
     }
-    if (
+    else if (
       !enableJetShare &&
       !maxJetSharePassengers &&
       !jetSharePricePerSeat &&
