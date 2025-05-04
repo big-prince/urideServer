@@ -189,6 +189,7 @@ const bookJetWithJetShare = async ({
 
   if (enableJetShare) {
     if (!maxJetSharePassengers || maxJetSharePassengers < 1) {
+      console.log(maxJetSharePassengers, "maxJetSharePassengers");
       throw new ApiError(400, "Invalid Jet Share passenger count");
     }
 
