@@ -6,6 +6,7 @@ const bookJet = async (req, res, next) => {
     const user = req.realUser
     const { flightId } = req.params;
     console.log("flightId", flightId);
+    console.log("REQUEST BODY", req.body);
     const {
       scheduleIndex,
       selectedSeat,
