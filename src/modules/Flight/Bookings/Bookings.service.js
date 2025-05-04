@@ -173,6 +173,7 @@ const bookJetWithJetShare = async ({
   if (!flight) throw new ApiError(404, "Flight not found");
 
   const schedule = flight.availableSchedules[scheduleIndex];
+  console.log(schedule, "schedule");
   if (!schedule) throw new ApiError(400, "Invalid schedule selected");
 
   if (schedule.jetShare) {
