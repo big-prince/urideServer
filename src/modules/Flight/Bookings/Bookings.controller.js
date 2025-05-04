@@ -18,6 +18,7 @@ const bookJet = async (req, res, next) => {
     let booking;
 
     if (enableJetShare) {
+      console.log("JET SHARE ENABLED", enableJetShare);
       booking = await bookingService.bookJetWithJetShare({
         flightId,
         scheduleIndex,
@@ -31,6 +32,7 @@ const bookJet = async (req, res, next) => {
     }
     // Fix here - don't pass an object, use individual parameters
     else if (!enableJetShare && selectedSeat) {
+      console.log("JET SHARE DISABLED", enableJetShare);
       booking = await bookingService.bookJetShareSeat(
         flightId,
         scheduleIndex,
@@ -45,6 +47,7 @@ const bookJet = async (req, res, next) => {
       !jetSharePricePerSeat &&
       !selectedSeat
     ) {
+      console.log("JET SHARE DISABLED", enableJetShare);
       booking = await bookingService.bookJet(
         flightId,
         scheduleIndex,
